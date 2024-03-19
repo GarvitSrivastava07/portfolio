@@ -93,9 +93,9 @@ class ConfigResourceWaiter extends AbstractResourceWaiter
             return $this->checkResult($this->client->execute($operation));
         } catch (ValidationException $e) {
             throw new InvalidArgumentException(
-                $this->waiterConfig->get(WaiterConfig::WAITER_NAME) . ' waiter validation failed:  ' . $e->getMessage(),
-                $e->getCode(),
-                $e
+                esc_html($this->waiterConfig->get(WaiterConfig::WAITER_NAME)) . ' waiter validation failed:  ' . esc_html($e->getMessage()),
+                esc_attr($e->getCode()),
+                esc_attr($e)
             );
         } catch (ServiceResponseException $e) {
 
@@ -173,8 +173,8 @@ class ConfigResourceWaiter extends AbstractResourceWaiter
                     // fast fail because the failure case was satisfied
                     throw new RuntimeException(
                         'A resource entered into an invalid state of "'
-                        . implode(', ', $triggered) . '" while waiting with the "'
-                        . $this->waiterConfig->get(WaiterConfig::WAITER_NAME) . '" waiter.'
+                        . esc_html(implode(', ', $triggered)) . '" while waiting with the "'
+                        . esc_html($this->waiterConfig->get(WaiterConfig::WAITER_NAME)) . '" waiter.'
                     );
                 }
             }

@@ -150,11 +150,11 @@ class Credentials implements CredentialsInterface, FromConfigInterface
         }
 
         if (!is_readable($filename) || ($data = parse_ini_file($filename, true)) === false) {
-            throw new \RuntimeException("Invalid AWS credentials file: {$filename}.");
+            throw new \RuntimeException(esc_html("Invalid AWS credentials file: {$filename}."));
         }
 
         if (!isset($data[$profile]['aws_access_key_id']) || !isset($data[$profile]['aws_secret_access_key'])) {
-            throw new \RuntimeException("Invalid AWS credentials profile {$profile} in {$filename}.");
+            throw new \RuntimeException(esc_html("Invalid AWS credentials profile {$profile} in {$filename}."));
         }
 
         return new self(
@@ -309,7 +309,7 @@ class Credentials implements CredentialsInterface, FromConfigInterface
                     . 'the credentials.');
             } elseif (!class_exists('Doctrine\Common\Cache\ApcCache')) {
                 throw new RuntimeException(
-                    'Cannot set ' . Options::CREDENTIALS_CACHE . ' to true because the Doctrine cache component is '
+                    'Cannot set ' . esc_html(Options::CREDENTIALS_CACHE) . ' to true because the Doctrine cache component is '
                     . 'not installed. Either install doctrine/cache or pass in an instantiated '
                     . 'Guzzle\Cache\CacheAdapterInterface object'
                 );

@@ -30,7 +30,7 @@ class WPvivid_error_log
 
         if(file_exists($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file))
         {
-            @unlink($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
+            @wp_delete_file($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
         }
 
         @rename($log_file_name,$dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
@@ -58,7 +58,7 @@ class WPvivid_error_log
         $file=$id.'_restore_log.txt';
         if(file_exists($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file))
         {
-            @unlink($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
+            @wp_delete_file($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
         }
 
         @copy($log_file_name,$dir.DIRECTORY_SEPARATOR.'wpvivid_log'.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
@@ -116,7 +116,7 @@ class WPvivid_error_log
 
             if($oldest_filename!='')
             {
-                @unlink($oldest_filename);
+                @wp_delete_file($oldest_filename);
             }
         }
     }
@@ -155,33 +155,42 @@ class WPvivid_error_log
 
     public static function get_staging_error_log()
     {
+        if(!class_exists('WPvivid_Staging_Log_Free'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/staging/class-wpvivid-staging-log.php';
         $log=new WPvivid_Staging_Log_Free();
         $dir=$log->GetSaveLogFolder();
         $dir=$dir.'error';
         $files=array();
-        $handler=opendir($dir);
-        if($handler === false){
-            return $files;
-        }
-        $regex='#^wpvivid.*_log.txt#';
-        while(($filename=readdir($handler))!==false)
+        if(is_dir($dir) && file_exists($dir))
         {
-            if($filename != "." && $filename != "..")
+            $handler=opendir($dir);
+            if($handler === false){
+                return $files;
+            }
+            $regex='#^wpvivid.*_log.txt#';
+            while(($filename=readdir($handler))!==false)
             {
-                if(is_dir($dir.$filename))
+                if($filename != "." && $filename != "..")
                 {
-                    continue;
-                }
-                else{
-                    if(preg_match($regex,$filename))
+                    if(is_dir($dir.$filename))
                     {
-                        $files[] = $dir.DIRECTORY_SEPARATOR.$filename;
+                        continue;
+                    }
+                    else{
+                        if(preg_match($regex,$filename))
+                        {
+                            $files[] = $dir.DIRECTORY_SEPARATOR.$filename;
+                        }
                     }
                 }
             }
+            if($handler)
+                @closedir($handler);
+            return $files;
         }
-        if($handler)
-            @closedir($handler);
-        return $files;
+        else
+        {
+            return $files;
+        }
     }
 }

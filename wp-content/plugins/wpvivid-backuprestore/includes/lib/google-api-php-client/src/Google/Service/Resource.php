@@ -91,7 +91,7 @@ class Google_Service_Resource
 
       throw new Google_Exception(
           "Unknown function: " .
-          "{$this->serviceName}->{$this->resourceName}->{$name}()"
+          esc_html("{$this->serviceName}->{$this->resourceName}->{$name}()")
       );
     }
     $method = $this->methods[$name];
@@ -144,7 +144,7 @@ class Google_Service_Resource
                 'parameter' => $key
             )
         );
-        throw new Google_Exception("($name) unknown parameter: '$key'");
+        throw new Google_Exception(esc_html("($name) unknown parameter: '$key'"));
       }
     }
 
@@ -162,7 +162,7 @@ class Google_Service_Resource
                 'parameter' => $paramName
             )
         );
-        throw new Google_Exception("($name) missing required param: '$paramName'");
+        throw new Google_Exception(esc_html("($name) missing required param: '$paramName'"));
       }
       if (isset($parameters[$paramName])) {
         $value = $parameters[$paramName];

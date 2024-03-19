@@ -150,7 +150,7 @@ class WPvivid_Google_AccessToken_Verify
       if (!$file = file_get_contents($url)) {
         throw new WPvivid_Google_Exception(
             "Failed to retrieve verification certificates: '" .
-            $url . "'."
+            esc_url($url) . "'."
         );
       }
 
@@ -165,9 +165,9 @@ class WPvivid_Google_AccessToken_Verify
     throw new WPvivid_Google_Exception(
         sprintf(
             'Failed to retrieve verification certificates: "%s".',
-            $response->getBody()->getContents()
+            esc_html($response->getBody()->getContents())
         ),
-        $response->getStatusCode()
+        esc_attr($response->getStatusCode())
     );
   }
 

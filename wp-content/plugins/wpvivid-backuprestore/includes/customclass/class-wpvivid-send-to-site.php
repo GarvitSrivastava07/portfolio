@@ -7,7 +7,7 @@ if (!defined('WPVIVID_PLUGIN_DIR'))
 
 if(!defined('WPVIVID_REMOTE_SEND_TO_SITE'))
     define('WPVIVID_REMOTE_SEND_TO_SITE','send_to_site');
-require_once WPVIVID_PLUGIN_DIR . '/includes/customclass/class-wpvivid-remote.php';
+include_once WPVIVID_PLUGIN_DIR . '/includes/customclass/class-wpvivid-remote.php';
 
 if(!defined('WPVIVID_SEND_TO_SITE_UPLOAD_SIZE'))
     define('WPVIVID_SEND_TO_SITE_UPLOAD_SIZE', 2);
@@ -149,7 +149,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
 
         $ret=$this->get_file_status($task_id,basename($file),$file_size,$md5);
 
-        $wpvivid_plugin->wpvivid_log->WriteLog(json_encode($ret),'notice');
+        $wpvivid_plugin->wpvivid_log->WriteLog(wp_json_encode($ret),'notice');
 
         if($ret['result']==WPVIVID_SUCCESS)
         {
@@ -259,7 +259,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
         $json=array();
 
         $json['backup_id']=$task_id;
-        $json=json_encode($json);
+        $json=wp_json_encode($json);
         $crypt=new WPvivid_crypt(base64_decode($this->options['token']));
         $data=$crypt->encrypt_message($json);
 
@@ -319,7 +319,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
         $json=array();
 
         $json['backup_id']=$task_id;
-        $json=json_encode($json);
+        $json=wp_json_encode($json);
         $crypt=new WPvivid_crypt(base64_decode($this->options['token']));
         $data=$crypt->encrypt_message($json);
 
@@ -393,7 +393,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
         $json['file_size']=$file_size;
         $json['md5']=$md5;
         $json['data']=base64_encode($data);
-        $json=json_encode($json);
+        $json=wp_json_encode($json);
 
         $crypt=new WPvivid_crypt(base64_decode($this->options['token']));
         $data=$crypt->encrypt_message($json);
@@ -463,7 +463,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
         $json=array();
         $json['backup']=$task;
         $json['backup_id']=$task_id;
-        $json=json_encode($json);
+        $json=wp_json_encode($json);
 
         $crypt=new WPvivid_crypt(base64_decode($this->options['token']));
         $data=$crypt->encrypt_message($json);
@@ -533,7 +533,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 if (!is_string($data)) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'Data decryption failed.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -541,7 +541,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 if (is_null($params)) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'Data decode failed.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -549,7 +549,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                     if (WPvivid_Backuplist::get_backup_by_id($params['backup_id']) !== false) {
                         $ret['result'] = WPVIVID_FAILED;
                         $ret['error'] = 'The uploading backup already exists in Backups list.';
-                        echo json_encode($ret);
+                        echo wp_json_encode($ret);
                     } else {
                         global $wpvivid_plugin;
                         $wpvivid_plugin->wpvivid_log = new WPvivid_Log();
@@ -563,18 +563,18 @@ class WPvivid_Send_to_site extends WPvivid_Remote
 
                         $wpvivid_plugin->wpvivid_log->WriteLog('Connect site success', 'notice');
                         $ret['result'] = WPVIVID_SUCCESS;
-                        echo json_encode($ret);
+                        echo wp_json_encode($ret);
                     }
                 } else {
                     $ret['result'] = WPVIVID_SUCCESS;
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                 }
             }
         }
         catch (Exception $e) {
             $ret['result']=WPVIVID_FAILED;
             $ret['error']=$e->getMessage();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
         die();
@@ -610,7 +610,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 {
                     $ret['result']=WPVIVID_FAILED;
                     $ret['error']='The key is invalid.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -619,7 +619,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 {
                     $ret['result']=WPVIVID_FAILED;
                     $ret['error']='The key is invalid.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -681,7 +681,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                     //
                 }
 
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $e)
@@ -689,7 +689,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
             $ret['result']=WPVIVID_FAILED;
             $ret['error']=$e->getMessage();
             //$wpvivid_plugin->wpvivid_log->WriteLog($e->getMessage(),'error');
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
 
@@ -715,14 +715,14 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 if (!is_string($data)) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'The key is invalid.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
                 $params = json_decode($data, 1);
                 if (is_null($params)) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'The key is invalid.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
                 global $wpvivid_plugin;
@@ -737,13 +737,13 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                     WPvivid_Setting::update_option('wpvivid_backup_list', $list);
                 }
                 $ret['result'] = WPVIVID_SUCCESS;
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $e) {
             $ret['result']=WPVIVID_FAILED;
             $ret['error']=$e->getMessage();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
         die();
@@ -775,6 +775,8 @@ class WPvivid_Send_to_site extends WPvivid_Remote
         {
             if($task['options']['backup_options']['ismerge']==1)
             {
+                if (!defined('WPVIVID_BACKUP_TYPE_MERGE'))
+                    define('WPVIVID_BACKUP_TYPE_MERGE','backup_merge');
                 if(WPVIVID_BACKUP_TYPE_MERGE==$backup_data['key'])
                 {
                     $ret=$backup_data['result'];
@@ -810,7 +812,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
         $json['name']=$file;
         $json['file_size']=$file_size;
         $json['md5']=$md5;
-        $json=json_encode($json);
+        $json=wp_json_encode($json);
         $crypt=new WPvivid_crypt(base64_decode($this->options['token']));
         $data=$crypt->encrypt_message($json);
         $data=base64_encode($data);
@@ -879,7 +881,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 if (!is_string($data)) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'The key is invalid.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -887,7 +889,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 if (is_null($params)) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'The key is invalid.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -910,7 +912,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 if (!$offset) {
                     $ret['result'] = WPVIVID_SUCCESS;
                     $ret['file_status']['status'] = 'start';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -929,13 +931,13 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                     $ret['file_status']['status'] = 'continue';
                     $ret['file_status']['offset'] = filesize($file_path);
                 }
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $e) {
             $ret['result']=WPVIVID_FAILED;
             $ret['error']=$e->getMessage();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
         die();
@@ -962,14 +964,14 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                 if (!is_string($data)) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'The key is invalid.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
                 $params = json_decode($data, 1);
                 if (is_null($params)) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'The key is invalid.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -1007,7 +1009,7 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                                                 if($id === $clear_backup_id || $white_label_id === $clear_backup_id)
                                                 {
                                                     $wpvivid_plugin->wpvivid_log->WriteLog('Clear backup file: '.$backup_path.$filename, 'notice');
-                                                    @unlink($backup_path.$filename);
+                                                    @wp_delete_file($backup_path.$filename);
                                                 }
                                             }
                                         }
@@ -1024,13 +1026,13 @@ class WPvivid_Send_to_site extends WPvivid_Remote
                     $ret['result']='failed';
                     $ret['error']='Failed to get local storage directory.';
                 }
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $e) {
             $ret['result']=WPVIVID_FAILED;
             $ret['error']=$e->getMessage();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
         die();

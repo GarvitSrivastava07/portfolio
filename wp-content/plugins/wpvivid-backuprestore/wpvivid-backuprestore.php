@@ -7,7 +7,7 @@
  * @wordpress-plugin
  * Plugin Name:       WPvivid Backup Plugin
  * Description:       Clone or copy WP sites then move or migrate them to new host (new domain), schedule backups, transfer backups to leading remote storage. All in one.
- * Version:           0.9.96
+ * Version:           0.9.98
  * Author:            WPvivid Team
  * Author URI:        https://wpvivid.com
  * License:           GPL-3.0+
@@ -21,7 +21,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'WPVIVID_PLUGIN_VERSION', '0.9.96' );
+define( 'WPVIVID_PLUGIN_VERSION', '0.9.98' );
 //
 define('WPVIVID_RESTORE_INIT','init');
 define('WPVIVID_RESTORE_READY','ready');
@@ -150,8 +150,27 @@ function wpvivid_plugin_activate()
         }
     }
 
+    //A flag to determine whether plugin had been initialized
+    $init=get_option('wpvivid_init', 'not init');
+    if($init=='not init')
+    {
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-setting.php';
+        //Initialization settings
+        WPvivid_Setting::init_option();
+        update_option('wpvivid_init','init');
+    }
+
+    $wpvivid_remote_init=get_option('wpvivid_remote_init', 'not init');
+    if($wpvivid_remote_init=='not init')
+    {
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-setting.php';
+        wpvivid_init_remote_option();
+        update_option('wpvivid_remote_init','init');
+    }
+
     add_option('wpvivid_do_activation_redirect', true);
 }
+
 function wpvivid_init_plugin_redirect()
 {
     if (get_option('wpvivid_do_activation_redirect', false))
@@ -201,6 +220,110 @@ function wpvivid_init_plugin_redirect()
         }
     }
 }
+
+function wpvivid_init_remote_option()
+{
+    $remoteslist=WPvivid_Setting::get_all_remote_options();
+    foreach ($remoteslist as $key=>$value)
+    {
+        if(!array_key_exists('options',$value))
+        {
+            continue;
+        }
+        $remote = array();
+        if($value['type'] === 'ftp')
+        {
+            $remote['host']=$value['options']['host'];
+            $remote['username']=$value['options']['username'];
+            $remote['password']=$value['options']['password'];
+            $remote['path']=$value['options']['path'];
+            $remote['name']=$value['options']['name'];
+            $remote['passive']=$value['options']['passive'];
+            $value['type'] = strtolower($value['type']);
+            $remote['type']=$value['type'];
+            $remoteslist[$key]=$remote;
+        }
+        elseif ($value['type'] === 'sftp')
+        {
+            $remote['host']=$value['options']['host'];
+            $remote['username']=$value['options']['username'];
+            $remote['password']=$value['options']['password'];
+            $remote['path']=$value['options']['path'];
+            $remote['name']=$value['options']['name'];
+            $remote['port']=$value['options']['port'];
+            $value['type'] = strtolower($value['type']);
+            $remote['type']=$value['type'];
+            $remoteslist[$key]=$remote;
+        }
+        elseif ($value['type'] === 'amazonS3')
+        {
+            $remote['classMode']='0';
+            $remote['sse']='0';
+            $remote['name']=$value['options']['name'];
+            $remote['access']=$value['options']['access'];
+            $remote['secret']=$value['options']['secret'];
+            $remote['s3Path']=$value['options']['s3Path'];
+            $value['type'] = strtolower($value['type']);
+            $remote['type']=$value['type'];
+            $remoteslist[$key]=$remote;
+        }
+    }
+    WPvivid_Setting::update_option('wpvivid_upload_setting',$remoteslist);
+
+    include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-backuplist.php';
+
+    $backuplist=WPvivid_Backuplist::get_backuplist();
+    foreach ($backuplist as $key=>$value)
+    {
+        if(is_array($value['remote']))
+        {
+            foreach ($value['remote'] as $remote_key=>$storage_type)
+            {
+                if(!array_key_exists('options',$storage_type))
+                {
+                    continue;
+                }
+                $remote = array();
+                if($storage_type['type'] === 'ftp')
+                {
+                    $remote['host']=$storage_type['options']['host'];
+                    $remote['username']=$storage_type['options']['username'];
+                    $remote['password']=$storage_type['options']['password'];
+                    $remote['path']=$storage_type['options']['path'];
+                    $remote['name']=$storage_type['options']['name'];
+                    $remote['passive']=$storage_type['options']['passive'];
+                    $storage_type['type'] = strtolower($storage_type['type']);
+                    $remote['type']=$storage_type['type'];
+                }
+                elseif ($storage_type['type'] === 'sftp')
+                {
+                    $remote['host']=$storage_type['options']['host'];
+                    $remote['username']=$storage_type['options']['username'];
+                    $remote['password']=$storage_type['options']['password'];
+                    $remote['path']=$storage_type['options']['path'];
+                    $remote['name']=$storage_type['options']['name'];
+                    $remote['port']=$storage_type['options']['port'];
+                    $storage_type['type'] = strtolower($storage_type['type']);
+                    $remote['type']=$storage_type['type'];
+                }
+                elseif ($storage_type['type'] === 'amazonS3')
+                {
+                    $remote['classMode']='0';
+                    $remote['sse']='0';
+                    $remote['name']=$storage_type['options']['name'];
+                    $remote['access']=$storage_type['options']['access'];
+                    $remote['secret']=$storage_type['options']['secret'];
+                    $remote['s3Path']=$storage_type['options']['s3Path'];
+                    $storage_type['type'] = strtolower($storage_type['type']);
+                    $remote['type']=$storage_type['type'];
+                }
+                $backuplist[$key]['remote'][$remote_key]=$remote;
+            }
+        }
+    }
+    WPvivid_Setting::update_option('wpvivid_backup_list',$backuplist);
+}
+
 register_activation_hook(__FILE__, 'wpvivid_plugin_activate');
 add_action('admin_init', 'wpvivid_init_plugin_redirect');
 

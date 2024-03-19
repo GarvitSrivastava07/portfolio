@@ -87,14 +87,14 @@ class WPvivid_Staging_Create_UI_Display_Free
             <div class="wpvivid-one-coloum" id="wpvivid_create_staging_step1" style="border:1px solid #f1f1f1;padding-bottom:0em; margin-top:0em;margin-bottom:1em;">
                 <div class="wpvivid-one-coloum" style="background:#f5f5f5;padding-top:0em;padding-bottom:0em;display: none;">
                     <div class="wpvivid-two-col">
-                        <p><span class="dashicons dashicons-awards wpvivid-dashicons-blue"></span><span><strong>Site Name: </strong></span><span class="wpvivid-staging-site-name"><?php echo $default_staging_site; ?></span></p>
-                        <p><span class="dashicons dashicons-admin-site-alt3 wpvivid-dashicons-blue"></span><span><strong>Database Name: </strong></span><span class="wpvivid-staging-additional-database-name-display"><?php echo DB_NAME; ?></span></p>
-                        <p><span class="dashicons dashicons-list-view wpvivid-dashicons-blue"></span><span><strong>Table Prefix: </strong></span><span class="wpvivid-staging-table-prefix-display"><?php echo $prefix; ?></span></p>
+                        <p><span class="dashicons dashicons-awards wpvivid-dashicons-blue"></span><span><strong>Site Name: </strong></span><span class="wpvivid-staging-site-name"><?php echo esc_html($default_staging_site); ?></span></p>
+                        <p><span class="dashicons dashicons-admin-site-alt3 wpvivid-dashicons-blue"></span><span><strong>Database Name: </strong></span><span class="wpvivid-staging-additional-database-name-display"><?php echo esc_html(DB_NAME); ?></span></p>
+                        <p><span class="dashicons dashicons-list-view wpvivid-dashicons-blue"></span><span><strong>Table Prefix: </strong></span><span class="wpvivid-staging-table-prefix-display"><?php echo esc_html($prefix); ?></span></p>
                     </div>
                     <div class="wpvivid-two-col">
                         <!--<p><span class="dashicons dashicons-admin-site-alt3 wpvivid-dashicons-blue"></span><span><strong>Database Name:</strong></span><span>admin06</span></p>-->
-                        <p><span class="dashicons dashicons-admin-home wpvivid-dashicons-blue"></span><span><strong>Home URL: </strong></span><span class="wpvivid-staging-home-url"><?php echo $home_url; ?>/</span><span class="wpvivid-staging-site-name"><?php echo $default_staging_site; ?></span></p>
-                        <p><span class="dashicons  dashicons-rest-api wpvivid-dashicons-blue"></span><span><strong>Admin URL: </strong></span><span class="wpvivid-staging-home-url"><?php echo $home_url; ?>/</span><span class="wpvivid-staging-site-name"><?php echo $default_staging_site; ?></span><span>/<?php echo $admin_name; ?></span></p>
+                        <p><span class="dashicons dashicons-admin-home wpvivid-dashicons-blue"></span><span><strong>Home URL: </strong></span><span class="wpvivid-staging-home-url"><?php echo esc_url($home_url); ?>/</span><span class="wpvivid-staging-site-name"><?php echo esc_html($default_staging_site); ?></span></p>
+                        <p><span class="dashicons  dashicons-rest-api wpvivid-dashicons-blue"></span><span><strong>Admin URL: </strong></span><span class="wpvivid-staging-home-url"><?php echo esc_url($home_url); ?>/</span><span class="wpvivid-staging-site-name"><?php echo esc_html($default_staging_site); ?></span><span>/<?php echo esc_html($admin_name); ?></span></p>
                     </div>
                 </div>
 
@@ -135,12 +135,12 @@ class WPvivid_Staging_Create_UI_Display_Free
 
                         <div id="wpvivid_staging_part" style="border-left: 4px solid #007cba;padding-left:1em;">
                             <p>
-                                <input type="text" id="wpvivid_staging_path" placeholder="<?php esc_attr_e($default_staging_site); ?>" value="<?php esc_attr_e($default_staging_site); ?>" onkeyup="value=value.replace(/[^a-zA-Z0-9]/g,'')" onpaste="value=value.replace(/[^\a-\z\A-\Z0-9]/g,'')"><span> Custom directory</span>
+                                <input type="text" id="wpvivid_staging_path" placeholder="<?php echo esc_attr($default_staging_site); ?>" value="<?php echo esc_attr($default_staging_site); ?>" onkeyup="value=value.replace(/[^a-zA-Z0-9]/g,'')" onpaste="value=value.replace(/[^\a-\z\A-\Z0-9]/g,'')"><span> Custom directory</span>
                             </p>
                             <p>
-                                <span class="dashicons dashicons-admin-home wpvivid-dashicons-blue"></span><span>Home Url: </span><span class="wpvivid-staging-home-url"><?php echo $home_url; ?>/</span><span class="wpvivid-staging-site-name"><?php echo $default_staging_site; ?></span>
+                                <span class="dashicons dashicons-admin-home wpvivid-dashicons-blue"></span><span>Home Url: </span><span class="wpvivid-staging-home-url"><?php echo esc_url($home_url); ?>/</span><span class="wpvivid-staging-site-name"><?php echo esc_html($default_staging_site); ?></span>
                                 <span style="margin-left:1em;" class="dashicons dashicons-portfolio wpvivid-dashicons-blue"></span><span><strong>Directory:</strong></span>
-                                <span><?php echo untrailingslashit(ABSPATH); ?>/</span><span class="wpvivid-staging-site-name"><?php echo $default_staging_site; ?></span>
+                                <span><?php echo esc_html(untrailingslashit(ABSPATH)); ?>/</span><span class="wpvivid-staging-site-name"><?php echo esc_html($default_staging_site); ?></span>
                             </p>
                         </div>
                     </div>
@@ -150,7 +150,7 @@ class WPvivid_Staging_Create_UI_Display_Free
                         <span>Choose Database to Install the Staging Site</span>
                     </h2>
                     <p>
-                        <input type="text" id="wpvivid_staging_table_prefix" placeholder="<?php esc_attr_e($prefix); ?>" value="<?php esc_attr_e($prefix); ?>" onkeyup="value=value.replace(/[^a-zA-Z0-9-_]/g,'')" onpaste="value=value.replace(/[^\a-\z\A-\Z0-9-_]/g,'')" title="Table Prefix"> Custom Table Prefix, By default: <?php echo $prefix; ?>
+                        <input type="text" id="wpvivid_staging_table_prefix" placeholder="<?php echo esc_attr($prefix); ?>" value="<?php echo esc_attr($prefix); ?>" onkeyup="value=value.replace(/[^a-zA-Z0-9-_]/g,'')" onpaste="value=value.replace(/[^\a-\z\A-\Z0-9-_]/g,'')" title="Table Prefix"> Custom Table Prefix, By default: <?php echo esc_html($prefix); ?>
                     </p>
 
                     <p>
@@ -277,7 +277,7 @@ class WPvivid_Staging_Create_UI_Display_Free
                         jQuery('#wpvivid_additional_database_account').find('.wpvivid-additional-database-user').attr('readonly', true);
                         jQuery('#wpvivid_additional_database_account').find('.wpvivid-additional-database-pass').attr('readonly', true);
                         jQuery('#wpvivid_additional_database_account').find('.wpvivid-additional-database-host').attr('readonly', true);
-                        jQuery('.wpvivid-staging-additional-database-name-display').html('<?php echo DB_NAME; ?>');
+                        jQuery('.wpvivid-staging-additional-database-name-display').html('<?php echo esc_html(DB_NAME); ?>');
                     }
                     else{
                         jQuery('#wpvivid_additional_database_account').show();
@@ -297,9 +297,9 @@ class WPvivid_Staging_Create_UI_Display_Free
                 }
             });
 
-            var default_staging_site = '<?php echo $default_staging_site; ?>';
-            var default_content_staging_site = '<?php echo $default_content_staging_site; ?>';
-            var is_mu='<?php echo is_multisite(); ?>';
+            var default_staging_site = '<?php echo esc_attr($default_staging_site); ?>';
+            var default_content_staging_site = '<?php echo esc_attr($default_content_staging_site); ?>';
+            var is_mu='<?php echo esc_attr(is_multisite()); ?>';
             jQuery('#wpvivid_create_staging_step1').on("click", 'input:radio[name=choose_staging_dir]', function() {
                 if(jQuery(this).prop('checked'))
                 {
@@ -765,7 +765,7 @@ class WPvivid_Staging_Create_UI_Display_Free
                                     jQuery('#wpvivid_staging_cancel').css({'pointer-events': 'auto', 'opacity': '1'});
                                     wpvivid_create_staging_lock_unlock('unlock');
                                     jQuery('#wpvivid_create_staging_step2').hide();
-                                    location.href='<?php echo apply_filters('wpvividstg_get_admin_url', '') . 'admin.php?page=wpvivid-staging'; ?>';
+                                    location.href='<?php echo esc_url(apply_filters('wpvividstg_get_admin_url', '')) . 'admin.php?page=wpvivid-staging'; ?>';
                                 }
                                 else if(typeof jsonarray.error !== 'undefined' && jsonarray.error){
                                     wpvivid_create_staging_lock_unlock('unlock');

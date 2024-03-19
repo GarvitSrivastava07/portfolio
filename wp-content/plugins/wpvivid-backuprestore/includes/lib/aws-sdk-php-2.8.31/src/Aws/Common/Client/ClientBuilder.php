@@ -298,11 +298,11 @@ class ClientBuilder
             $format = $config->get(Options::BACKOFF_LOGGER_TEMPLATE);
             if ($logger === 'debug') {
                 $logger = new ClosureLogAdapter(function ($message) {
-                    trigger_error($message . "\n");
+                    trigger_error(esc_html($message) . "\n");
                 });
             } elseif (!($logger instanceof LogAdapterInterface)) {
                 throw new InvalidArgumentException(
-                    Options::BACKOFF_LOGGER . ' must be set to `debug` or an instance of '
+                    esc_html(Options::BACKOFF_LOGGER) . ' must be set to `debug` or an instance of '
                         . 'Guzzle\\Common\\Log\\LogAdapterInterface'
                 );
             }
@@ -397,7 +397,7 @@ class ClientBuilder
             } elseif ($signature == 'v3https') {
                 $signature = new SignatureV3Https();
             } else {
-                throw new InvalidArgumentException("Invalid signature type: {$signature}");
+                throw new InvalidArgumentException(esc_html("Invalid signature type: {$signature}"));
             }
         } elseif (!($signature instanceof SignatureInterface)) {
             throw new InvalidArgumentException('The provided signature is not '
@@ -444,7 +444,7 @@ class ClientBuilder
 
         if (!$global && !$region) {
             throw new InvalidArgumentException(
-                'A region is required when using ' . $description->getData('serviceFullName')
+                'A region is required when using ' . esc_html($description->getData('serviceFullName'))
             );
         } elseif ($global && !$region) {
             $config[Options::REGION] = 'us-east-1';

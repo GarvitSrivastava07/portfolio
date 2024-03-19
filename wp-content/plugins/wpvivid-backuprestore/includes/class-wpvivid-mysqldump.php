@@ -159,7 +159,7 @@ class WPvivid_Mysqldump
 
         $diff = array_diff(array_keys($this->dumpSettings), array_keys($dumpSettingsDefault));
         if (count($diff)>0) {
-            throw new Exception("Unexpected value in dumpSettings: (" . implode(",", $diff) . ")");
+            throw new Exception("Unexpected value in dumpSettings: (" . esc_html(implode(",", $diff)) . ")");
         }
 
         if ( !is_array($this->dumpSettings['include-tables']) ||
@@ -374,7 +374,7 @@ class WPvivid_Mysqldump
         // This check will be removed once include-tables supports regexps
         if (0 < count($this->dumpSettings['include-tables'])) {
             $name = implode(",", $this->dumpSettings['include-tables']);
-            throw new Exception("Table (" . $name . ") not found in database");
+            throw new Exception("Table (" . esc_html($name) . ") not found in database");
         }
         $this->exportTables();
         /*
@@ -436,7 +436,7 @@ class WPvivid_Mysqldump
             }
 
             if ( !$this->dumpSettings['skip-dump-date'] ) {
-                $header .= "-- Date: " . date('r') . PHP_EOL . PHP_EOL;
+                $header .= "-- Date: " . gmdate('r') . PHP_EOL . PHP_EOL;
             }
         }
         return $header;
@@ -453,7 +453,7 @@ class WPvivid_Mysqldump
         if (!$this->dumpSettings['skip-comments']) {
             $footer .= '-- Dump completed';
             if (!$this->dumpSettings['skip-dump-date']) {
-                $footer .= ' on: ' . date('r');
+                $footer .= ' on: ' . gmdate('r');
             }
             $footer .= PHP_EOL;
         }

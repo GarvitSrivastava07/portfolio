@@ -27,11 +27,11 @@ class WPvivid_Staging_Log_Free
         }
         if(file_exists($this->log_file))
         {
-            @unlink( $this->log_file);
+            @wp_delete_file( $this->log_file);
         }
         $this->log_file_handle = fopen($this->log_file, 'a');
         $offset=get_option('gmt_offset');
-        $time =date("Y-m-d H:i:s",time()+$offset*60*60);
+        $time =gmdate("Y-m-d H:i:s",time()+$offset*60*60);
         $text='Log created: '.$time."\n";
         $text.='Type: '.$describe."\n";
         fwrite($this->log_file_handle,$text);
@@ -51,7 +51,7 @@ class WPvivid_Staging_Log_Free
         }
         if($delete==1)
         {
-            unlink( $this->log_file);
+            wp_delete_file( $this->log_file);
         }
         $this->log_file_handle = fopen($this->log_file, 'a');
 
@@ -63,7 +63,7 @@ class WPvivid_Staging_Log_Free
         if ($this->log_file_handle)
         {
             $offset=get_option('gmt_offset');
-            $time =date("Y-m-d H:i:s",time()+$offset*60*60);
+            $time =gmdate("Y-m-d H:i:s",time()+$offset*60*60);
             $text='['.$time.']'.'['.$type.']'.$log."\n";
             fwrite($this->log_file_handle,$text );
         }
@@ -161,7 +161,7 @@ class WPvivid_Staging_Log_Free
             }
 
             $offset=get_option('gmt_offset');
-            $time =date("Y-m-d H:i:s",time()+$offset*60*60);
+            $time =gmdate("Y-m-d H:i:s",time()+$offset*60*60);
             $text='['.$time.']'.'[notice]'.$log."\n";
             fwrite($this->log_file_handle,$text );
         }
@@ -195,7 +195,7 @@ class WPvivid_Staging_error_log_free
 
         if(file_exists($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file))
         {
-            @unlink($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
+            @wp_delete_file($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
         }
 
         @rename($log_file_name,$dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
@@ -223,7 +223,7 @@ class WPvivid_Staging_error_log_free
         $file=$id.'_restore_log.txt';
         if(file_exists($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file))
         {
-            @unlink($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
+            @wp_delete_file($dir.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
         }
 
         @copy($log_file_name,$dir.DIRECTORY_SEPARATOR.'wpvivid_log'.DIRECTORY_SEPARATOR.'error'.DIRECTORY_SEPARATOR.$file);
@@ -281,7 +281,7 @@ class WPvivid_Staging_error_log_free
 
             if($oldest_filename!='')
             {
-                @unlink($oldest_filename);
+                @wp_delete_file($oldest_filename);
             }
         }
     }

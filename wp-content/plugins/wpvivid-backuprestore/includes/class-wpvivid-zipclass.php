@@ -408,7 +408,7 @@ class WPvivid_ZipClass extends Wpvivid_Compress_Default
             {
                 $ret['result']=WPVIVID_FAILED;
                 $ret['error'] = $archive->errorInfo(true);
-                $wpvivid_plugin->restore_data->write_log('extract finished:'.json_encode($ret),'notice');
+                $wpvivid_plugin->restore_data->write_log('extract finished:'.wp_json_encode($ret),'notice');
                 break;
             }
             else
@@ -416,7 +416,7 @@ class WPvivid_ZipClass extends Wpvivid_Compress_Default
                 $wpvivid_plugin->restore_data->write_log('extract finished file:'.$file,'notice');
             }
         }
-        //$this->restore_data->write_log('extract finished files:'.json_encode($all_files),'notice');
+        //$this->restore_data->write_log('extract finished files:'.wp_json_encode($all_files),'notice');
 
         return $ret;
     }
@@ -434,14 +434,14 @@ class WPvivid_ZipClass extends Wpvivid_Compress_Default
         foreach ($files as $file)
         {
             $wpvivid_plugin->restore_data->write_log('start extracting file:'.$file,'notice');
-            $wpvivid_plugin->restore_data->write_log('extract child file:'.json_encode($extract_files),'notice');
+            $wpvivid_plugin->restore_data->write_log('extract child file:'.wp_json_encode($extract_files),'notice');
             $archive = new WPvivid_PclZip($file);
             $zip_ret = $archive->extract(WPVIVID_PCLZIP_OPT_BY_NAME,$extract_files,WPVIVID_PCLZIP_OPT_PATH, $path,WPVIVID_PCLZIP_OPT_REPLACE_NEWER,WPVIVID_PCLZIP_CB_PRE_EXTRACT,'wpvivid_function_pre_extract_callback',WPVIVID_PCLZIP_OPT_TEMP_FILE_THRESHOLD,16);
             if(!$zip_ret)
             {
                 $ret['result']=WPVIVID_FAILED;
                 $ret['error'] = $archive->errorInfo(true);
-                $wpvivid_plugin->restore_data->write_log('extract finished:'.json_encode($ret),'notice');
+                $wpvivid_plugin->restore_data->write_log('extract finished:'.wp_json_encode($ret),'notice');
                 break;
             }
             else
@@ -449,7 +449,7 @@ class WPvivid_ZipClass extends Wpvivid_Compress_Default
                 $wpvivid_plugin->restore_data->write_log('extract finished file:'.$file,'notice');
             }
         }
-        //$this->restore_data->write_log('extract finished files:'.json_encode($all_files),'notice');
+        //$this->restore_data->write_log('extract finished files:'.wp_json_encode($all_files),'notice');
 
         return $ret;
     }
@@ -815,7 +815,7 @@ class WPvivid_ZipClass extends Wpvivid_Compress_Default
             $skip_files_time=0;
         }
         global $wpvivid_plugin;
-        $wpvivid_plugin->wpvivid_log->WriteLog('exclude_files_regex:'.json_encode($exclude_files_regex),'notice');
+        $wpvivid_plugin->wpvivid_log->WriteLog('exclude_files_regex:'.wp_json_encode($exclude_files_regex),'notice');
 
         foreach ($data['files'] as $file)
         {
@@ -994,7 +994,7 @@ class WPvivid_PclZip_Class
         global $wpvivid_plugin;
 
         if(file_exists($name))
-            @unlink($name);
+            @wp_delete_file($name);
 
         if (!class_exists('WPvivid_PclZip'))
             include_once WPVIVID_PLUGIN_DIR . '/includes/zip/class-wpvivid-pclzip.php';
@@ -1044,14 +1044,14 @@ class WPvivid_PclZip_Class
             $temp_path = dirname($name).DIRECTORY_SEPARATOR.'wpvivid_package_info.json';
             if(file_exists($temp_path))
             {
-                @unlink($temp_path);
+                @wp_delete_file($temp_path);
             }
             $json_info['php_version'] = phpversion();
             global $wpdb;
             $json_info['mysql_version'] = $wpdb->db_version();
-            file_put_contents($temp_path,print_r(json_encode($json_info),true));
+            file_put_contents($temp_path,print_r(wp_json_encode($json_info),true));
             $archive -> add($temp_path,WPVIVID_PCLZIP_OPT_REMOVE_PATH,dirname($temp_path));
-            @unlink($temp_path);
+            @wp_delete_file($temp_path);
         }
 
         $wpvivid_plugin->wpvivid_log->WriteLog('Prepare to zip files. file: '.basename($name),'notice');
@@ -1158,7 +1158,7 @@ class WPvivid_PclZip_Class_Ex
         global $wpvivid_plugin;
 
         if(file_exists($name))
-            @unlink($name);
+            @wp_delete_file($name);
 
         if (!class_exists('WPvivid_PclZip'))
             include_once WPVIVID_PLUGIN_DIR . '/includes/zip/class-wpvivid-pclzip.php';
@@ -1209,14 +1209,14 @@ class WPvivid_PclZip_Class_Ex
             $temp_path = dirname($name).DIRECTORY_SEPARATOR.'wpvivid_package_info.json';
             if(file_exists($temp_path))
             {
-                @unlink($temp_path);
+                @wp_delete_file($temp_path);
             }
             $json_info['php_version'] = phpversion();
             global $wpdb;
             $json_info['mysql_version'] = $wpdb->db_version();
-            file_put_contents($temp_path,print_r(json_encode($json_info),true));
+            file_put_contents($temp_path,print_r(wp_json_encode($json_info),true));
             $archive -> add($temp_path,WPVIVID_PCLZIP_OPT_REMOVE_PATH,dirname($temp_path));
-            @unlink($temp_path);
+            @wp_delete_file($temp_path);
         }
 
         $wpvivid_plugin->wpvivid_log->WriteLog('Prepare to zip files. file: '.basename($name),'notice');

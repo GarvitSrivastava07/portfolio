@@ -61,7 +61,7 @@ class DownloadSync extends AbstractSync
         // Create the directory if it does not exist
         if (!is_dir($directory) && !mkdir($directory, 0777, true)) {
             $errors = error_get_last();
-            throw new RuntimeException('Could not create directory: ' . $directory . ' - ' . $errors['message']);
+            throw new RuntimeException('Could not create directory: ' . esc_html($directory) . ' - ' . esc_html($errors['message']));
         }
     }
 

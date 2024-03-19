@@ -101,7 +101,7 @@ class DeleteObjectsTransfer implements BatchTransferInterface
         foreach ($batch as $object) {
             // Ensure that the batch item is valid
             if (!is_array($object) || !isset($object['Key'])) {
-                throw new InvalidArgumentException('Invalid batch item encountered: ' . var_export($batch, true));
+                throw new InvalidArgumentException('Invalid batch item encountered: ' . esc_html(var_export($batch, true)));
             }
             $del[] = array(
                 'Key'       => $object['Key'],
@@ -127,7 +127,7 @@ class DeleteObjectsTransfer implements BatchTransferInterface
         // Ensure that the objects were deleted successfully
         if (!empty($result['Errors'])) {
             $errors = $result['Errors'];
-            throw new DeleteMultipleObjectsException($errors);
+            throw new DeleteMultipleObjectsException(esc_html($errors));
         }
     }
 }

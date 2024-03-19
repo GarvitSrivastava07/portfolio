@@ -93,7 +93,7 @@ class Grantee implements ToArrayInterface
         if ($expectedType && $expectedType !== $this->type) {
             throw new UnexpectedValueException('The type of the grantee after '
                 . 'setting the ID did not match the specified, expected type "'
-                . $expectedType . '" but received "' . $this->type . '".');
+                . esc_html($expectedType) . '" but received "' . esc_html($this->type) . '".');
         }
 
         $this->id = $id;

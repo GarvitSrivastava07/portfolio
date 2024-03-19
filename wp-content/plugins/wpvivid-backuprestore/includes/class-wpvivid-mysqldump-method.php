@@ -36,7 +36,7 @@ abstract class WPvividCompressManagerFactory
     {
         $c = ucfirst(strtolower($c));
         if (! WPvividCompressMethod::isValid($c)) {
-            throw new Exception("Compression method ($c) is not defined yet");
+            throw new Exception("Compression method (".esc_html($c).") is not defined yet");
         }
 
         $method =  __NAMESPACE__ . "\\" . "WPvividCompress" . $c;
@@ -190,7 +190,7 @@ if(!class_exists('TypeAdapterFactory'))
                 if($c === 'Mysql'){
                     $c = 'PDO_MySQL';
                 }
-                throw new Exception("Database type support for ($c) not yet available");
+                throw new Exception("Database type support for (".esc_html($c).") not yet available");
             }
             $method =  __NAMESPACE__ . "\\" . "WPvividTypeAdapter" . $c;
             return new $method($dbHandler);
@@ -998,7 +998,7 @@ if(!class_exists('TypeAdapterFactory'))
         private function check_parameters($num_args, $expected_num_args, $method_name)
         {
             if ( $num_args != $expected_num_args ) {
-                throw new Exception("Unexpected parameter passed to $method_name");
+                throw new Exception("Unexpected parameter passed to ".esc_html($method_name));
             }
             return;
         }
@@ -1595,7 +1595,7 @@ if(!class_exists('TypeAdapterFactory'))
         private function check_parameters($num_args, $expected_num_args, $method_name)
         {
             if ( $num_args != $expected_num_args ) {
-                throw new Exception("Unexpected parameter passed to $method_name");
+                throw new Exception("Unexpected parameter passed to ".esc_html($method_name));
             }
             return;
         }
@@ -1644,7 +1644,7 @@ abstract class WPvividTypeAdapterFactory
             if($c === 'Mysql'){
                 $c = 'PDO_MySQL';
             }
-            throw new Exception("Database type support for ($c) not yet available");
+            throw new Exception("Database type support for (".esc_html($c).") not yet available");
         }
         $method =  __NAMESPACE__ . "\\" . "WPvividTypeAdapter" . $c;
         return new $method($dbHandler);
@@ -2452,7 +2452,7 @@ class WPvividTypeAdapterMysql extends WPvividTypeAdapterFactory
     private function check_parameters($num_args, $expected_num_args, $method_name)
     {
         if ( $num_args != $expected_num_args ) {
-            throw new Exception("Unexpected parameter passed to $method_name");
+            throw new Exception("Unexpected parameter passed to ".esc_html($method_name));
         }
         return;
     }
@@ -3049,7 +3049,7 @@ class WPvividTypeAdapterWpdb extends WPvividTypeAdapterFactory
     private function check_parameters($num_args, $expected_num_args, $method_name)
     {
         if ( $num_args != $expected_num_args ) {
-            throw new Exception("Unexpected parameter passed to $method_name");
+            throw new Exception("Unexpected parameter passed to ".esc_html($method_name));
         }
         return;
     }

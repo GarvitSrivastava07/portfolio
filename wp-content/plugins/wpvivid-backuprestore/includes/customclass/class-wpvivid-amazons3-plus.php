@@ -41,7 +41,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
     {
         ?>
         <div class="storage-providers" remote_type="amazons3" onclick="select_remote_storage(event, 'storage_account_amazons3');">
-            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/storage-amazon-s3.png'); ?>" style="vertical-align:middle;"/><?php _e('Amazon S3', 'wpvivid-backuprestore'); ?>
+            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/storage-amazon-s3.png'); ?>" style="vertical-align:middle;"/><?php esc_html_e('Amazon S3', 'wpvivid-backuprestore'); ?>
         </div>
         <?php
     }
@@ -59,7 +59,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
         ?>
         <div id="storage_account_amazons3"  class="storage-account-page" style="display:none;">
             <div style="padding: 0 10px 10px 0;">
-                <strong><?php _e('Enter Your Amazon S3 Account', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('Enter Your Amazon S3 Account', 'wpvivid-backuprestore'); ?></strong>
             </div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
@@ -72,7 +72,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -84,7 +84,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your Amazon S3 access key.', 'wpvivid-backuprestore'); ?></i><a href="https://wpvivid.com/get-amazon-access-secret-key.html" target="_blank"> <?php _e('How to get an AmazonS3 access key.', 'wpvivid-backuprestore'); ?></a>
+                            <i><?php esc_html_e('Enter your Amazon S3 access key.', 'wpvivid-backuprestore'); ?></i><a href="https://wpvivid.com/get-amazon-access-secret-key.html" target="_blank"> <?php esc_html_e('How to get an AmazonS3 access key.', 'wpvivid-backuprestore'); ?></a>
                         </div>
                     </td>
                 </tr>
@@ -96,7 +96,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your Amazon S3 secret key.', 'wpvivid-backuprestore'); ?></i><a href="https://wpvivid.com/get-amazon-access-secret-key.html" target="_blank"> <?php _e('How to get an Amazon S3 secret key.', 'wpvivid-backuprestore'); ?></a>
+                            <i><?php esc_html_e('Enter your Amazon S3 secret key.', 'wpvivid-backuprestore'); ?></i><a href="https://wpvivid.com/get-amazon-access-secret-key.html" target="_blank"> <?php esc_html_e('How to get an Amazon S3 secret key.', 'wpvivid-backuprestore'); ?></a>
                         </div>
                     </td>
                 </tr>
@@ -108,7 +108,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><span><?php _e('Enter an existed Bucket to create a custom backup storage directory.', 'wpvivid-backuprestore'); ?></span></i>
+                            <i><span><?php esc_html_e('Enter an existed Bucket to create a custom backup storage directory.', 'wpvivid-backuprestore'); ?></span></i>
                         </div>
                     </td>
                 </tr>
@@ -120,7 +120,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><span><?php _e('Customize the directory where you want to store backups within the Bucket.', 'wpvivid-backuprestore'); ?></span></i>
+                            <i><span><?php esc_html_e('Customize the directory where you want to store backups within the Bucket.', 'wpvivid-backuprestore'); ?></span></i>
                         </div>
                     </td>
                 </tr>
@@ -128,13 +128,13 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="amazons3" name="default" checked /><?php _e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="amazons3" name="default" checked /><?php esc_html_e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -142,13 +142,13 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="amazons3" name="classMode" checked /><?php _e('Storage class: Standard (infrequent access).', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="amazons3" name="classMode" checked /><?php esc_html_e('Storage class: Standard (infrequent access).', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Check the option to use Amazon S3 Standard-Infrequent Access (S3 Standard-IA) storage class for data transfer.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Check the option to use Amazon S3 Standard-Infrequent Access (S3 Standard-IA) storage class for data transfer.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -156,13 +156,13 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="amazons3" name="sse" checked /><?php _e('Server-side encryption.', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="amazons3" name="sse" checked /><?php esc_html_e('Server-side encryption.', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Check the option to use Amazon S3 server-side encryption to protect data.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Check the option to use Amazon S3 server-side encryption to protect data.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -175,7 +175,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to connect to Amazon S3 storage and add it to the storage list below.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Click the button to connect to Amazon S3 storage and add it to the storage list below.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -184,7 +184,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
             <?php
             if($need_extension){
                 ?>
-                <p style="padding-left: 10px;"><?php _e('The simplexml extension is not detected. Please install the extension first.', 'wpvivid-backuprestore'); ?></p>
+                <p style="padding-left: 10px;"><?php esc_html_e('The simplexml extension is not detected. Please install the extension first.', 'wpvivid-backuprestore'); ?></p>
                 <?php
             }
             ?>
@@ -197,7 +197,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
         ?>
         <div id="remote_storage_edit_amazons3" class="postbox storage-account-block remote-storage-edit" style="display:none;">
             <div style="padding: 0 10px 10px 0;">
-                <strong><?php _e('Enter Your Amazon S3 Account', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('Enter Your Amazon S3 Account', 'wpvivid-backuprestore'); ?></strong>
             </div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
@@ -210,7 +210,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -222,7 +222,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your Amazon S3 access key.', 'wpvivid-backuprestore'); ?></i><a href="https://wpvivid.com/get-amazon-access-secret-key.html" target="_blank"> <?php _e('How to get an AmazonS3 access key.', 'wpvivid-backuprestore'); ?></a>
+                            <i><?php esc_html_e('Enter your Amazon S3 access key.', 'wpvivid-backuprestore'); ?></i><a href="https://wpvivid.com/get-amazon-access-secret-key.html" target="_blank"> <?php esc_html_e('How to get an AmazonS3 access key.', 'wpvivid-backuprestore'); ?></a>
                         </div>
                     </td>
                 </tr>
@@ -234,7 +234,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your Amazon S3 secret key.', 'wpvivid-backuprestore'); ?></i><a href="https://wpvivid.com/get-amazon-access-secret-key.html" target="_blank"> <?php _e('How to get an Amazon S3 secret key.', 'wpvivid-backuprestore'); ?></a>
+                            <i><?php esc_html_e('Enter your Amazon S3 secret key.', 'wpvivid-backuprestore'); ?></i><a href="https://wpvivid.com/get-amazon-access-secret-key.html" target="_blank"> <?php esc_html_e('How to get an Amazon S3 secret key.', 'wpvivid-backuprestore'); ?></a>
                         </div>
                     </td>
                 </tr>
@@ -246,7 +246,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><span><?php _e('Enter an existed Bucket to create a custom backup storage directory.', 'wpvivid-backuprestore'); ?></span></i>
+                            <i><span><?php esc_html_e('Enter an existed Bucket to create a custom backup storage directory.', 'wpvivid-backuprestore'); ?></span></i>
                         </div>
                     </td>
                 </tr>
@@ -258,7 +258,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><span><?php _e('Customize the directory where you want to store backups within the Bucket.', 'wpvivid-backuprestore'); ?></span></i>
+                            <i><span><?php esc_html_e('Customize the directory where you want to store backups within the Bucket.', 'wpvivid-backuprestore'); ?></span></i>
                         </div>
                     </td>
                 </tr>
@@ -266,13 +266,13 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="edit-amazons3" name="classMode" /><?php _e('Storage class: Standard (infrequent access).', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="edit-amazons3" name="classMode" /><?php esc_html_e('Storage class: Standard (infrequent access).', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Check the option to use Amazon S3 Standard-Infrequent Access (S3 Standard-IA) storage class for data transfer.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Check the option to use Amazon S3 Standard-Infrequent Access (S3 Standard-IA) storage class for data transfer.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -280,13 +280,13 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="edit-amazons3" name="sse" /><?php _e('Server-side encryption.', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="edit-amazons3" name="sse" /><?php esc_html_e('Server-side encryption.', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Check the option to use Amazon S3 server-side encryption to protect data.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Check the option to use Amazon S3 server-side encryption to protect data.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -299,7 +299,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to save the changes.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Click the button to save the changes.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -321,7 +321,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
         $amazons3 = $this -> getS3();
         if(is_array($amazons3) && $amazons3['result'] === WPVIVID_FAILED)
             return $amazons3;
-        $temp_file = md5(rand());
+        $temp_file = md5(wp_rand());
         try
         {
             if(isset($this->options['s3Path']))
@@ -561,7 +561,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
                 }else{
                     $wpvivid_plugin->wpvivid_log->WriteLog('Uploaded files are less than 5M.','notice');
                     $input = $amazons3 -> inputFile($file);
-                    $wpvivid_plugin->wpvivid_log->WriteLog('putObject input:'.json_encode($input).' bucket:'.$this->bucket.' url:'.$url,'notice');
+                    $wpvivid_plugin->wpvivid_log->WriteLog('putObject input:'.wp_json_encode($input).' bucket:'.$this->bucket.' url:'.$url,'notice');
                     $result = $amazons3 -> putObject($input,$this ->bucket,$url);
                     $wpvivid_plugin->wpvivid_log->WriteLog('putObject end:'.$result,'notice');
                 }
@@ -647,7 +647,7 @@ class WPvivid_AMAZONS3Class extends WPvivid_Remote{
             }
 
             if ($res !== TRUE) {
-                @unlink($file_path);
+                @wp_delete_file($file_path);
                 return array('result' => WPVIVID_FAILED, 'error' => 'Downloading ' . $file['file_name'] . ' failed. ' . $file['file_name'] . ' might be deleted or network doesn\'t work properly. Please verify the file and confirm the network connection and try again later.');
             }
 

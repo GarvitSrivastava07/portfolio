@@ -940,6 +940,9 @@ class Net_SSH2
      */
     var $auth = array();
 
+    var $decompress = false;
+    var $compress   = false;
+
     /**
      * Default Constructor.
      *

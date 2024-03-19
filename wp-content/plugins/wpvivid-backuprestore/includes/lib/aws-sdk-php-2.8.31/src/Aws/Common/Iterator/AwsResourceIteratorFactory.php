@@ -69,7 +69,7 @@ class AwsResourceIteratorFactory implements ResourceIteratorFactoryInterface
         if ($this->primaryIteratorFactory && $this->primaryIteratorFactory->canBuild($command)) {
             $iterator = $this->primaryIteratorFactory->build($command, $options);
         } elseif (!$commandSupported) {
-            throw new InvalidArgumentException("Iterator was not found for {$commandName}.");
+            throw new InvalidArgumentException(esc_html("Iterator was not found for {$commandName}."));
         } else {
             // Instantiate a generic AWS resource iterator
             $iterator = new AwsResourceIterator($command, $options);

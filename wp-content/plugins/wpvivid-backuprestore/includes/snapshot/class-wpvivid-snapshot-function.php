@@ -18,11 +18,14 @@ class WPvivid_Snapshot_Function_Ex
     {
         $snapshots=$this->options->get_option('wpvivid_snapshot');
         $manual_snapshots=array();
-        foreach ($snapshots as $snapshot)
+        if($snapshots !== false)
         {
-            if($snapshot['type']=='manual')
+            foreach ($snapshots as $snapshot)
             {
-                $manual_snapshots[]=$snapshot;
+                if($snapshot['type']=='manual')
+                {
+                    $manual_snapshots[]=$snapshot;
+                }
             }
         }
         $setting=$this->options->get_option('wpvivid_snapshot_setting');
@@ -664,7 +667,7 @@ class WPvivid_Snapshot_Function_Ex
         do
         {
             $count++;
-            $uid = sprintf('%06x', mt_rand(0, 0xFFFFFF));
+            $uid = sprintf('%06x', wp_rand(0, 0xFFFFFF));
 
             $verify_db = $wpdb->get_col($wpdb->prepare('SHOW TABLES LIKE %s', array('%' . $uid . '%')));
 

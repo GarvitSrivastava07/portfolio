@@ -219,9 +219,9 @@ class WPvivid_Backup_Task
         $this->task['options']['backup_prefix']=$backup_prefix;
         $offset=get_option('gmt_offset');
         if(empty($backup_prefix))
-            $this->task['options']['file_prefix'] = $this->task['id'] . '_' . date('Y-m-d-H-i', $this->task['status']['start_time']+$offset*60*60);
+            $this->task['options']['file_prefix'] = $this->task['id'] . '_' . gmdate('Y-m-d-H-i', $this->task['status']['start_time']+$offset*60*60);
         else
-            $this->task['options']['file_prefix'] = $backup_prefix . '_' . $this->task['id'] . '_' . date('Y-m-d-H-i', $this->task['status']['start_time']+$offset*60*60);
+            $this->task['options']['file_prefix'] = $backup_prefix . '_' . $this->task['id'] . '_' . gmdate('Y-m-d-H-i', $this->task['status']['start_time']+$offset*60*60);
 
         $this->task['options']['file_prefix'] = apply_filters('wpvivid_backup_file_prefix',$this->task['options']['file_prefix'],$backup_prefix,$this->task['id'],$this->task['status']['start_time']);
 
@@ -324,7 +324,7 @@ class WPvivid_Backup_Task
 
     protected function parse_url_all($url)
     {
-        $parse = parse_url($url);
+        $parse = wp_parse_url($url);
         //$path=str_replace('/','_',$parse['path']);
         $path = '';
         if(isset($parse['path'])) {
@@ -1684,6 +1684,8 @@ class WPvivid_Backup_Item
         if(isset($this->config['backup']['files']))
         {
             $tmp_data = $this->config['backup']['files'];
+            if(!class_exists('WPvivid_ZipClass'))
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
             $zip=new WPvivid_ZipClass();
 
             foreach ($tmp_data as $file)
@@ -1722,6 +1724,8 @@ class WPvivid_Backup_Item
         if(isset($this->config['backup']['files']))
         {
             $tmp_data = $this->config['backup']['files'];
+            if(!class_exists('WPvivid_ZipClass'))
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
             $zip=new WPvivid_ZipClass();
 
             foreach ($tmp_data as $file)
@@ -1969,6 +1973,8 @@ class WPvivid_Backup_Item
 
     public function get_child_files($file_name)
     {
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip=new WPvivid_ZipClass();
 
         $path=$this->get_backup_path($file_name);//$this->get_local_path().$file_name;
@@ -1989,6 +1995,8 @@ class WPvivid_Backup_Item
 
     public function get_file_info($file_name)
     {
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip=new WPvivid_ZipClass();
 
         $path=$this->get_backup_path($file_name);//$this->get_local_path().$file_name;
@@ -2010,6 +2018,8 @@ class WPvivid_Backup_Item
 
     static public function get_backup_file_info($file_name)
     {
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip=new WPvivid_ZipClass();
         $ret=$zip->get_json_data($file_name);
         if($ret['result'] === WPVIVID_SUCCESS)
@@ -2029,6 +2039,8 @@ class WPvivid_Backup_Item
 
     public function get_sql_file($file_name)
     {
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip=new WPvivid_ZipClass();
         $path=$this->get_backup_path($file_name);//$this->get_local_path().$file_name;
         $files=$zip->list_file($path);
@@ -2268,14 +2280,14 @@ class WPvivid_Backup_Item
             $download_path = WP_CONTENT_DIR .DIRECTORY_SEPARATOR . $download_dir . DIRECTORY_SEPARATOR . $file;
             if (file_exists($download_path))
             {
-                @unlink($download_path);
+                @wp_delete_file($download_path);
             }
             else{
                 $backup_dir=WPvivid_Setting::get_backupdir();
                 $download_path = WP_CONTENT_DIR .DIRECTORY_SEPARATOR . $backup_dir . DIRECTORY_SEPARATOR . $file;
                 if (file_exists($download_path))
                 {
-                    @unlink($download_path);
+                    @wp_delete_file($download_path);
                 }
             }
         }
@@ -2286,9 +2298,10 @@ class WPvivid_Backup_Item
         if(!empty($this->config['remote']))
         {
             $files=$this->get_files(false);
-
             foreach($this->config['remote'] as $remote)
             {
+                if(!class_exists('WPvivid_downloader'))
+                    include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-downloader.php';
                 WPvivid_downloader::delete($remote,$files);
             }
         }
@@ -2299,6 +2312,9 @@ class WPvivid_Backup_Item
         if(isset($this->config['backup']['files']))
         {
             $tmp_data = $this->config['backup']['files'];
+
+            if(!class_exists('WPvivid_ZipClass'))
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
             $zip=new WPvivid_ZipClass();
             foreach ($tmp_data as $file)
             {
@@ -2391,7 +2407,7 @@ class WPvivid_Backup
         {
             global $wpvivid_plugin;
             $wpvivid_plugin->set_time_limit($this->task->get_id());
-            $this->task->update_sub_task_progress($next_backup['key'],0, sprintf(__('Start backing up %s.', 'wpvivid-backuprestore'), $next_backup['key']));
+            $this->task->update_sub_task_progress($next_backup['key'],0, sprintf('Start backing up %s.', $next_backup['key']));
             $wpvivid_plugin->wpvivid_log->WriteLog('Prepare to backup '.$next_backup['key'].' files.','notice');
             $this->backup_type_report .= $next_backup['key'].',';
             if(isset($next_backup['files'])) {
@@ -2399,7 +2415,7 @@ class WPvivid_Backup
             }
             $result = $this->_backup($next_backup);
             $wpvivid_plugin->wpvivid_log->WriteLog('Backing up '.$next_backup['key'].' completed.','notice');
-            $this->task->update_sub_task_progress($next_backup['key'],1, sprintf(__('Backing up %s finished.', 'wpvivid-backuprestore'), $next_backup['key']));
+            $this->task->update_sub_task_progress($next_backup['key'],1, sprintf('Backing up %s finished.', $next_backup['key']));
             $this->task->update_backup_result($next_backup,$result);
             $wpvivid_plugin->check_cancel_backup($task_id);
             unset($next_backup);
@@ -2438,8 +2454,8 @@ class WPvivid_Backup
             }
         }
 
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
-
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip = new WPvivid_ZipClass();
         if(is_array($zip->last_error))
         {
@@ -2502,7 +2518,7 @@ class WPvivid_Backup
                         {
                             if(file_exists($package['files']))
                             {
-                                @unlink($package['files']);
+                                @wp_delete_file($package['files']);
                             }
                         }
 
@@ -2541,7 +2557,7 @@ class WPvivid_Backup
             {
                 foreach ($data['files'] as $sql_file)
                 {
-                    @unlink($sql_file);
+                    @wp_delete_file($sql_file);
                 }
             }
         }
@@ -2558,7 +2574,7 @@ class WPvivid_Backup
             if(file_exists($file)) {
                 global $wpvivid_plugin;
                 $wpvivid_plugin->wpvivid_log->WriteLog('Cleaned up file, filename: '.$file,'notice');
-                @unlink($file);
+                @wp_delete_file($file);
             }
         }
     }
@@ -2571,7 +2587,7 @@ class WPvivid_Backup
             {
                 global $wpvivid_plugin;
                 $wpvivid_plugin->wpvivid_log->WriteLog('Cleaned up file, filename: '.$file,'notice');
-                @unlink($file);
+                @wp_delete_file($file);
             }
         }
     }
@@ -2586,7 +2602,7 @@ class WPvivid_Backup
             {
                 if(preg_match('#'.$this->task->get_id().'#',$filename) || preg_match('#'.apply_filters('wpvivid_fix_wpvivid_free', $this->task->get_id()).'#',$filename))
                 {
-                    @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                    @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
                 }
             }
             @closedir($handler);
@@ -2611,10 +2627,10 @@ class WPvivid_Backup
                     $this->deldir($path.DIRECTORY_SEPARATOR.$filename,'',true);
                 }
                 if(preg_match('#pclzip-.*\.tmp#', $filename)){
-                    @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                    @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
                 }
                 if(preg_match('#pclzip-.*\.gz#', $filename)){
-                    @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                    @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
                 }
             }
             @closedir($handler);
@@ -2642,7 +2658,7 @@ class WPvivid_Backup
                     }
                 }else{
                     if(empty($exclude)||$this->regex_match($exclude['file'],$path.DIRECTORY_SEPARATOR.$filename ,0)){
-                        @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                        @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
                     }
                 }
             }
@@ -2696,7 +2712,11 @@ class WPvivid_Backup
         if(!is_null($remote_option))
         {
             global $wpvivid_plugin;
-
+            if(!class_exists('WPvivid_Remote_collection'))
+            {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
+                $wpvivid_plugin->remote_collection=new WPvivid_Remote_collection();
+            }
             $remote=$wpvivid_plugin->remote_collection->get_remote($remote_option);
             $remote ->cleanup($files);
         }

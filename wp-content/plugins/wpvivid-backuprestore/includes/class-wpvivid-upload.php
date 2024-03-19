@@ -47,6 +47,11 @@ class WPvivid_Upload
                     return array('result' => WPVIVID_FAILED , 'error' => 'not select remote storage');
                 }
 
+                if(!class_exists('WPvivid_Remote_collection'))
+                {
+                    include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
+                    $wpvivid_plugin->remote_collection=new WPvivid_Remote_collection();
+                }
                 $remote=$wpvivid_plugin->remote_collection->get_remote($remote_option);
 
                 $result=$remote->upload($this->task_id,$files,array($this,'upload_callback'));
@@ -68,6 +73,11 @@ class WPvivid_Upload
         }
         else
         {
+            if(!class_exists('WPvivid_Remote_collection'))
+            {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
+                $wpvivid_plugin->remote_collection=new WPvivid_Remote_collection();
+            }
             $remote=$wpvivid_plugin->remote_collection->get_remote($remote_option);
 
             $result=$remote->upload($this->task_id,$files,array($this,'upload_callback'));
@@ -126,7 +136,11 @@ class WPvivid_Upload
         if(!is_null($remote_option))
         {
             global $wpvivid_plugin;
-
+            if(!class_exists('WPvivid_Remote_collection'))
+            {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
+                $wpvivid_plugin->remote_collection=new WPvivid_Remote_collection();
+            }
             $remote=$wpvivid_plugin->remote_collection->get_remote($remote_option);
             $remote ->cleanup($files);
         }

@@ -536,7 +536,7 @@ class WPvivid_Restore_File_2
             { //base check on if plugin includes directory separator AND that it's not the root plugin folder
                 $this->delete_folder($this_plugin_dir,$plugins_dir);
             } else {
-               @unlink($plugins_dir . $plugin_file);
+               @wp_delete_file($plugins_dir . $plugin_file);
             }
         }
 
@@ -563,7 +563,7 @@ class WPvivid_Restore_File_2
             {
                 $this->delete_folder($folder . DIRECTORY_SEPARATOR . $file, $base_folder);
             } else {
-                @unlink($folder . DIRECTORY_SEPARATOR . $file);
+                @wp_delete_file($folder . DIRECTORY_SEPARATOR . $file);
             }
         } // foreach
 
@@ -635,7 +635,7 @@ class WPvivid_Restore_File_2
             }
 
             // If the file isn't deleted, try writing an empty string to the file instead.
-            @unlink($old_file);
+            @wp_delete_file($old_file);
         }
         return $ret;
     }

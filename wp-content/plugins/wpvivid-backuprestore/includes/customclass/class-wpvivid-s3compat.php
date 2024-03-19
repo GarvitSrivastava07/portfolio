@@ -93,7 +93,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
             return $s3compat;
         }
 
-        $temp_file = md5(rand());
+        $temp_file = md5(wp_rand());
 
         try
         {
@@ -349,7 +349,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
             }
 
             if ($res !== TRUE) {
-                @unlink($file_path);
+                @wp_delete_file($file_path);
                 return array('result' => WPVIVID_FAILED, 'error' => 'Downloading ' . $file['file_name'] . ' failed. ' . $file['file_name'] . ' might be deleted or network doesn\'t work properly. Please verify the file and confirm the network connection and try again later.');
             }
 
@@ -410,7 +410,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
     public function wpvivid_add_storage_tab_s3compat(){
         ?>
         <div class="storage-providers" remote_type="s3compat" onclick="select_remote_storage(event, 'storage_account_s3compat');">
-            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/storage-digitalocean.png'); ?>" style="vertical-align:middle;"/><?php _e('DigitalOcean Spaces', 'wpvivid-backuprestore'); ?>
+            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/storage-digitalocean.png'); ?>" style="vertical-align:middle;"/><?php esc_html_e('DigitalOcean Spaces', 'wpvivid-backuprestore'); ?>
         </div>
         <?php
     }
@@ -419,7 +419,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
         ?>
         <div id="storage_account_s3compat"  class="storage-account-page" style="display:none;">
             <div style="padding: 0 10px 10px 0;">
-                <strong><?php _e('Enter Your DigitalOcean Spaces Account', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('Enter Your DigitalOcean Spaces Account', 'wpvivid-backuprestore'); ?></strong>
             </div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
@@ -432,7 +432,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -444,7 +444,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your DigitalOcean Spaces access key', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter your DigitalOcean Spaces access key', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -456,7 +456,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your DigitalOcean Spaces secret key', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter your DigitalOcean Spaces secret key', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -468,7 +468,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><span><?php _e('Enter an existed Space to create a custom backup storage directory.', 'wpvivid-backuprestore'); ?></span></i>
+                            <i><span><?php esc_html_e('Enter an existed Space to create a custom backup storage directory.', 'wpvivid-backuprestore'); ?></span></i>
                         </div>
                     </td>
                 </tr>
@@ -480,7 +480,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><span><?php _e('Customize the directory where you want to store backups within the Space.', 'wpvivid-backuprestore'); ?></span></i>
+                            <i><span><?php esc_html_e('Customize the directory where you want to store backups within the Space.', 'wpvivid-backuprestore'); ?></span></i>
                         </div>
                     </td>
                 </tr>
@@ -492,7 +492,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the DigitalOcean Endpoint for the storage', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the DigitalOcean Endpoint for the storage', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -500,13 +500,13 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="s3compat" name="default" checked /><?php _e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="s3compat" name="default" checked /><?php esc_html_e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -519,7 +519,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to connect to DigitalOcean Spaces storage and add it to the storage list below.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Click the button to connect to DigitalOcean Spaces storage and add it to the storage list below.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -534,7 +534,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
         ?>
         <div id="remote_storage_edit_s3compat" class="postbox storage-account-block remote-storage-edit" style="display:none;">
             <div style="padding: 0 10px 10px 0;">
-                <strong><?php _e('Enter Your DigitalOcean Spaces Account', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('Enter Your DigitalOcean Spaces Account', 'wpvivid-backuprestore'); ?></strong>
             </div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
@@ -547,7 +547,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -559,7 +559,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your DigitalOcean Spaces access key', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter your DigitalOcean Spaces access key', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -571,7 +571,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your DigitalOcean Spaces secret key', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter your DigitalOcean Spaces secret key', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -583,7 +583,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><span><?php _e('Enter an existed Space to create a custom backup storage directory.', 'wpvivid-backuprestore'); ?></span></i>
+                            <i><span><?php esc_html_e('Enter an existed Space to create a custom backup storage directory.', 'wpvivid-backuprestore'); ?></span></i>
                         </div>
                     </td>
                 </tr>
@@ -595,7 +595,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><span><?php _e('Customize the directory where you want to store backups within the Space.', 'wpvivid-backuprestore'); ?></span></i>
+                            <i><span><?php esc_html_e('Customize the directory where you want to store backups within the Space.', 'wpvivid-backuprestore'); ?></span></i>
                         </div>
                     </td>
                 </tr>
@@ -607,7 +607,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the DigitalOcean Endpoint for the storage', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the DigitalOcean Endpoint for the storage', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -620,7 +620,7 @@ class Wpvivid_S3Compat extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to save the changes.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Click the button to save the changes.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>

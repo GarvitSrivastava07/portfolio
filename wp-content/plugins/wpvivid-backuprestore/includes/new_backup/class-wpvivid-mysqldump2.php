@@ -386,7 +386,7 @@ class WPvivid_Mysqldump2
     public function open_tmp_file($b_delete=false)
     {
         if($b_delete)
-            @unlink( $this->tmp_file_name);
+            @wp_delete_file( $this->tmp_file_name);
         $this->compressManager->open($this->tmp_file_name);
     }
 

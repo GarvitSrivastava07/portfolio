@@ -62,6 +62,7 @@ class WPvivid_Backup_Task_2
         $this->task['status']['str']='ready';
         $this->task['status']['resume_count']=0;
 
+        $options['save_local']=isset($settings['save_local'])?$settings['save_local']:false;
         $this->set_backup_option($options);
 
         if(isset($options['remote']))
@@ -163,11 +164,11 @@ class WPvivid_Backup_Task_2
 
         if(empty($this->task['options']['backup_prefix']))
         {
-            $this->task['options']['file_prefix'] = $this->task['id'] . '_' . date('Y-m-d-H-i', time()+$offset*60*60);
+            $this->task['options']['file_prefix'] = $this->task['id'] . '_' . gmdate('Y-m-d-H-i', time()+$offset*60*60);
         }
         else
         {
-            $this->task['options']['file_prefix'] =  $this->task['options']['backup_prefix'] . '_' . $this->task['id'] . '_' . date('Y-m-d-H-i', time()+$offset*60*60);
+            $this->task['options']['file_prefix'] =  $this->task['options']['backup_prefix'] . '_' . $this->task['id'] . '_' . gmdate('Y-m-d-H-i', time()+$offset*60*60);
         }
         $this->task['options']['file_prefix'] = apply_filters('wpvivid_backup_file_prefix',$this->task['options']['file_prefix'],$this->task['options']['backup_prefix'],$this->task['id'],$this->task['status']['start_time']);
 
@@ -191,7 +192,7 @@ class WPvivid_Backup_Task_2
 
         $this->task['options']['include_plugins']=isset($options['include_plugins'])?$options['include_plugins']:array();
         $this->task['options']['include_themes']=isset($options['include_themes'])?$options['include_themes']:array();
-        //$this->task['options']['save_local'] =isset($options['save_local'])?$options['save_local']:false;
+
         if(isset($options['local']))
         {
             if($options['local']=='1')
@@ -200,7 +201,8 @@ class WPvivid_Backup_Task_2
             }
             else
             {
-                $this->task['options']['save_local']=0;
+                //$this->task['options']['save_local']=0;
+                $this->task['options']['save_local'] =isset($options['save_local'])?$options['save_local']:false;
             }
         }
         else
@@ -227,7 +229,7 @@ class WPvivid_Backup_Task_2
 
     public function parse_url_all($url)
     {
-        $parse = parse_url($url);
+        $parse = wp_parse_url($url);
         //$path=str_replace('/','_',$parse['path']);
         $path = '';
         if(isset($parse['path'])) {
@@ -480,7 +482,7 @@ class WPvivid_Backup_Task_2
         global $wpvivid_plugin;
         $wpvivid_plugin->wpvivid_log->WriteLog('Prepare to backup '.$job['backup_type'].' files.','notice');
 
-        $this->update_sub_task_progress(sprintf(__('Start backing up %s.', 'wpvivid-backuprestore'),$job['backup_type']));
+        $this->update_sub_task_progress(sprintf('Start backing up %s.',$job['backup_type']));
 
         if($job['backup_type']=='backup_db')
         {
@@ -523,7 +525,7 @@ class WPvivid_Backup_Task_2
         $this->task['jobs'][$key]['finished']=1;
         $this->task['status']['resume_count']=0;
 
-        $this->update_sub_task_progress(sprintf(__('Backing up %s finished.', 'wpvivid-backuprestore'),$job['backup_type']));
+        $this->update_sub_task_progress(sprintf('Backing up %s finished.',$job['backup_type']));
         $this->update_main_progress();
 
         $ret['result']='success';
@@ -592,7 +594,7 @@ class WPvivid_Backup_Task_2
             {
                 if(preg_match('#'.$task_id.'#',$filename) || preg_match('#'.apply_filters('wpvivid_fix_wpvivid_free', $task_id).'#',$filename))
                 {
-                    @unlink($path.'/'.$filename);
+                    @wp_delete_file($path.'/'.$filename);
                 }
             }
             @closedir($handler);
@@ -678,7 +680,7 @@ class WPvivid_Backup_Task_2
         $this->update_zip_file(basename($zip_file_name),1,$json);
         foreach ($files as $file)
         {
-            @unlink($file);
+            @wp_delete_file($file);
         }
         $ret['result']='success';
         return $ret;
@@ -1004,7 +1006,7 @@ class WPvivid_Backup_Task_2
             {
                 foreach ($this->task['jobs'][$this->current_job]['cache_files'] as $cache_file)
                 {
-                    @unlink($cache_file['name']);
+                    @wp_delete_file($cache_file['name']);
                 }
             }
 
@@ -1016,14 +1018,14 @@ class WPvivid_Backup_Task_2
                     $path=$this->task['options']['dir'].'/';
                     $new_file=$this->task['options']['file_prefix'].'_backup_db.sql';
 
-                    @unlink($path.$new_file);
+                    @wp_delete_file($path.$new_file);
                 }
                 else
                 {
                     $path=$this->task['options']['dir'].'/';
                     foreach ($files as $file)
                     {
-                        @unlink($path.$file);
+                        @wp_delete_file($path.$file);
                     }
                 }
             }
@@ -2361,7 +2363,7 @@ class WPvivid_Backup_Task_2
 
                 foreach ($this->task['jobs'][$this->current_job]['zip_file'] as $zip)
                 {
-                    @unlink($path.$zip['filename']);
+                    @wp_delete_file($path.$zip['filename']);
                 }
 
                 unset($this->task['jobs'][$this->current_job]['zip_file']);
@@ -2575,7 +2577,7 @@ class WPvivid_Backup_Task_2
             {
                 if(preg_match('#'.$this->task_id.'#',$filename) || preg_match('#'.apply_filters('wpvivid_fix_wpvivid_free', $this->task_id).'#',$filename))
                 {
-                    @unlink($path.'/'.$filename);
+                    @wp_delete_file($path.'/'.$filename);
                 }
             }
             @closedir($handler);
@@ -2779,18 +2781,18 @@ class WPvivid_Backup_Task_2
 
     public function get_backup_tasks_progress()
     {
-        $current_time=date("Y-m-d H:i:s");
-        $create_time=date("Y-m-d H:i:s",$this->task['status']['start_time']);
+        $current_time=gmdate("Y-m-d H:i:s");
+        $create_time=gmdate("Y-m-d H:i:s",$this->task['status']['start_time']);
         $time_diff=strtotime($current_time)-strtotime($create_time);
         $running_time='';
-        if(date("G",$time_diff) > 0){
-            $running_time .= date("G",$time_diff).' hour(s)';
+        if(gmdate("G",$time_diff) > 0){
+            $running_time .= gmdate("G",$time_diff).' hour(s)';
         }
-        if(intval(date("i",$time_diff)) > 0){
-            $running_time .= intval(date("i",$time_diff)).' min(s)';
+        if(intval(gmdate("i",$time_diff)) > 0){
+            $running_time .= intval(gmdate("i",$time_diff)).' min(s)';
         }
-        if(intval(date("s",$time_diff)) > 0){
-            $running_time .= intval(date("s",$time_diff)).' second(s)';
+        if(intval(gmdate("s",$time_diff)) > 0){
+            $running_time .= intval(gmdate("s",$time_diff)).' second(s)';
         }
         $next_resume_time=$this->get_next_resume_time();
 
@@ -2799,8 +2801,7 @@ class WPvivid_Backup_Task_2
         $ret['doing']=$this->task['data'][$ret['type']]['doing'];
         if(isset($this->task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress']))
         {
-            $ret['descript']=__($this->task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress'], 'wpvivid-backuprestore');
-
+            $ret['descript']=$this->task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress'];
         }
         else
         {
@@ -2837,10 +2838,10 @@ class WPvivid_Backup_Task_2
             while(($filename=readdir($handler))!==false)
             {
                 if(preg_match('#pclzip-.*\.tmp#', $filename)){
-                    @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                    @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
                 }
                 if(preg_match('#pclzip-.*\.gz#', $filename)){
-                    @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                    @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
                 }
             }
             @closedir($handler);
@@ -2862,7 +2863,7 @@ class WPvivid_Backup_Task_2
             {
                 if(preg_match('#'.$this->task_id.'#',$filename) || preg_match('#'.apply_filters('wpvivid_fix_wpvivid_free', $this->task_id).'#',$filename))
                 {
-                    @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                    @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
                 }
             }
             @closedir($handler);
@@ -2876,6 +2877,8 @@ class WPvivid_Backup_Task_2
 
     public function get_file_json($file)
     {
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip=new WPvivid_ZipClass();
 
         $ret=$zip->get_json_data($file);

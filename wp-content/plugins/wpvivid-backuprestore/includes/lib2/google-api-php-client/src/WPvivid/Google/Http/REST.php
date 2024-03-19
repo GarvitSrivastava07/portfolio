@@ -115,7 +115,7 @@ class WPvivid_Google_Http_REST
       $body = (string) $response->getBody();
 
       // Check if we received errors, and add those to the Exception for convenience
-      throw new WPvivid_Google_Service_Exception($body, $code, null, self::getResponseErrors($body));
+      throw new WPvivid_Google_Service_Exception(esc_html($body), esc_attr($code), null, esc_html(self::getResponseErrors($body)));
     }
 
     // Ensure we only pull the entire body into memory if the request is not

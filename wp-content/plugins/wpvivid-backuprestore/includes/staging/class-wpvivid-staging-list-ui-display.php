@@ -159,7 +159,7 @@ class WPvivid_Staging_List_UI_Display_Free
                             $staging_create_time = $staging['create_time'];
                             $offset=get_option('gmt_offset');
                             $utc_time = $staging_create_time + $offset * 60 * 60;
-                            $staging_create_time = date('M-d-Y H:i', $utc_time);
+                            $staging_create_time = gmdate('M-d-Y H:i', $utc_time);
                         }
                         else
                         {
@@ -171,7 +171,7 @@ class WPvivid_Staging_List_UI_Display_Free
                             $staging_copy_time = $staging['copy_time'];
                             $offset=get_option('gmt_offset');
                             $utc_time = $staging_copy_time + $offset * 60 * 60;
-                            $staging_copy_time = date('M-d-Y H:i', $utc_time);
+                            $staging_copy_time = gmdate('M-d-Y H:i', $utc_time);
                         }
                         else
                         {
@@ -180,17 +180,17 @@ class WPvivid_Staging_List_UI_Display_Free
                         ?>
                         <div class="wpvivid-one-coloum" style="border:1px solid #f1f1f1;padding-top:0em; margin-top:1em;" id="<?php echo esc_attr($id); ?>">
                             <div class="wpvivid-two-col">
-                                <p><span class="dashicons dashicons-awards wpvivid-dashicons-blue"></span><span><strong>Site Name: </strong></span><span><?php echo $staging_site_name; ?></span></p>
-                                <p><span class="dashicons dashicons-admin-home wpvivid-dashicons-blue"></span><span><strong>Home URL: </strong></span><span><a href="<?php echo esc_url($site_url); ?>"><?php echo $site_url; ?></a></span></p>
-                                <p><span class="dashicons dashicons-rest-api wpvivid-dashicons-blue"></span><span><strong><?php echo $admin_url_descript; ?>: </strong></span><span><a href="<?php echo esc_url($admin_url); ?>"><?php echo $admin_url; ?></a></span></p>
-                                <p><span class="dashicons dashicons-clock wpvivid-dashicons-blue"></span><span><strong>Create Time: </strong></span><span><?php echo $staging_create_time; ?></span></p>
+                                <p><span class="dashicons dashicons-awards wpvivid-dashicons-blue"></span><span><strong>Site Name: </strong></span><span><?php echo esc_html($staging_site_name); ?></span></p>
+                                <p><span class="dashicons dashicons-admin-home wpvivid-dashicons-blue"></span><span><strong>Home URL: </strong></span><span><a href="<?php echo esc_url($site_url); ?>"><?php echo esc_url($site_url); ?></a></span></p>
+                                <p><span class="dashicons dashicons-rest-api wpvivid-dashicons-blue"></span><span><strong><?php echo esc_html($admin_url_descript); ?>: </strong></span><span><a href="<?php echo esc_url($admin_url); ?>"><?php echo esc_url($admin_url); ?></a></span></p>
+                                <p><span class="dashicons dashicons-clock wpvivid-dashicons-blue"></span><span><strong>Create Time: </strong></span><span><?php echo esc_html($staging_create_time); ?></span></p>
                             </div>
 
                             <div class="wpvivid-two-col">
-                                <p><span class="dashicons dashicons-admin-site-alt3 wpvivid-dashicons-blue"></span><span><strong>Database Name: </strong></span><span><?php echo $db_name; ?></span></p>
-                                <p><span class="dashicons dashicons-list-view wpvivid-dashicons-blue"></span><span><strong>Table Prefix: </strong></span><span><?php echo $prefix; ?></span></p>
-                                <p><span class="dashicons dashicons-portfolio wpvivid-dashicons-blue"></span><span><strong>Directory: </strong></span><span><?php echo $site_dir; ?></span></p>
-                                <p><span class="dashicons dashicons-clock wpvivid-dashicons-blue"></span><span><strong>Update Time: </strong></span><span><?php echo $staging_copy_time; ?></span></p>
+                                <p><span class="dashicons dashicons-admin-site-alt3 wpvivid-dashicons-blue"></span><span><strong>Database Name: </strong></span><span><?php echo esc_html($db_name); ?></span></p>
+                                <p><span class="dashicons dashicons-list-view wpvivid-dashicons-blue"></span><span><strong>Table Prefix: </strong></span><span><?php echo esc_html($prefix); ?></span></p>
+                                <p><span class="dashicons dashicons-portfolio wpvivid-dashicons-blue"></span><span><strong>Directory: </strong></span><span><?php echo esc_html($site_dir); ?></span></p>
+                                <p><span class="dashicons dashicons-clock wpvivid-dashicons-blue"></span><span><strong>Update Time: </strong></span><span><?php echo esc_html($staging_copy_time); ?></span></p>
                             </div>
 
                             <div class="wpvivid-copy-staging-to-live-block <?php echo esc_attr($class_btn); ?>" name="<?php echo esc_attr($id); ?>" style="padding:1em 1em 0 0;">
@@ -198,8 +198,8 @@ class WPvivid_Staging_List_UI_Display_Free
                                 if($staging['status']['str'] === 'completed')
                                 {
                                     ?>
-                                    <span class="wpvivid-rectangle wpvivid-grey-light wpvivid-hover-blue wpvivid-staging-operate wpvivid-update-live-to-staging"><?php echo $update_btn; ?></span>
-                                    <span class="wpvivid-rectangle wpvivid-grey-light wpvivid-hover-blue wpvivid-staging-operate wpvivid-copy-staging-to-live"><?php echo $copy_btn; ?></span>
+                                    <span class="wpvivid-rectangle wpvivid-grey-light wpvivid-hover-blue wpvivid-staging-operate wpvivid-update-live-to-staging"><?php echo esc_html($update_btn); ?></span>
+                                    <span class="wpvivid-rectangle wpvivid-grey-light wpvivid-hover-blue wpvivid-staging-operate wpvivid-copy-staging-to-live"><?php echo esc_html($copy_btn); ?></span>
                                     <?php
                                 }
                                 ?>
@@ -244,11 +244,11 @@ class WPvivid_Staging_List_UI_Display_Free
                 $plugin_path = $plugin_path.'/';
                 ?>
                 var path_arr = {};
-                path_arr['core'] = '<?php echo $home_path; ?>';
-                path_arr['content'] = '<?php echo $content_path; ?>';
-                path_arr['uploads'] = '<?php echo $upload_path; ?>';
-                path_arr['themes'] = '<?php echo $theme_path; ?>';
-                path_arr['plugins'] = '<?php echo $plugin_path; ?>';
+                path_arr['core'] = '<?php echo esc_attr($home_path); ?>';
+                path_arr['content'] = '<?php echo esc_attr($content_path); ?>';
+                path_arr['uploads'] = '<?php echo esc_attr($upload_path); ?>';
+                path_arr['themes'] = '<?php echo esc_attr($theme_path); ?>';
+                path_arr['plugins'] = '<?php echo esc_attr($plugin_path); ?>';
 
                 var push_staging_site_id='';
                 var wpvivid_ajax_lock=false;
@@ -526,7 +526,7 @@ class WPvivid_Staging_List_UI_Display_Free
 
                     jQuery('#'+parent_id).on('click', '.wpvivid-include-additional-folder-btn', function(){
                         var select_folders = jQuery('#'+parent_id).find('.wpvivid-custom-additional-folder-tree-info').jstree(true).get_selected(true);
-                        var tree_path = '<?php echo $home_path; ?>';
+                        var tree_path = '<?php echo esc_attr($home_path); ?>';
                         var list_obj = jQuery('#'+parent_id).find('.wpvivid-custom-include-additional-folder-list');
                         var tree_type = 'additional-folder';
 
@@ -1130,7 +1130,7 @@ class WPvivid_Staging_List_UI_Display_Free
                             wpvivid_delete_staging_site_lock_unlock(id, 'unlock');
                             var jsonarray = jQuery.parseJSON(data);
                             if (jsonarray.result === 'success') {
-                                location.href='<?php echo apply_filters('wpvividstg_get_admin_url', '') . 'admin.php?page=wpvivid-staging'; ?>';
+                                location.href='<?php echo esc_url(apply_filters('wpvividstg_get_admin_url', '') ). 'admin.php?page=wpvivid-staging'; ?>';
                             }
                             else if (jsonarray.result === 'failed') {
                                 alert(jsonarray.error);
@@ -1183,15 +1183,15 @@ class WPvivid_Staging_List_UI_Display_Free
         ?>
         <div class="wpvivid-one-coloum" style="border:1px solid #f1f1f1;padding-top:0em;">
             <div class="wpvivid-two-col">
-                <p><span class="dashicons dashicons-awards wpvivid-dashicons-blue"></span><span><strong>Site Name: </strong></span><span><?php echo _e(basename(get_home_path())); ?></span></p>
+                <p><span class="dashicons dashicons-awards wpvivid-dashicons-blue"></span><span><strong>Site Name: </strong></span><span><?php echo esc_html(basename(get_home_path())); ?></span></p>
                 <p><span class="dashicons dashicons-admin-home wpvivid-dashicons-blue"></span><span><strong>Live Site URL: </strong></span><span><?php echo esc_url($live_site_url); ?></span></p>
                 <p><span class="dashicons dashicons-rest-api wpvivid-dashicons-blue"></span><span><strong>Live Site Staging: </strong></span><span><?php echo esc_url($push_site_url); ?></span></p>
             </div>
 
             <div class="wpvivid-two-col">
-                <p><span class="dashicons dashicons-admin-site-alt3 wpvivid-dashicons-blue"></span><span><strong>Database Name: </strong></span><span><?php echo _e(DB_NAME); ?></span></p>
-                <p><span class="dashicons dashicons-list-view wpvivid-dashicons-blue"></span><span><strong>Table Prefix: </strong></span><span><?php echo _e($data['prefix']); ?></span></p>
-                <p><span class="dashicons dashicons-portfolio wpvivid-dashicons-blue"></span><span><strong>Directory: </strong></span><span><?php echo _e(get_home_path()); ?></span></p>
+                <p><span class="dashicons dashicons-admin-site-alt3 wpvivid-dashicons-blue"></span><span><strong>Database Name: </strong></span><span><?php echo esc_html(DB_NAME); ?></span></p>
+                <p><span class="dashicons dashicons-list-view wpvivid-dashicons-blue"></span><span><strong>Table Prefix: </strong></span><span><?php echo esc_html($data['prefix']); ?></span></p>
+                <p><span class="dashicons dashicons-portfolio wpvivid-dashicons-blue"></span><span><strong>Directory: </strong></span><span><?php echo esc_html(get_home_path()); ?></span></p>
             </div>
             <div style="clear: both;"></div>
         </div>

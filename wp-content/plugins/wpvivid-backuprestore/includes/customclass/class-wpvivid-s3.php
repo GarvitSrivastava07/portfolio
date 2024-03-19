@@ -395,9 +395,9 @@ class WPvivid_S3
 	function __triggerError($message, $file, $line, $code = 0)
 	{
 		if ($this -> useExceptions)
-			throw new WPvivid_S3Exception($message, $file, $line, $code);
+			throw new WPvivid_S3Exception(esc_html($message), esc_attr($file), esc_attr($line), esc_attr($code));
 		else
-			trigger_error($message, E_USER_WARNING);
+			trigger_error(esc_html($message), E_USER_WARNING);
 	}
 
 
@@ -1222,7 +1222,7 @@ class WPvivid_S3
 	*/
 	public function getSignedPolicyURL($policy)
 	{
-		$data = json_encode($policy);
+		$data = wp_json_encode($policy);
 		$signature = '';
 		if (!openssl_sign($data, $signature, $this -> __signingKeyResource)) return false;
 
@@ -1300,7 +1300,7 @@ class WPvivid_S3
 			array_push($policy->conditions, $obj);
 		}
 		array_push($policy->conditions, array('content-length-range', 0, $maxFileSize));
-		$policy = base64_encode(str_replace('\/', '/', json_encode($policy)));
+		$policy = base64_encode(str_replace('\/', '/', wp_json_encode($policy)));
 
 		// Create parameters
 		$params = new stdClass;
@@ -1571,7 +1571,7 @@ class WPvivid_S3
 		if ($rest->error !== false)
 		{
 			trigger_error(sprintf("S3::listOriginAccessIdentities(): [%s] %s",
-			$rest->error['code'], $rest->error['message']), E_USER_WARNING);
+			esc_attr($rest->error['code']), esc_html($rest->error['message'])), E_USER_WARNING);
 			return false;
 		}
 
@@ -1617,8 +1617,8 @@ class WPvivid_S3
 			$rest->error = array('code' => $rest->code, 'message' => 'Unexpected HTTP status');
 		if ($rest->error !== false)
 		{
-			trigger_error(sprintf("S3::invalidate('{$distributionId}',{$paths}): [%s] %s",
-			$rest->error['code'], $rest->error['message']), E_USER_WARNING);
+			trigger_error(esc_html(sprintf("S3::invalidate('{$distributionId}',{$paths}): [%s] %s",
+                $rest->error['code'], $rest->error['message'])), E_USER_WARNING);
 			return false;
 		}
 		return true;
@@ -1682,8 +1682,8 @@ class WPvivid_S3
 			$rest->error = array('code' => $rest->code, 'message' => 'Unexpected HTTP status');
 		if ($rest->error !== false)
 		{
-			trigger_error(sprintf("S3::getDistributionInvalidationList('{$distributionId}'): [%s]",
-			$rest->error['code'], $rest->error['message']), E_USER_WARNING);
+			trigger_error(esc_html(sprintf("S3::getDistributionInvalidationList('{$distributionId}'): [%s]",
+                $rest->error['code'], $rest->error['message'])), E_USER_WARNING);
 			return false;
 		}
 		elseif ($rest->body instanceof SimpleXMLElement && isset($rest->body->InvalidationSummary))

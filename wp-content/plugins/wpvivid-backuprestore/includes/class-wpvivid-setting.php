@@ -148,9 +148,9 @@ class WPvivid_Setting
         if(!empty($message['id'])) {
             $ret['id'] = $message['id'];
             $ret['status'] = $message['status'];
-            $ret['status']['start_time'] = date("M d, Y H:i", $ret['status']['start_time']);
-            $ret['status']['run_time'] = date("M d, Y H:i", $ret['status']['run_time']);
-            $ret['status']['timeout'] = date("M d, Y H:i", $ret['status']['timeout']);
+            $ret['status']['start_time'] = gmdate("M d, Y H:i", $ret['status']['start_time']);
+            $ret['status']['run_time'] = gmdate("M d, Y H:i", $ret['status']['run_time']);
+            $ret['status']['timeout'] = gmdate("M d, Y H:i", $ret['status']['timeout']);
             if(isset($message['options']['log_file_name']))
                 $ret['log_file_name'] = $message['options']['log_file_name'];
             else
@@ -206,7 +206,7 @@ class WPvivid_Setting
                         }
                         if(is_file($subFile))
                         {
-                            unlink($subFile);
+                            wp_delete_file($subFile);
                         }
                     }
                 }
@@ -531,6 +531,12 @@ class WPvivid_Setting
         if($backup_list){
             $json['data']['wpvivid_backup_list']=self::get_option('wpvivid_backup_list');
             $json = apply_filters('wpvivid_backup_list_addon', $json);
+        }
+        else{
+            if(isset($json['data']['wpvivid_new_remote_list']))
+            {
+                unset($json['data']['wpvivid_new_remote_list']);
+            }
         }
 
         if($review)

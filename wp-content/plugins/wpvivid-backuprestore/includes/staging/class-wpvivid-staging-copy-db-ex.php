@@ -146,7 +146,7 @@ class WPvivid_Staging_Copy_DB
             if(!$table['finished'])
             {
                 $wpvivid_plugin->staging->log->WriteLog('Copying '.$this->task->get_db_insert_count().' queries is completed.','notice');
-                $wpvivid_plugin->staging->log->WriteLog('The next copying table info: '.json_encode($table),'notice');
+                $wpvivid_plugin->staging->log->WriteLog('The next copying table info: '.wp_json_encode($table),'notice');
             }
 
             $this->task->update_table('db',$table);
@@ -200,7 +200,7 @@ class WPvivid_Staging_Copy_DB
             if(!$table['finished'])
             {
                 $wpvivid_plugin->staging->log->WriteLog($this->task->get_db_replace_count().' queries of '.$table['name'].' is replaced.','notice');
-                $wpvivid_plugin->staging->log->WriteLog('The next replacing table info: '.json_encode($table),'notice');
+                $wpvivid_plugin->staging->log->WriteLog('The next replacing table info: '.wp_json_encode($table),'notice');
             }
 
             $this->task->update_table('db_replace',$table);
@@ -483,7 +483,7 @@ class WPvivid_Staging_Copy_DB
                     $tables[$table_name]=$table;
                 }
             }*/
-            //$wpvivid_staging->log->WriteLog(json_encode($tables),'test');
+            //$wpvivid_staging->log->WriteLog(wp_json_encode($tables),'test');
             $this->task->update_tables('db_replace',$tables);
         }
         return true;
@@ -923,7 +923,7 @@ class WPvivid_Staging_Copy_DB
                     {
                         $rows = $result;
                         $mu_option=$this->task->get_mu_option();
-                        $wpvivid_plugin->staging->log->WriteLog(json_encode($mu_option), 'notice');
+                        $wpvivid_plugin->staging->log->WriteLog(wp_json_encode($mu_option), 'notice');
                         foreach ($rows as $row)
                         {
                             $update=array();
@@ -1543,7 +1543,7 @@ class WPvivid_Staging_Copy_DB
                 // If ext/hash is not present, compat.php's hash_hmac() does not support sha256.
                 $algo = function_exists( 'hash' ) ? 'sha256' : 'sha1';
                 // Old WP installs may not have AUTH_SALT defined.
-                $salt = defined( 'AUTH_SALT' ) && AUTH_SALT ? AUTH_SALT : (string) rand();
+                $salt = defined( 'AUTH_SALT' ) && AUTH_SALT ? AUTH_SALT : (string) wp_rand();
 
                 $this->placeholder[$i] = '{' . hash_hmac( $algo, uniqid( $salt, true ), $salt ) . '}';
             }

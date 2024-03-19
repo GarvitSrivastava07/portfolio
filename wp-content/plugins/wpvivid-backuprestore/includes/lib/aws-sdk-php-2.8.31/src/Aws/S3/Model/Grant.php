@@ -96,7 +96,7 @@ class Grant implements ToArrayInterface
         $valid = Permission::values();
         if (!in_array($permission, $valid)) {
             throw new InvalidArgumentException('The permission must be one of '
-                . 'the following: ' . implode(', ', $valid) . '.');
+                . 'the following: ' . esc_html(implode(', ', $valid)) . '.');
         }
 
         $this->permission = $permission;

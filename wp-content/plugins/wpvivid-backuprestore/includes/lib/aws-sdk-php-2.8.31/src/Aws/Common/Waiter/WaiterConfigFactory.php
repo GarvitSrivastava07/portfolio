@@ -74,7 +74,7 @@ class WaiterConfigFactory implements WaiterFactoryInterface
     protected function getWaiterConfig($name)
     {
         if (!$this->canBuild($name)) {
-            throw new InvalidArgumentException('No waiter found matching "' . $name . '"');
+            throw new InvalidArgumentException(esc_html('No waiter found matching "' . $name . '"'));
         }
 
         // inflect the name if needed

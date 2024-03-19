@@ -60,48 +60,6 @@ class WPvivid_Post_List extends WP_List_Table
         }
     }
 
-    public function print_column_headers( $with_id = true ) {
-        list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
-
-        if ( ! empty( $columns['cb'] ) )
-        {
-            $checked='';
-
-            static $cb_counter = 1;
-            $columns['cb']     = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All', 'wpvivid-backuprestore' ) . '</label>'
-                . '<input id="cb-select-all-' . $cb_counter . '" type="checkbox" '.$checked.'/>';
-            $cb_counter++;
-        }
-
-        foreach ( $columns as $column_key => $column_display_name ) {
-            $class = array( 'manage-column', "column-$column_key" );
-
-            if ( in_array( $column_key, $hidden ) ) {
-                $class[] = 'hidden';
-            }
-
-            if ( 'cb' === $column_key ) {
-                $class[] = 'check-column';
-            } elseif ( in_array( $column_key, array( 'posts', 'comments', 'links' ) ) ) {
-                $class[] = 'num';
-            }
-
-            if ( $column_key === $primary ) {
-                $class[] = 'column-primary';
-            }
-
-            $tag   = ( 'cb' === $column_key ) ? 'td' : 'th';
-            $scope = ( 'th' === $tag ) ? 'scope="col"' : '';
-            $id    = $with_id ? "id='$column_key'" : '';
-
-            if ( ! empty( $class ) ) {
-                $class = "class='" . join( ' ', $class ) . "'";
-            }
-
-            echo "<$tag $scope $id $class>$column_display_name</$tag>";
-        }
-    }
-
     public function get_columns()
     {
         $post_type = $this->screen->post_type;
@@ -210,7 +168,7 @@ class WPvivid_Post_List extends WP_List_Table
             $checked='checked';
         }
         ?>
-        <input id="cb-select-<?php echo $post->ID; ?>" type="checkbox" name="post[]" value="<?php echo $post->ID; ?>" <?php echo $checked ?>/>
+        <input id="cb-select-<?php echo esc_attr($post->ID); ?>" type="checkbox" name="post[]" value="<?php echo esc_attr($post->ID); ?>" <?php echo esc_attr($checked) ?>/>
         <?php
     }
 
@@ -223,14 +181,14 @@ class WPvivid_Post_List extends WP_List_Table
      * @param string  $primary
      */
     protected function _column_title( $post, $classes, $data, $primary ) {
-        echo '<td class="' . $classes . ' page-title" ', $data, '>';
-        echo $this->column_title( $post );
+        echo '<td class="' . esc_attr($classes) . ' page-title" ', esc_attr($data), '>';
+        echo esc_html($this->column_title( $post ));
         echo '</td>';
     }
 
     public function column_wpvivid_id( $post )
     {
-        echo '<span>'.$post->ID.'</span>';
+        echo '<span>'.esc_attr($post->ID).'</span>';
     }
     /**
      * Handles the title column output.
@@ -272,7 +230,7 @@ class WPvivid_Post_List extends WP_List_Table
             $time_diff = time() - $time;
 
             if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
-                $h_time = sprintf( __( '%s ago', 'wpvivid-backuprestore' ), human_time_diff( $time ) );
+                $h_time = sprintf( '%s ago', human_time_diff( $time ) );
             } else {
                 $h_time = mysql2date( 'Y/m/d', $m_time );
             }
@@ -303,7 +261,7 @@ class WPvivid_Post_List extends WP_List_Table
         $status = apply_filters( 'post_date_column_status', $status, $post, 'date', $mode );
 
         if ( $status ) {
-            echo $status . '<br />';
+            echo esc_html($status) . '<br />';
         }
 
         if ( 'excerpt' === $mode ) {
@@ -321,11 +279,11 @@ class WPvivid_Post_List extends WP_List_Table
              * @param string  $column_name The column name.
              * @param string  $mode        The list display mode ('excerpt' or 'list').
              */
-            echo apply_filters( 'post_date_column_time', $t_time, $post, 'date', $mode );
+            echo esc_html(apply_filters( 'post_date_column_time', $t_time, $post, 'date', $mode ));
         } else {
 
             /** This filter is documented in wp-admin/includes/class-wp-posts-list-table.php */
-            echo '<abbr title="' . $t_time . '">' . apply_filters( 'post_date_column_time', $h_time, $post, 'date', $mode ) . '</abbr>';
+            echo '<abbr title="' . esc_attr($t_time) . '">' . esc_html(apply_filters( 'post_date_column_time', $h_time, $post, 'date', $mode )) . '</abbr>';
         }
     }
 
@@ -340,7 +298,7 @@ class WPvivid_Post_List extends WP_List_Table
         ?>
         <div class="post-com-count-wrapper">
             <?php
-            echo '<span style="text-align:center">'.get_comments_number($post->ID).'</span>'
+            echo '<span style="text-align:center">'.esc_html(get_comments_number($post->ID)).'</span>'
             ?>
         </div>
         <?php
@@ -356,7 +314,7 @@ class WPvivid_Post_List extends WP_List_Table
     public function column_author( $post ) {
         $user_data = get_userdata($post->post_author );
 
-        echo '<span>'.$user_data->display_name.'</span>';
+        echo '<span>'.esc_html($user_data->display_name).'</span>';
     }
 
     /**
@@ -402,9 +360,9 @@ class WPvivid_Post_List extends WP_List_Table
                     $out[] = $label;
                 }
                 /* translators: used between list items, there is a space after the comma */
-                echo join(  ', ', $out );
+                echo esc_html(join(  ', ', $out ));
             } else {
-                echo '<span aria-hidden="true">&#8212;</span><span class="screen-reader-text">' . $taxonomy_object->labels->no_terms . '</span>';
+                echo '<span aria-hidden="true">&#8212;</span><span class="screen-reader-text">' . esc_html($taxonomy_object->labels->no_terms) . '</span>';
             }
             return;
         }
@@ -480,136 +438,10 @@ class WPvivid_Post_List extends WP_List_Table
         $classes = 'iedit author-' . ( get_current_user_id() == $post->post_author ? 'self' : 'other' );
 
         ?>
-        <tr id="post-<?php echo $post->ID; ?>" class="<?php echo implode( ' ', get_post_class( $classes, $post->ID ) ); ?>">
+        <tr id="post-<?php echo esc_attr($post->ID); ?>" class="<?php echo esc_attr(implode( ' ', get_post_class( $classes, $post->ID ) )); ?>">
             <?php $this->single_row_columns( $post ); ?>
         </tr>
         <?php
-    }
-
-    /**
-     * Display the pagination.
-     *
-     * @since 3.1.0
-     *
-     * @param string $which
-     */
-    protected function pagination( $which ) {
-        if ( empty( $this->_pagination_args ) ) {
-            return;
-        }
-
-        $total_items     = $this->_pagination_args['total_items'];
-        $total_pages     = $this->_pagination_args['total_pages'];
-        $infinite_scroll = false;
-        if ( isset( $this->_pagination_args['infinite_scroll'] ) ) {
-            $infinite_scroll = $this->_pagination_args['infinite_scroll'];
-        }
-
-        if ( 'top' === $which && $total_pages > 1 ) {
-            $this->screen->render_screen_reader_content( 'heading_pagination' );
-        }
-
-        $output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items, 'wpvivid-backuprestore' ), number_format_i18n( $total_items ) ) . '</span>';
-
-        $current              = $this->get_pagenum();
-        $removable_query_args = wp_removable_query_args();
-
-        $current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
-
-        $current_url = remove_query_arg( $removable_query_args, $current_url );
-
-        $page_links = array();
-
-        $total_pages_before = '<span class="paging-input">';
-        $total_pages_after  = '</span></span>';
-
-        $disable_first = $disable_last = $disable_prev = $disable_next = false;
-
-        if ( $current == 1 ) {
-            $disable_first = true;
-            $disable_prev  = true;
-        }
-        if ( $current == 2 ) {
-            $disable_first = true;
-        }
-        if ( $current == $total_pages ) {
-            $disable_last = true;
-            $disable_next = true;
-        }
-        if ( $current == $total_pages - 1 ) {
-            $disable_last = true;
-        }
-
-        if ( $disable_first ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&laquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='first-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                __( 'First page', 'wpvivid-backuprestore' ),
-                '&laquo;'
-            );
-        }
-
-        if ( $disable_prev ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&lsaquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='prev-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                $current,
-                __( 'Previous page', 'wpvivid-backuprestore' ),
-                '&lsaquo;'
-            );
-        }
-
-        if ( 'bottom' === $which ) {
-            $html_current_page  = $current;
-            $total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page', 'wpvivid-backuprestore' ) . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
-        } else {
-            $html_current_page = sprintf(
-                "%s<input class='current-page' id='current-page-selector-export' type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' /><span class='tablenav-paging-text'>",
-                '<label for="current-page-selector-export" class="screen-reader-text">' . __( 'Current Page', 'wpvivid-backuprestore' ) . '</label>',
-                $current,
-                strlen( $total_pages )
-            );
-        }
-        $html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
-        $page_links[]     = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging', 'wpvivid-backuprestore' ), $html_current_page, $html_total_pages ) . $total_pages_after;
-
-        if ( $disable_next ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&rsaquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='next-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                $current,
-                __( 'Next page', 'wpvivid-backuprestore' ),
-                '&rsaquo;'
-            );
-        }
-
-        if ( $disable_last ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&raquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='last-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                __( 'Last page', 'wpvivid-backuprestore' ),
-                '&raquo;'
-            );
-        }
-
-        $pagination_links_class = 'pagination-links';
-        if ( ! empty( $infinite_scroll ) ) {
-            $pagination_links_class .= ' hide-if-js';
-        }
-        $output .= "\n<span class='$pagination_links_class'>" . join( "\n", $page_links ) . '</span>';
-
-        if ( $total_pages ) {
-            $page_class = $total_pages < 2 ? ' one-page' : '';
-        } else {
-            $page_class = ' no-pages';
-        }
-        $this->_pagination = "<div class='tablenav-pages{$page_class}'>$output</div>";
-
-        echo $this->_pagination;
     }
 
     /**
@@ -628,7 +460,7 @@ class WPvivid_Post_List extends WP_List_Table
             $css_type = 'margin: 10px 0 0 0';
         }
         ?>
-        <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php esc_attr_e($css_type); ?>">
+        <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php echo esc_attr($css_type); ?>">
             <div class="alignleft actions bulkactions">
                 <?php echo '<input class="button-primary" id="wpvivid-post-research-submit" type="submit" name="post" value="' . esc_attr__('Reset Filters', 'wpvivid-backuprestore') .'">'; ?>
             </div>
@@ -789,25 +621,25 @@ class WPvivid_Exporter_taskmanager
         if(array_key_exists ($task_id,$tasks))
         {
             $task = $tasks[$task_id];
-            $current_time=date("Y-m-d H:i:s");
-            $create_time=date("Y-m-d H:i:s",$task['status']['start_time']);
+            $current_time=gmdate("Y-m-d H:i:s");
+            $create_time=gmdate("Y-m-d H:i:s",$task['status']['start_time']);
             $time_diff=strtotime($current_time)-strtotime($create_time);
             $running_time='';
-            if(date("G",$time_diff) > 0){
-                $running_time .= date("G",$time_diff).'hour';
+            if(gmdate("G",$time_diff) > 0){
+                $running_time .= gmdate("G",$time_diff).'hour';
             }
-            if(intval(date("i",$time_diff)) > 0){
-                $running_time .= intval(date("i",$time_diff)).'min';
+            if(intval(gmdate("i",$time_diff)) > 0){
+                $running_time .= intval(gmdate("i",$time_diff)).'min';
             }
-            if(intval(date("s",$time_diff)) > 0){
-                $running_time .= intval(date("s",$time_diff)).'second';
+            if(intval(gmdate("s",$time_diff)) > 0){
+                $running_time .= intval(gmdate("s",$time_diff)).'second';
             }
 
             $ret['type']=$task['data']['doing'];
             $ret['progress']=$task['data'][$ret['type']]['progress'];
             $ret['doing']=$task['data'][$ret['type']]['doing'];
             if(isset($task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress']))
-                $ret['descript']=__($task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress'], 'wpvivid-backuprestore');
+                $ret['descript']=$task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress'];
             else
                 $ret['descript']='';
             if(isset($task['data'][$ret['type']]['sub_job'][$ret['doing']]['upload_data']))
@@ -883,9 +715,9 @@ class WPvivid_Exporter_task
         $this->task['options']['post_comment'] = $options['post_comment'];
 
         if(empty($backup_prefix))
-            $this->task['options']['file_prefix'] = $this->task['id'] . '_' . date('Y-m-d-H-i', $this->task['status']['start_time']);
+            $this->task['options']['file_prefix'] = $this->task['id'] . '_' . gmdate('Y-m-d-H-i', $this->task['status']['start_time']);
         else
-            $this->task['options']['file_prefix'] = $backup_prefix . '_' . $this->task['id'] . '_' . date('Y-m-d-H-i', $this->task['status']['start_time']);
+            $this->task['options']['file_prefix'] = $backup_prefix . '_' . $this->task['id'] . '_' . gmdate('Y-m-d-H-i', $this->task['status']['start_time']);
 
         $this->task['options']['log_file_name']=$id.'_export';
         $log=new WPvivid_Log();
@@ -926,7 +758,7 @@ class WPvivid_Exporter_task
 
     private function parse_url_all($url)
     {
-        $parse = parse_url($url);
+        $parse = wp_parse_url($url);
         $path=str_replace('/','_',$parse['path']);
         return $parse['host'].$path;
     }
@@ -978,7 +810,7 @@ class WPvivid_Exporter_task
         $last=end($next_post_ids);
 
         $post_comment = !empty($this->task['options']['post_comment']) ? $this->task['options']['post_comment'].'_' : '';
-        $ret['file_name']=$post_comment.self::get_id().'_'.date('Y-m-d-H-i', $this->task['status']['start_time']);
+        $ret['file_name']=$post_comment.self::get_id().'_'.gmdate('Y-m-d-H-i', $this->task['status']['start_time']);
         $ret['export_type']=$this->task['options']['backup_options']['post_type'];
         return $ret;
     }
@@ -1325,7 +1157,7 @@ class WPvivid_Exporter_Item{
                 ?>
                 <div style="float:left;margin:10px 10px 10px 0;text-align:center; width:180px;">
                     <span>Part01</span><br>
-                    <span><a class="wpvivid-download-export" id="trtr" name="<?php echo $file; ?>" style="cursor: pointer;">Download</a></span><br>
+                    <span><a class="wpvivid-download-export" id="trtr" name="<?php echo esc_attr($file); ?>" style="cursor: pointer;">Download</a></span><br>
                     <div style="width:100%;height:5px; background-color:#dcdcdc;">
                         <div style="background-color:#0085ba; float:left;width:100%;height:5px;"></div>
                     </div>
@@ -1392,7 +1224,7 @@ class WPvivid_Exporter
                 $wpvivid_plugin->wpvivid_log->WriteLog('Finished to zip file '.$next['file_name'],'notice');
                 if($ret['result']!='success')
                 {
-                    $wpvivid_plugin->wpvivid_log->WriteLog('Failed to zip post '.$next['file_name'].' '.json_encode($ret),'notice');
+                    $wpvivid_plugin->wpvivid_log->WriteLog('Failed to zip post '.$next['file_name'].' '.wp_json_encode($ret),'notice');
                     return $ret;
                 }
                 $this->task->update_sub_task_progress($next['file_name'],1,'Backing up '.$next['file_name'].' finished');
@@ -1401,7 +1233,7 @@ class WPvivid_Exporter
             }
             else
             {
-                $wpvivid_plugin->wpvivid_log->WriteLog('Failed to export post '.$next['file_name'].' '.json_encode($ret),'notice');
+                $wpvivid_plugin->wpvivid_log->WriteLog('Failed to export post '.$next['file_name'].' '.wp_json_encode($ret),'notice');
                 return $ret;
             }
             $next=$this->task->get_next_posts();
@@ -1425,7 +1257,7 @@ class WPvivid_Exporter
         $ret['xml_file_name']=$path;
         if(file_exists($path))
         {
-            @unlink($path);
+            @wp_delete_file($path);
         }
 
         $this->write_header_to_file($path);
@@ -1482,12 +1314,12 @@ class WPvivid_Exporter
         $options['root_flag']=WPVIVID_BACKUP_ROOT_WP_CONTENT;
 
         if(file_exists($path))
-            @unlink($path);
+            @wp_delete_file($path);
         $archive = new WPvivid_PclZip($path);
         if($json_info!==false) {
             $temp_path = dirname($path).DIRECTORY_SEPARATOR.'wpvivid_export_package_info.json';
             if(file_exists($temp_path)) {
-                @unlink($temp_path);
+                @wp_delete_file($temp_path);
             }
             $json_info['create_time']=time();
             $json_info['xml_file']=basename($xml_file);
@@ -1496,13 +1328,13 @@ class WPvivid_Exporter
             {
                 $json_info['media_size']+=@filesize($file);
             }
-            file_put_contents($temp_path,print_r(json_encode($json_info),true));
+            file_put_contents($temp_path,print_r(wp_json_encode($json_info),true));
             $archive -> add($temp_path,WPVIVID_PCLZIP_OPT_REMOVE_PATH,dirname($temp_path));
-            @unlink($temp_path);
+            @wp_delete_file($temp_path);
         }
 
         $ret =$archive -> add($xml_file,WPVIVID_PCLZIP_OPT_REMOVE_PATH,dirname($xml_file));
-        @unlink($xml_file);
+        @wp_delete_file($xml_file);
         if(!$ret)
         {
             return array('result'=>WPVIVID_FAILED,'error'=>$archive->errorInfo(true));
@@ -1559,7 +1391,7 @@ class WPvivid_Exporter
     <title>'.apply_filters( 'bloginfo_rss', get_bloginfo_rss( 'name' ), 'name' ).'</title>
     <link>'.apply_filters( 'bloginfo_rss', get_bloginfo_rss( 'url' ), 'url' ).'</link>
     <description>'.apply_filters( 'bloginfo_rss', get_bloginfo_rss( 'description' ), 'description' ).'</description>
-    <pubDate>'.date( 'D, d M Y H:i:s +0000' ).'</pubDate>
+    <pubDate>'.gmdate( 'D, d M Y H:i:s +0000' ).'</pubDate>
     <language>'.apply_filters( 'bloginfo_rss', get_bloginfo_rss( 'language' ), 'language' ).'</language>
     <wp:wxr_version>'.$wxr_version.'</wp:wxr_version>
     <wp:base_site_url>'.$this->wxr_site_url().'</wp:base_site_url>

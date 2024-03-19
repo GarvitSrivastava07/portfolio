@@ -161,7 +161,7 @@ class Dropbox_Base{
         );
         $headers = array(
             "Content-Type: application/octet-stream",
-            "Dropbox-API-Arg: " . json_encode($entry),
+            "Dropbox-API-Arg: " . wp_json_encode($entry),
         );
 
         $returnData = $this ->postRequest($endpoint, $headers,null);
@@ -184,7 +184,7 @@ class Dropbox_Base{
         $headers = array(
             "Content-Type: application/json"
         );
-        $postdata = json_encode(array( "path" => $path ));
+        $postdata = wp_json_encode(array( "path" => $path ));
         $returnData = $this -> postRequest($endpoint, $headers, $postdata);
         return $returnData;
     }

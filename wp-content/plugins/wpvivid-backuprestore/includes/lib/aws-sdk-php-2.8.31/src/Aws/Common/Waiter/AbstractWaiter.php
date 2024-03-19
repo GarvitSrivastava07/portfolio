@@ -122,7 +122,7 @@ abstract class AbstractWaiter extends AbstractHasDispatcher implements WaiterInt
             }
 
             if (++$this->attempts >= $this->getMaxAttempts()) {
-                throw new RuntimeException('Wait method never resolved to true after ' . $this->attempts . ' attempts');
+                throw new RuntimeException('Wait method never resolved to true after ' . esc_html($this->attempts) . ' attempts');
             }
 
             $this->dispatch('waiter.before_wait', array(

@@ -11,6 +11,7 @@ class WPvivid_Migrate
     {
         add_filter('wpvivid_add_tab_page', array($this, 'wpvivid_add_migrate_tab_page'));
         add_action('wp_ajax_wpvivid_generate_url',array( $this,'generate_url'));
+        add_action('wp_ajax_wpvivid_generate_url_ex', array($this, 'generate_url_ex'));
         add_action('wp_ajax_wpvivid_send_backup_to_site',array( $this,'send_backup_to_site'));
         add_action('wp_ajax_wpvivid_migrate_now',array( $this,'migrate_now'));
         add_filter('wpvivid_backuppage_load_backuplist', array($this, 'wpvivid_backuppage_load_backuplist'));
@@ -21,15 +22,17 @@ class WPvivid_Migrate
         add_action('wp_ajax_wpvivid_delete_transfer_key',array($this, 'delete_transfer_key'));
 
         add_filter('wpvivid_put_transfer_key', array($this, 'wpvivid_put_transfer_key'));
+        add_action('wpvivid_put_transfer_key_output', array($this, 'wpvivid_put_transfer_key_output'));
         add_action('wpvivid_handle_backup_failed',array($this,'wpvivid_handle_backup_failed'),9);
 
         add_action('wpvivid_rescan_backup_list', array($this, 'wpvivid_rescan_backup_list'));
         add_action('wpvivid_handle_upload_succeed',array($this,'wpvivid_deal_upload_succeed'),11);
 
+        add_action('wpvivid_add_migrate_type_output', array($this, 'wpvivid_add_migrate_type_output'),10,1);
         add_filter('wpvivid_add_migrate_type', array($this, 'wpvivid_add_migrate_type'), 11, 2);
         add_filter('wpvivid_migrate_descript', array($this, 'wpvivid_migrate_descript'));
         add_filter('wpvivid_migrate_part_type', array($this, 'wpvivid_migrate_part_type'));
-        add_filter('wpvivid_migrate_part_exec', array($this, 'wpvivid_migrate_part_exec'));
+        add_action('wpvivid_migrate_part_exec', array($this, 'wpvivid_migrate_part_exec'));
         add_filter('wpvivid_migrate_part_note', array($this, 'wpvivid_migrate_part_note'));
         add_filter('wpvivid_migrate_part_tip', array($this, 'wpvivid_migrate_part_tip'));
 
@@ -46,14 +49,14 @@ class WPvivid_Migrate
     public function wpvivid_add_tab_migrate()
     {
         ?>
-        <a href="#" id="wpvivid_tab_migrate" class="nav-tab wrap-nav-tab" onclick="switchTabs(event,'migrate-page')"><?php _e('Auto-Migration', 'wpvivid-backuprestore'); ?></a>
+        <a href="#" id="wpvivid_tab_migrate" class="nav-tab wrap-nav-tab" onclick="switchTabs(event,'migrate-page')"><?php esc_html_e('Auto-Migration', 'wpvivid-backuprestore'); ?></a>
         <?php
     }
 
     public function wpvivid_add_tab_key()
     {
         ?>
-        <a href="#" id="wpvivid_tab_key" class="nav-tab wrap-nav-tab" onclick="switchTabs(event,'key-page')"><?php _e('Key', 'wpvivid-backuprestore'); ?></a>
+        <a href="#" id="wpvivid_tab_key" class="nav-tab wrap-nav-tab" onclick="switchTabs(event,'key-page')"><?php esc_html_e('Key', 'wpvivid-backuprestore'); ?></a>
         <?php
     }
 
@@ -385,8 +388,10 @@ class WPvivid_Migrate
         <div id="migrate-page" class="wrap-tab-content wpvivid_tab_migrate" name="tab-migrate" style="display: none;">
             <div class="postbox wpvivid-element-space-bottom" style="padding: 10px;">
                 <?php
-                echo apply_filters('wpvivid_migrate_descript', $migrate_descript);
-                echo apply_filters('wpvivid_put_transfer_key', $migrate_key);
+                echo '<div style="padding: 0 0 10px 0;">
+                    '.esc_html__('The feature can help you transfer a Wordpress site to a new domain(site). It would be a convenient way to migrate your WP site from dev environment to live server or from old server to the new.', 'wpvivid-backuprestore').'
+                  </div>';
+                do_action('wpvivid_put_transfer_key_output');
                 ?>
             </div>
 
@@ -403,16 +408,45 @@ class WPvivid_Migrate
 
             <div style="padding: 0 0 10px 0;">
 
-                <?php echo apply_filters('wpvivid_migrate_part_type', $migrate_part_type); ?>
+                <?php
+                $migrate_type = '';
+                $type_name = 'transfer_type';
+                echo '<div class="postbox quicktransfer">
+                    <div class="wpvivid-element-space-bottom">
+                        <h2 style="padding: 0;"><span>'.esc_html__( 'Choose the content you want to transfer', 'wpvivid-backuprestore').'</span></h2>
+                    </div>
+                    <div class="quickstart-archive-block">
+                        <fieldset>
+                            <legend class="screen-reader-text"><span>input type="radio"</span></legend>
+                                ';
+                do_action('wpvivid_add_migrate_type_output', $type_name);
+                echo '
+                        </fieldset>
+                    </div>
+                </div>';
+                ?>
 
-                <?php echo apply_filters('wpvivid_migrate_part_note', $migrate_part_note); ?>
+                <?php
+                echo '<p>'.esc_html__('Note: ', 'wpvivid-backuprestore').'</p>
+                <p>'.esc_html__('1. In order to successfully complete the migration, you\'d better deactivate <a href="https://wpvivid.com/best-redirect-plugins.html" target="_blank" style="text-decoration: none;">301 redirect plugin</a>, <a href="https://wpvivid.com/8-best-wordpress-firewall-plugins.html" target="_blank" style="text-decoration: none;">firewall and security plugin</a>, and <a href="https://wpvivid.com/best-free-wordpress-caching-plugins.html" target="_blank" style="text-decoration: none;">caching plugin</a> (if they exist) before transferring website.', 'wpvivid-backuprestore').'</p>
+                <p>'.esc_html__('2. Please migrate website with the manual way when using <strong>Local by Flywheel</strong> environment.', 'wpvivid-backuprestore').'</p>';
+                ?>
 
                 <div style="padding: 0 0 10px 0;">
-                    <?php echo apply_filters('wpvivid_migrate_part_exec', $migrate_part_exec); ?>
+                    <?php do_action('wpvivid_migrate_part_exec'); ?>
                 </div>
                 <div style="clear: both;"></div>
                 <div style="padding: 10px 0 10px 0;">
-                    <?php echo apply_filters('wpvivid_migrate_part_tip', $migrate_part_tip); ?>
+                    <?php
+                    $backupdir=WPvivid_Setting::get_backupdir();
+                    echo '<p><strong>Tips: </strong>Some web hosts may restrict the connection between the two sites, so you may get a 403 error or unstable connection issue when performing auto migration. In that case, it is recommended to manually transfer the site</p>
+                    <p><strong>'.esc_html__('How to migrate Wordpress site manually to a new domain(site) with WPvivid backup plugin?', 'wpvivid-backuprestore').'</strong></p>
+                    <p>'.esc_html__('1. Download a backup in backups list to your computer.', 'wpvivid-backuprestore').'</p>
+                    <p>'.esc_html__('2. Upload the backup to destination site. There are two ways available to use:', 'wpvivid-backuprestore').'</p>
+                    <p style="margin-left: 20px;">'.esc_html__('2.1 Upload the backup to the upload section of WPvivid backup plugin in destination site.', 'wpvivid-backuprestore').'</p>
+                    <p style="margin-left: 20px;">'.sprintf('2.2 Upload the backup with FTP client to backup directory %s in destination site, then click <strong>Scan uploaded backup or received backup</strong> button.', esc_html(WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$backupdir)).'</p>
+                    <p>'.esc_html__('3. Once done, the backup appears in backups list. Then, restore the backup.', 'wpvivid-backuprestore').'</p>';
+                    ?>
                 </div>
             </div>
         </div>
@@ -428,16 +462,16 @@ class WPvivid_Migrate
         <div id="key-page" class="wrap-tab-content wpvivid_tab_key" name="tab-key" style="display: none;">
             <div style="padding: 0 0 0 10px">
                 <div style="padding: 0 0 10px 0">
-                    <span><?php _e('In order to allow another site to send a backup to this site, please generate a key below. Once the key is generated, this site is ready to receive a backup from another site. Then, please copy and paste the key in sending site and save it.', 'wpvivid-backuprestore'); ?></span>
+                    <span><?php esc_html_e('In order to allow another site to send a backup to this site, please generate a key below. Once the key is generated, this site is ready to receive a backup from another site. Then, please copy and paste the key in sending site and save it.', 'wpvivid-backuprestore'); ?></span>
                 </div>
-                <strong><?php _e('The key will expire in ', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('The key will expire in ', 'wpvivid-backuprestore'); ?></strong>
                 <select id="wpvivid_generate_url_expires" style="margin-bottom: 2px;">
                     <option value="2 hour"><?php esc_html_e('2 hours', 'wpvivid-backuprestore'); ?></option>
                     <option selected="selected" value="8 hour"><?php esc_html_e('8 hours', 'wpvivid-backuprestore'); ?></option>
                     <option value="24 hour"><?php esc_html_e('24 hours', 'wpvivid-backuprestore'); ?></option>
                     <!--<option value="Never">Never</option>-->
                 </select>
-                <p><?php _e('Tips: For security reason, please choose an appropriate expiration time for the key.', 'wpvivid-backuprestore'); ?></p>
+                <p><?php esc_html_e('Tips: For security reason, please choose an appropriate expiration time for the key.', 'wpvivid-backuprestore'); ?></p>
                 <div>
                     <input class="button-primary" id="wpvivid_generate_url" type="submit" value="<?php esc_attr_e( 'Generate', 'wpvivid-backuprestore' ); ?>" onclick="wpvivid_click_generate_url();" />
                 </div>
@@ -454,17 +488,32 @@ class WPvivid_Migrate
                     return false;
                 });
             });
+
             function wpvivid_click_generate_url()
             {
-                //
                 var expires=jQuery('#wpvivid_generate_url_expires').val();
                 var ajax_data = {
-                    'action': 'wpvivid_generate_url',
+                    'action': 'wpvivid_generate_url_ex',
                     'expires':expires
                 };
                 wpvivid_post_request(ajax_data, function (data)
                 {
-                    jQuery('#wpvivid_test_remote_site_url_text').val(data);
+                    try
+                    {
+                        var jsonarray = jQuery.parseJSON(data);
+                        if (jsonarray.result === 'success')
+                        {
+                            jQuery('#wpvivid_test_remote_site_url_text').val(jsonarray.url);
+                        }
+                        else
+                        {
+                            alert('Failed to generating key.');
+                        }
+                    }
+                    catch (err)
+                    {
+                        alert(err);
+                    }
                 }, function (XMLHttpRequest, textStatus, errorThrown)
                 {
                     var error_message = wpvivid_output_ajaxerror('generating key', textStatus, errorThrown);
@@ -480,15 +529,21 @@ class WPvivid_Migrate
         if(isset($_POST['url']))
         {
             global $wpvivid_plugin;
-            $wpvivid_plugin->ajax_check_security();
+            check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+            $check=is_admin()&&current_user_can('administrator');
+            $check=apply_filters('wpvivid_ajax_check_security',$check);
+            if(!$check)
+            {
+                die();
+            }
 
-            $url=strtok($_POST['url'],'?');
+            $url=strtok(sanitize_url($_POST['url']),'?');
 
             if (filter_var($url, FILTER_VALIDATE_URL) === FALSE)
             {
                 $ret['result']=WPVIVID_FAILED;
                 $ret['error']='The key is invalid.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -496,11 +551,11 @@ class WPvivid_Migrate
             {
                 $ret['result']=WPVIVID_FAILED;
                 $ret['error']='The key generated by this site cannot be added into this site.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
-            $query=parse_url ($_POST['url'],PHP_URL_QUERY);
+            $query=wp_parse_url (sanitize_url($_POST['url']),PHP_URL_QUERY);
             if($query===null)
             {
                 $query=strtok('?');
@@ -513,19 +568,19 @@ class WPvivid_Migrate
             if ($expires != 0 && time() > $expires) {
                 $ret['result'] = 'failed';
                 $ret['error'] = 'The key has expired.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
             $json['test_connect']=1;
-            $json=json_encode($json);
+            $json=wp_json_encode($json);
             $crypt=new WPvivid_crypt(base64_decode($token));
             $data=$crypt->encrypt_message($json);
             if($data===false)
             {
                 $ret['result'] = 'failed';
                 $ret['error'] = 'Data encryption failed.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
             $data=base64_encode($data);
@@ -572,7 +627,7 @@ class WPvivid_Migrate
 
                                 if($site['expires']>time())
                                 {
-                                    $date=date("l, F d, Y H:i", $site['expires']);
+                                    $date=gmdate("l, F d, Y H:i", $site['expires']);
                                 }
                                 else
                                 {
@@ -606,7 +661,7 @@ class WPvivid_Migrate
                 }
             }
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         die();
     }
@@ -614,13 +669,19 @@ class WPvivid_Migrate
     public function delete_transfer_key()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         $ret['result']=WPVIVID_SUCCESS;
         delete_option('wpvivid_saved_api_token');
         $html='';
         $html = apply_filters('wpvivid_put_transfer_key', $html);
         $ret['html']=$html;
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
@@ -628,14 +689,20 @@ class WPvivid_Migrate
     {
         try {
             global $wpvivid_plugin;
-            $wpvivid_plugin->ajax_check_security();
+            check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+            $check=is_admin()&&current_user_can('administrator');
+            $check=apply_filters('wpvivid_ajax_check_security',$check);
+            if(!$check)
+            {
+                die();
+            }
 
             $options = WPvivid_Setting::get_option('wpvivid_saved_api_token');
 
             if (empty($options)) {
                 $ret['result'] = 'failed';
                 $ret['error'] = __('A key is required.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -647,19 +714,19 @@ class WPvivid_Migrate
             if ($url === '') {
                 $ret['result'] = 'failed';
                 $ret['error'] = __('The key is invalid.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
             if ($options[$url]['expires'] != 0 && $options[$url]['expires'] < time()) {
                 $ret['result'] = 'failed';
                 $ret['error'] =  __('The key has expired.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
             $json['test_connect']=1;
-            $json=json_encode($json);
+            $json=wp_json_encode($json);
             $crypt=new WPvivid_crypt(base64_decode($options[$url]['token']));
             $data=$crypt->encrypt_message($json);
             $data=base64_encode($data);
@@ -670,7 +737,7 @@ class WPvivid_Migrate
             {
                 $ret['result']=WPVIVID_FAILED;
                 $ret['error']= $response->get_error_message();
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
             else
@@ -683,7 +750,7 @@ class WPvivid_Migrate
                         else {
                             $ret['result']=WPVIVID_FAILED;
                             $ret['error']= $res['error'];
-                            echo json_encode($ret);
+                            echo wp_json_encode($ret);
                             die();
                         }
                     }
@@ -691,14 +758,14 @@ class WPvivid_Migrate
                         $ret['result']=WPVIVID_FAILED;
                         $ret['error']= 'failed to parse returned data, unable to establish connection with the target site.';
                         $ret['response']=$response;
-                        echo json_encode($ret);
+                        echo wp_json_encode($ret);
                         die();
                     }
                 }
                 else {
                     $ret['result']=WPVIVID_FAILED;
                     $ret['error']= 'upload error '.$response['response']['code'].' '.$response['body'];
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
             }
@@ -706,7 +773,7 @@ class WPvivid_Migrate
             if (WPvivid_taskmanager::is_tasks_backup_running()) {
                 $ret['result'] = 'failed';
                 $ret['error'] = __('A task is already running. Please wait until the running task is complete, and try again.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -715,7 +782,7 @@ class WPvivid_Migrate
             $remote_option['type'] = WPVIVID_REMOTE_SEND_TO_SITE;
             $remote_options['temp'] = $remote_option;
 
-            $backup_options = stripslashes($_POST['backup_options']);
+            $backup_options = stripslashes(sanitize_text_field($_POST['backup_options']));
             $backup_options = json_decode($backup_options, true);
             $backup['backup_files'] = $backup_options['transfer_type'];
             $backup['local'] = 0;
@@ -731,13 +798,13 @@ class WPvivid_Migrate
 
             global $wpvivid_plugin;
             $wpvivid_plugin->check_backup($task_id, $backup);
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
         catch (Exception $e){
             $ret['result'] = 'failed';
             $ret['error'] = $e->getMessage();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
     }
@@ -745,13 +812,19 @@ class WPvivid_Migrate
     public function migrate_now()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         if (!isset($_POST['task_id'])||empty($_POST['task_id'])||!is_string($_POST['task_id']))
         {
             $ret['result']='failed';
             $ret['error']=__('Error occurred while parsing the request data. Please try to run backup again.', 'wpvivid-backuprestore');
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
         $task_id=sanitize_key($_POST['task_id']);
@@ -765,14 +838,20 @@ class WPvivid_Migrate
     function export_download_backup()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         $schedule_options=WPvivid_Schedule::get_schedule();
         if(empty($schedule_options))
         {
             die();
         }
-        $backup_options = stripslashes($_POST['backup_options']);
+        $backup_options = stripslashes(sanitize_text_field($_POST['backup_options']));
         $backup_options = json_decode($backup_options, true);
         $backup['backup_files']= $backup_options['transfer_type'];
         $backup['local']=1;
@@ -833,36 +912,43 @@ class WPvivid_Migrate
 
     public function generate_url()
     {
-        include_once WPVIVID_PLUGIN_DIR . '/vendor/autoload.php';
-
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
+
+        include_once WPVIVID_PLUGIN_DIR . '/vendor/autoload.php';
 
         $expires=time()+3600;
 
         if(isset($_POST['expires']))
         {
-            if($_POST['expires']=='1 month')
+            $expires_display=sanitize_text_field($_POST['expires']);
+            if($expires_display=='1 month')
             {
                 $expires=time()+2592000;
             }
-            else if($_POST['expires']=='1 day')
+            else if($expires_display=='1 day')
             {
                 $expires=time()+86400;
             }
-            else if($_POST['expires']=='2 hour')
+            else if($expires_display=='2 hour')
             {
                 $expires=time()+7200;
             }
-            else if($_POST['expires']=='8 hour')
+            else if($expires_display=='8 hour')
             {
                 $expires=time()+28800;
             }
-            else if($_POST['expires']=='24 hour')
+            else if($expires_display=='24 hour')
             {
                 $expires=time()+86400;
             }
-            else if($_POST['expires']=='Never')
+            else if($expires_display=='Never')
             {
                 $expires=0;
             }
@@ -882,6 +968,209 @@ class WPvivid_Migrate
         $url=$url.'?domain='.$options['domain'].'&token='.$options['public_key'].'&expires='.$expires;
         echo $url;
         die();
+    }
+
+    public function generate_url_ex()
+    {
+        global $wpvivid_plugin;
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
+
+        include_once WPVIVID_PLUGIN_DIR . '/vendor/autoload.php';
+
+        $expires=time()+3600;
+
+        if(isset($_POST['expires']))
+        {
+            $expires_display=sanitize_text_field($_POST['expires']);
+            if($expires_display=='1 month')
+            {
+                $expires=time()+2592000;
+            }
+            else if($expires_display=='1 day')
+            {
+                $expires=time()+86400;
+            }
+            else if($expires_display=='2 hour')
+            {
+                $expires=time()+7200;
+            }
+            else if($expires_display=='8 hour')
+            {
+                $expires=time()+28800;
+            }
+            else if($expires_display=='24 hour')
+            {
+                $expires=time()+86400;
+            }
+            else if($expires_display=='Never')
+            {
+                $expires=0;
+            }
+        }
+
+        $key_size = 2048;
+        $rsa = new Crypt_RSA();
+        $keys = $rsa->createKey($key_size);
+        $options['public_key']=base64_encode($keys['publickey']);
+        $options['private_key']=base64_encode($keys['privatekey']);
+        $options['expires']=$expires;
+        $options['domain']=home_url();
+
+        WPvivid_Setting::update_option('wpvivid_api_token',$options);
+
+        $url= $options['domain'];
+        $url=$url.'?domain='.$options['domain'].'&token='.$options['public_key'].'&expires='.$expires;
+
+        $ret['result']='success';
+        $ret['url']=$url;
+        echo wp_json_encode($ret);
+        die();
+    }
+
+    public function wpvivid_put_transfer_key_output()
+    {
+        echo  '<div id="wpvivid_transfer_key">';
+        $options=WPvivid_Setting::get_option('wpvivid_saved_api_token');
+        if(empty($options))
+        {
+            echo '<div style="padding: 0 0 10px 0;"><strong>'.esc_html__('Please paste the key below.', 'wpvivid-backuprestore').'</strong><a href="#" style="margin-left: 5px; text-decoration: none;" onclick="wpvivid_click_how_to_get_key();">'.esc_html__('How to get a site key?', 'wpvivid-backuprestore').'</a></div>
+            <div id="wpvivid_how_to_get_key"></div>
+            <div class="wpvivid-element-space-bottom"><textarea type="text" id="wpvivid_transfer_key_text" onKeyUp="wpvivid_check_key(this.value)" style="width: 100%; height: 140px;"/></textarea></div>
+            <div><input class="button-primary" id="wpvivid_save_url_button" type="submit" value="'.esc_attr__( 'Save', 'wpvivid-backuprestore' ).'" onclick="wpvivid_click_save_site_url();" /></div>';
+        }
+        else{
+            foreach ($options as $key => $value)
+            {
+                $token = $value['token'];
+                $source_dir=home_url();
+                $target_dir=$value['domain'];
+                $expires=$value['expires'];
+
+                if ($expires != 0 && time() > $expires) {
+                    $key_status='The key has expired. Please delete it first and generate a new one.';
+                }
+                else{
+                    $time_diff = $expires - time();
+                    $key_status = 'The key will expire in: '.gmdate("H:i:s",$time_diff).'. Once the key expires, you need to generate a new key.';
+                }
+            }
+            echo '<div style="padding: 0 0 10px 0;">
+                        <span>Key:</span>
+                        <input type="text" id="wpvivid_send_remote_site_url_text" value="'.esc_attr($token).'" readonly="readonly" />
+                        <input class="button-primary" id="wpvivid_delete_key_button" type="submit" value="'.esc_attr__( 'Delete', 'wpvivid-backuprestore' ).'" onclick="wpvivid_click_delete_transfer_key();" />
+                       </div>
+                       <div class="wpvivid-element-space-bottom">'.esc_html($key_status).'</div>
+                       <div>The connection is ok. Now you can transfer the site <strong>'.esc_html($source_dir).'</strong> to the site <strong>'.esc_html($target_dir).'</strong></div>';
+        }
+        ?>
+        </div>
+        <script>
+         var source_site = "<?php echo esc_url(admin_url('admin-ajax.php'))?>";
+        function wpvivid_check_key(value){
+                var pos = value.indexOf("?");
+                var site_url = value.substring(0, pos);
+                if(site_url == source_site){
+                    alert("The key generated by this site cannot be added into this site.");
+                    jQuery('#wpvivid_save_url_button').prop('disabled', true);
+                }
+                else{
+                    jQuery("#wpvivid_save_url_button").prop('disabled', false);
+                }
+            }
+
+            function wpvivid_click_save_site_url()
+            {
+                var url= jQuery('#wpvivid_transfer_key_text').val();
+                var ajax_data = {
+                    'action': 'wpvivid_test_connect_site',
+                    'url':url
+                };
+
+                jQuery("#wpvivid_save_url_button").prop('disabled', true);
+                wpvivid_post_request(ajax_data, function (data)
+                {
+                    jQuery("#wpvivid_save_url_button").prop('disabled', false);
+                    try
+                    {
+                        var jsonarray = jQuery.parseJSON(data);
+                        if(jsonarray.result==='success')
+                        {
+                            jQuery('#wpvivid_transfer_key').html(jsonarray.html);
+                        }
+                        else
+                        {
+                            alert(jsonarray.error);
+                        }
+                    }
+                    catch(err)
+                    {
+                        alert(err);
+                    }
+                }, function (XMLHttpRequest, textStatus, errorThrown)
+                {
+                    jQuery("#wpvivid_save_url_button").prop('disabled', false);
+                    var error_message = wpvivid_output_ajaxerror('saving key', textStatus, errorThrown);
+                    alert(error_message);
+                });
+            }
+
+            function wpvivid_click_delete_transfer_key()
+            {
+                var ajax_data = {
+                    'action': 'wpvivid_delete_transfer_key'
+                };
+
+                jQuery("#wpvivid_delete_key_button").css({'pointer-events': 'none', 'opacity': '0.4'});
+                wpvivid_post_request(ajax_data, function (data)
+                {
+                    jQuery("#wpvivid_delete_key_button").css({'pointer-events': 'none', 'opacity': '0.4'});
+                    try
+                    {
+                        var jsonarray = jQuery.parseJSON(data);
+                        if(jsonarray.result==='success')
+                        {
+                            jQuery('#wpvivid_transfer_key').html(jsonarray.html);
+                        }
+                    }
+                    catch(err)
+                    {
+                        alert(err);
+                    }
+                }, function (XMLHttpRequest, textStatus, errorThrown)
+                {
+                    jQuery("#wpvivid_delete_key_button").css({'pointer-events': 'auto', 'opacity': '1'});
+                    var error_message = wpvivid_output_ajaxerror('deleting key', textStatus, errorThrown);
+                    alert(error_message);
+                });
+            }
+
+            function click_dismiss_key_notice(obj){
+                wpvivid_display_get_key = false;
+                jQuery(obj).parent().remove();
+            }
+
+            function wpvivid_click_how_to_get_key(){
+                if(!wpvivid_display_get_key) {
+                    wpvivid_display_get_key = true;
+                    var div = "<div class='notice notice-info is-dismissible inline'>" +
+                        "<p>" + wpvividlion.get_key_step1 + "</p>" +
+                        "<p>" + wpvividlion.get_key_step2 + "</p>" +
+                        "<p>" + wpvividlion.get_key_step3 + "</p>" +
+                        "<button type='button' class='notice-dismiss' onclick='click_dismiss_key_notice(this);'>" +
+                        "<span class='screen-reader-text'>Dismiss this notice.</span>" +
+                        "</button>" +
+                        "</div>";
+                    jQuery('#wpvivid_how_to_get_key').append(div);
+                }
+            }
+        </script>
+        <?php
     }
 
     public function wpvivid_put_transfer_key($html){
@@ -906,7 +1195,7 @@ class WPvivid_Migrate
                 }
                 else{
                     $time_diff = $expires - time();
-                    $key_status = 'The key will expire in: '.date("H:i:s",$time_diff).'. Once the key expires, you need to generate a new key.';
+                    $key_status = 'The key will expire in: '.gmdate("H:i:s",$time_diff).'. Once the key expires, you need to generate a new key.';
                 }
             }
             $html .= '<div style="padding: 0 0 10px 0;">
@@ -1047,28 +1336,28 @@ class WPvivid_Migrate
 
     public function wpvivid_migrate_part_exec($html)
     {
-        $html = '';
-        $html .= '<div id="wpvivid_transfer_btn" style="float: left;">
-                        <input class="button-primary quicktransfer-btn" type="submit" value="'.esc_attr__( 'Clone then Transfer', 'wpvivid-backuprestore').'" onclick="wpvivid_click_send_backup();" />
-                    </div>
-                    <script>
-                    function wpvivid_click_send_backup()
+        ?>
+        <div id="wpvivid_transfer_btn" style="float: left;">
+            <input class="button-primary quicktransfer-btn" type="submit" value="<?php esc_attr_e( 'Clone then Transfer', 'wpvivid-backuprestore'); ?>" onclick="wpvivid_click_send_backup();" />
+        </div>
+        <script>
+            function wpvivid_click_send_backup()
             {
                 //send_to_remote
-                var option_data = wpvivid_ajax_data_transfer(\'migrate\');
+                var option_data = wpvivid_ajax_data_transfer('migrate');
                 var ajax_data = {
-                    \'action\': \'wpvivid_send_backup_to_site_2\',
-                    \'backup_options\':option_data
+                    'action': 'wpvivid_send_backup_to_site_2',
+                    'backup_options':option_data
                 };
                 migrate_task_need_update=true;
-                wpvivid_clear_notice(\'wpvivid_backup_notice\');
+                wpvivid_clear_notice('wpvivid_backup_notice');
                 wpvivid_control_transfer_lock();
                 wpvivid_post_request(ajax_data, function (data)
                 {
                     try
                     {
                         var jsonarray = jQuery.parseJSON(data);
-                        if(jsonarray.result===\'failed\')
+                        if(jsonarray.result==='failed')
                         {
                             wpvivid_delete_transfer_ready_task(jsonarray.error);
                         }
@@ -1083,7 +1372,7 @@ class WPvivid_Migrate
                     }
                 }, function (XMLHttpRequest, textStatus, errorThrown)
                 {
-                    var error_message = wpvivid_output_ajaxerror(\'trying to establish communication with your server\', textStatus, errorThrown);
+                    var error_message = wpvivid_output_ajaxerror('trying to establish communication with your server', textStatus, errorThrown);
                     wpvivid_delete_transfer_ready_task(error_message);
                 });
             }
@@ -1091,8 +1380,8 @@ class WPvivid_Migrate
             function wpvivid_migrate_now(task_id)
             {
                 var ajax_data = {
-                    \'action\': \'wpvivid_migrate_now_2\',
-                    \'task_id\': task_id
+                    'action': 'wpvivid_migrate_now_2',
+                    'task_id': task_id
                 };
                 task_recheck_times = 0;
                 m_need_update_2=true;
@@ -1103,21 +1392,21 @@ class WPvivid_Migrate
 
             function wpvivid_delete_transfer_ready_task(error){
                 var ajax_data={
-                    \'action\': \'wpvivid_delete_ready_task\'
+                    'action': 'wpvivid_delete_ready_task'
                 };
                 wpvivid_post_request(ajax_data, function (data) {
                     try {
                         var jsonarray = jQuery.parseJSON(data);
-                        if (jsonarray.result === \'success\') {
-                            wpvivid_add_notice(\'Backup\', \'Error\', error);
+                        if (jsonarray.result === 'success') {
+                            wpvivid_add_notice('Backup', 'Error', error);
                             wpvivid_control_transfer_unlock();
-                            jQuery(\'#wpvivid_upload_backup_percent\').hide();
+                            jQuery('#wpvivid_upload_backup_percent').hide();
                         }
                     }
                     catch(err){
-                        wpvivid_add_notice(\'Backup\', \'Error\', err);
+                        wpvivid_add_notice('Backup', 'Error', err);
                         wpvivid_control_transfer_unlock();
-                        jQuery(\'#wpvivid_upload_backup_percent\').hide();
+                        jQuery('#wpvivid_upload_backup_percent').hide();
                     }
                 }, function (XMLHttpRequest, textStatus, errorThrown) {
                     setTimeout(function () {
@@ -1125,8 +1414,8 @@ class WPvivid_Migrate
                     }, 3000);
                 });
             }
-        </script>';
-        return $html;
+        </script>
+        <?php
     }
 
     public function wpvivid_migrate_part_note($html){
@@ -1143,9 +1432,34 @@ class WPvivid_Migrate
                     <p>'.__('1. Download a backup in backups list to your computer.', 'wpvivid-backuprestore').'</p>
                     <p>'.__('2. Upload the backup to destination site. There are two ways available to use:', 'wpvivid-backuprestore').'</p>
                     <p style="margin-left: 20px;">'.__('2.1 Upload the backup to the upload section of WPvivid backup plugin in destination site.', 'wpvivid-backuprestore').'</p>
-                    <p style="margin-left: 20px;">'.sprintf(__('2.2 Upload the backup with FTP client to backup directory %s in destination site, then click <strong>Scan uploaded backup or received backup</strong> button.', 'wpvivid-backuprestore'), WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$backupdir).'</p>
+                    <p style="margin-left: 20px;">'.sprintf('2.2 Upload the backup with FTP client to backup directory %s in destination site, then click <strong>Scan uploaded backup or received backup</strong> button.', WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$backupdir).'</p>
                     <p>'.__('3. Once done, the backup appears in backups list. Then, restore the backup.', 'wpvivid-backuprestore').'</p>';
         return $html;
+    }
+
+    public function wpvivid_add_migrate_type_output($name_type)
+    {
+        echo '<label>
+                    <input type="radio" option="migrate" name="'.esc_attr($name_type).'" value="files+db" checked />
+                    <span>'.esc_html__( 'Database + Files (WordPress Files)', 'wpvivid-backuprestore' ).'</span>
+                  </label><br>
+                  <label>
+                    <input type="radio" option="migrate" name="'.esc_attr($name_type).'" value="files" />
+                    <span>'.esc_html__( 'WordPress Files (Exclude Database)', 'wpvivid-backuprestore' ).'</span>
+                  </label><br>
+                  <label>
+                    <input type="radio" option="migrate" name="'.esc_attr($name_type).'" value="db" />
+                    <span>'.esc_html__( 'Only Database', 'wpvivid-backuprestore' ).'</span>
+                  </label><br>
+                  <label>
+                   <div style="float: left;">
+                        <input type="radio" disabled />
+                        <span class="wpvivid-element-space-right" style="color: #ddd;">'.esc_html__('Choose what to migrate', 'wpvivid-backuprestore').'</span>
+                    </div>
+                    <span class="wpvivid-feature-pro">
+                        <a href="https://docs.wpvivid.com/custom-migration-overview.html" style="text-decoration: none;">'.esc_html__('Pro feature: learn more', 'wpvivid-backuprestore').'</a>
+                    </span>
+                  </label><br>';
     }
 
     public function wpvivid_add_migrate_type($html, $name_type){
@@ -1176,7 +1490,13 @@ class WPvivid_Migrate
     public function list_tasks()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         $tasks=WPvivid_Setting::get_tasks();
         $ret=array();
         $list_tasks=array();
@@ -1264,7 +1584,7 @@ class WPvivid_Migrate
             }
         }
 
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
@@ -1285,7 +1605,7 @@ class WPvivid_Migrate
 
     function wpvivid_add_tab_upload(){
         ?>
-        <a href="#" id="wpvivid_tab_upload" class="nav-tab backup-nav-tab" onclick="switchrestoreTabs(event,'page-upload')"><?php _e('Upload', 'wpvivid-backuprestore'); ?></a>
+        <a href="#" id="wpvivid_tab_upload" class="nav-tab backup-nav-tab" onclick="switchrestoreTabs(event,'page-upload')"><?php esc_html_e('Upload', 'wpvivid-backuprestore'); ?></a>
         <?php
     }
 
@@ -1295,10 +1615,10 @@ class WPvivid_Migrate
         <div class="backup-tab-content wpvivid_tab_upload" id="page-upload" style="display:none;">
             <div style="padding: 10px 0 10px 0;">
                 <div style="padding-bottom: 10px;">
-                    <span><?php echo sprintf(__('The backups will be uploaded to %s directory.', 'wpvivid-backuprestore'), WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$backupdir); ?></span>
+                    <span><?php echo esc_html(sprintf('The backups will be uploaded to %s directory.', WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$backupdir)); ?></span>
                 </div>
                 <div style="padding-bottom: 10px;">
-                    <span><?php echo __('Note: The files you want to upload must be a backup created by WPvivid backup plugin. Make sure that uploading every part of a backup to the directory if the backup is split into many parts', 'wpvivid-backuprestore'); ?></span>
+                    <span><?php esc_html_e('Note: The files you want to upload must be a backup created by WPvivid backup plugin. Make sure that uploading every part of a backup to the directory if the backup is split into many parts', 'wpvivid-backuprestore'); ?></span>
                 </div>
                 <?php
                 Wpvivid_BackupUploader::upload_meta_box();

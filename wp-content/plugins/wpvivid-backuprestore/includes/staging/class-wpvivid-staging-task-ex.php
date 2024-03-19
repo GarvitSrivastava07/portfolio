@@ -24,7 +24,7 @@ class WPvivid_Staging_Task
             else
             {
                 $error = 'Staging task not found.';
-                throw new Exception($error);
+                throw new Exception(esc_html($error));
             }
         }
     }
@@ -502,7 +502,7 @@ class WPvivid_Staging_Task
     {
         $ret['result']='success';
         $ret['task_id']=$this->task['id'];
-        $json=json_encode($ret);
+        $json=wp_json_encode($ret);
         if(!headers_sent())
         {
             header('Content-Length: '.strlen($json));
@@ -512,7 +512,7 @@ class WPvivid_Staging_Task
 
         if (session_id())
             session_write_close();
-        echo $json;
+        echo wp_json_encode($ret);
 
         if(function_exists('fastcgi_finish_request'))
         {

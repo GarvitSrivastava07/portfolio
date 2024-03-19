@@ -26,7 +26,7 @@ class WPvivid_Staging_Setting_Free
     public function add_tab_staging()
     {
         ?>
-        <a href="#" id="wpvivid_tab_staging_setting" class="nav-tab setting-nav-tab" onclick="switchsettingTabs(event,'page-staging-setting')"><?php _e('Staging Settings', 'wpvivid-backuprestore'); ?></a>
+        <a href="#" id="wpvivid_tab_staging_setting" class="nav-tab setting-nav-tab" onclick="switchsettingTabs(event,'page-staging-setting')"><?php esc_html_e('Staging Settings', 'wpvivid-backuprestore'); ?></a>
         <?php
     }
 
@@ -84,124 +84,124 @@ class WPvivid_Staging_Setting_Free
         ?>
         <div style="margin-top: 10px;">
             <div class="postbox schedule-tab-block wpvivid-setting-addon" style="margin-bottom: 10px; padding-bottom: 0;">
-                <div class="wpvivid-element-space-bottom"><strong><?php _e('DB Copy Count', 'wpvivid-backuprestore'); ?></strong></div>
+                <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('DB Copy Count', 'wpvivid-backuprestore'); ?></strong></div>
                 <div class="wpvivid-element-space-bottom">
-                    <input type="text" class="all-options" option="setting" name="staging_db_insert_count" value="<?php esc_attr_e($staging_db_insert_count); ?>"
+                    <input type="text" class="all-options" option="setting" name="staging_db_insert_count" value="<?php echo esc_attr($staging_db_insert_count); ?>"
                            placeholder="10000" onkeyup="value=value.replace(/\D/g,'')" />
                 </div>
                 <div class="wpvivid-element-space-bottom">
-                    <?php _e( 'Number of DB rows, that are copied within one ajax query. The higher value makes the database copy process faster. 
+                    <?php esc_html_e( 'Number of DB rows, that are copied within one ajax query. The higher value makes the database copy process faster. 
                 Please try a high value to find out the highest possible value. If you encounter timeout errors, try lower values until no 
                 more errors occur.', 'wpvivid-backuprestore' ); ?>
                 </div>
 
-                <div class="wpvivid-element-space-bottom"><strong><?php _e('DB Replace Count', 'wpvivid-backuprestore'); ?></strong></div>
+                <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('DB Replace Count', 'wpvivid-backuprestore'); ?></strong></div>
                 <div class="wpvivid-element-space-bottom">
-                    <input type="text" class="all-options" option="setting" name="staging_db_replace_count" value="<?php esc_attr_e($staging_db_replace_count); ?>"
+                    <input type="text" class="all-options" option="setting" name="staging_db_replace_count" value="<?php echo esc_attr($staging_db_replace_count); ?>"
                            placeholder="5000" onkeyup="value=value.replace(/\D/g,'')" />
                 </div>
                 <div class="wpvivid-element-space-bottom">
-                    <?php _e( 'Number of DB rows, that are processed within one ajax query. The higher value makes the DB replacement process faster. 
+                    <?php esc_html_e( 'Number of DB rows, that are processed within one ajax query. The higher value makes the DB replacement process faster. 
                 If timeout erros occur, decrease the value because this process consumes a lot of memory.', 'wpvivid-backuprestore' ); ?>
                 </div>
 
-                <div class="wpvivid-element-space-bottom"><strong><?php _e('File Copy Count', 'wpvivid-backuprestore'); ?></strong></div>
+                <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('File Copy Count', 'wpvivid-backuprestore'); ?></strong></div>
                 <div class="wpvivid-element-space-bottom">
-                    <input type="text" class="all-options" option="setting" name="staging_file_copy_count" value="<?php esc_attr_e($staging_file_copy_count); ?>"
+                    <input type="text" class="all-options" option="setting" name="staging_file_copy_count" value="<?php echo esc_attr($staging_file_copy_count); ?>"
                            placeholder="500" onkeyup="value=value.replace(/\D/g,'')" />
                 </div>
                 <div class="wpvivid-element-space-bottom">
-                    <?php _e( 'Number of files to copy that will be copied within one ajax request. The higher value makes the file copy process faster. 
+                    <?php esc_html_e( 'Number of files to copy that will be copied within one ajax request. The higher value makes the file copy process faster. 
                 Please try a high value to find out the highest possible value. If you encounter timeout errors, try lower values until no more errors occur.', 'wpvivid-backuprestore' ); ?>
                 </div>
 
-                <div class="wpvivid-element-space-bottom"><strong><?php _e('Max File Size', 'wpvivid-backuprestore'); ?></strong></div>
+                <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Max File Size', 'wpvivid-backuprestore'); ?></strong></div>
                 <div class="wpvivid-element-space-bottom">
-                    <input type="text" class="all-options" option="setting" name="staging_exclude_file_size" value="<?php esc_attr_e($staging_exclude_file_size); ?>"
+                    <input type="text" class="all-options" option="setting" name="staging_exclude_file_size" value="<?php echo esc_attr($staging_exclude_file_size); ?>"
                            placeholder="30" onkeyup="value=value.replace(/\D/g,'')" />MB
                 </div>
                 <div class="wpvivid-element-space-bottom">
-                    <?php _e( 'Maximum size of the files copied to a staging site. All files larger than this value will be ignored. If you set the value of 0 MB, all files will be copied to a staging site.', 'wpvivid-backuprestore' ); ?>
+                    <?php esc_html_e( 'Maximum size of the files copied to a staging site. All files larger than this value will be ignored. If you set the value of 0 MB, all files will be copied to a staging site.', 'wpvivid-backuprestore' ); ?>
                 </div>
 
-                <div class="wpvivid-element-space-bottom"><strong><?php _e('Staging Memory Limit', 'wpvivid-backuprestore'); ?></strong></div>
+                <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Staging Memory Limit', 'wpvivid-backuprestore'); ?></strong></div>
                 <div class="wpvivid-element-space-bottom">
-                    <input type="text" class="all-options" option="setting" name="staging_memory_limit" value="<?php esc_attr_e($staging_memory_limit); ?>"
+                    <input type="text" class="all-options" option="setting" name="staging_memory_limit" value="<?php echo esc_attr($staging_memory_limit); ?>"
                            placeholder="256" onkeyup="value=value.replace(/\D/g,'')" />MB
                 </div>
                 <div class="wpvivid-element-space-bottom">
-                    <?php _e('Adjust this value to apply for a temporary PHP memory limit for the plugin to create a staging site. 
+                    <?php esc_html_e('Adjust this value to apply for a temporary PHP memory limit for the plugin to create a staging site. 
                 We set this value to 256M by default. Increase the value if you encounter a memory exhausted error. Note: some 
                 web hosting providers may not support this.', 'wpvivid-backuprestore'); ?>
                 </div>
 
-                <div class="wpvivid-element-space-bottom"><strong><?php _e('PHP Script Execution Timeout', 'wpvivid-backuprestore'); ?></strong></div>
+                <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('PHP Script Execution Timeout', 'wpvivid-backuprestore'); ?></strong></div>
                 <div class="wpvivid-element-space-bottom">
-                    <input type="text" class="all-options" option="setting" name="staging_max_execution_time" value="<?php esc_attr_e($staging_max_execution_time); ?>"
+                    <input type="text" class="all-options" option="setting" name="staging_max_execution_time" value="<?php echo esc_attr($staging_max_execution_time); ?>"
                            placeholder="900" onkeyup="value=value.replace(/\D/g,'')" />
                 </div>
                 <div class="wpvivid-element-space-bottom">
-                    <?php _e( 'The time-out is not your server PHP time-out. With the execution time exhausted, our plugin will shut down the progress of 
+                    <?php esc_html_e( 'The time-out is not your server PHP time-out. With the execution time exhausted, our plugin will shut down the progress of 
                 creating a staging site. If the progress  encounters a time-out, that means you have a medium or large sized website. Please try to 
                 scale the value bigger.', 'wpvivid-backuprestore' ); ?>
                 </div>
 
-                <div class="wpvivid-element-space-bottom"><strong><?php _e('Delay Between Requests', 'wpvivid-backuprestore'); ?></strong></div>
+                <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Delay Between Requests', 'wpvivid-backuprestore'); ?></strong></div>
                 <div class="wpvivid-element-space-bottom">
-                    <input type="text" class="all-options" option="setting" name="staging_request_timeout" value="<?php esc_attr_e($staging_request_timeout); ?>"
+                    <input type="text" class="all-options" option="setting" name="staging_request_timeout" value="<?php echo esc_attr($staging_request_timeout); ?>"
                            placeholder="1500" onkeyup="value=value.replace(/\D/g,'')" />ms
                 </div>
                 <div class="wpvivid-element-space-bottom">
-                    <?php _e( 'A lower value will help speed up the process of creating a staging site. However, if your server has a limit on the number of requests, a higher value is recommended.', 'wpvivid-backuprestore' ); ?>
+                    <?php esc_html_e( 'A lower value will help speed up the process of creating a staging site. However, if your server has a limit on the number of requests, a higher value is recommended.', 'wpvivid-backuprestore' ); ?>
                 </div>
 
                 <div class="wpvivid-element-space-bottom">
-                    <strong><?php _e('Retrying', 'wpvivid-backuprestore'); ?> </strong>
+                    <strong><?php esc_html_e('Retrying', 'wpvivid-backuprestore'); ?> </strong>
                     <select option="setting" name="staging_resume_count">
                         <?php
                         for($resume_count=3; $resume_count<10; $resume_count++){
                             if($resume_count === $staging_resume_count){
-                                _e('<option selected="selected" value="'.$resume_count.'">'.$resume_count.'</option>');
+                                echo '<option selected="selected" value="'.esc_attr($resume_count).'">'.esc_html($resume_count).'</option>';
                             }
                             else{
-                                _e('<option value="'.$resume_count.'">'.$resume_count.'</option>');
+                                echo '<option value="'.esc_attr($resume_count).'">'.esc_html($resume_count).'</option>';
                             }
                         }
                         ?>
-                    </select><strong><?php _e(' times when encountering a time-out error', 'wpvivid-backuprestore'); ?></strong>
+                    </select><strong><?php esc_html_e(' times when encountering a time-out error', 'wpvivid-backuprestore'); ?></strong>
                 </div>
 
                 <div class="wpvivid-element-space-bottom">
                     <label>
-                        <input type="checkbox" option="setting" name="not_need_login" <?php esc_attr_e($staging_not_need_login_check); ?> />
-                        <span><strong><?php _e('Anyone can visit the staging site', 'wpvivid-backuprestore'); ?></strong></span>
+                        <input type="checkbox" option="setting" name="not_need_login" <?php echo esc_attr($staging_not_need_login_check); ?> />
+                        <span><strong><?php esc_html_e('Anyone can visit the staging site', 'wpvivid-backuprestore'); ?></strong></span>
                     </label>
                 </div>
 
                 <div class="wpvivid-element-space-bottom">
-                    <span><?php _e('When the option is checked, anyone will be able to visit the staging site without the need to login. Uncheck it to request a login to visit the staging site.', 'wpvivid-backuprestore'); ?></span>
+                    <span><?php esc_html_e('When the option is checked, anyone will be able to visit the staging site without the need to login. Uncheck it to request a login to visit the staging site.', 'wpvivid-backuprestore'); ?></span>
                 </div>
 
                 <div class="wpvivid-element-space-bottom">
                     <label>
-                        <input type="checkbox" option="setting" name="staging_overwrite_permalink" <?php esc_attr_e($staging_overwrite_permalink_check); ?> />
-                        <span><strong><?php _e('Keep permalink when transferring website', 'wpvivid-backuprestore'); ?></strong></span>
+                        <input type="checkbox" option="setting" name="staging_overwrite_permalink" <?php echo esc_attr($staging_overwrite_permalink_check); ?> />
+                        <span><strong><?php esc_html_e('Keep permalink when transferring website', 'wpvivid-backuprestore'); ?></strong></span>
                     </label>
                 </div>
 
                 <div class="wpvivid-element-space-bottom">
-                    <span><?php _e('When checked, this option allows you to keep the current permalink structure when you create a staging site or push a staging site to live.', 'wpvivid-backuprestore'); ?></span>
+                    <span><?php esc_html_e('When checked, this option allows you to keep the current permalink structure when you create a staging site or push a staging site to live.', 'wpvivid-backuprestore'); ?></span>
                 </div>
 
                 <div class="wpvivid-element-space-bottom">
                     <label>
-                        <input type="checkbox" option="setting" name="staging_keep_setting" <?php esc_attr_e($staging_keep_setting); ?> />
-                        <span><strong><?php _e('Keep staging sites when deleting the plugin', 'wpvivid-backuprestore'); ?></strong></span>
+                        <input type="checkbox" option="setting" name="staging_keep_setting" <?php echo esc_attr($staging_keep_setting); ?> />
+                        <span><strong><?php esc_html_e('Keep staging sites when deleting the plugin', 'wpvivid-backuprestore'); ?></strong></span>
                     </label>
                 </div>
 
                 <div class="wpvivid-element-space-bottom">
-                    <span><?php _e('With this option checked, all staging sites you have created will be retained when the plugin is deleted, just in case you still need them later. The sites will show up again after the plugin is reinstalled.', 'wpvivid-backuprestore'); ?></span>
+                    <span><?php esc_html_e('With this option checked, all staging sites you have created will be retained when the plugin is deleted, just in case you still need them later. The sites will show up again after the plugin is reinstalled.', 'wpvivid-backuprestore'); ?></span>
                 </div>
             </div>
         </div>
@@ -263,127 +263,127 @@ class WPvivid_Staging_Setting_Free
         }
         ?>
         <div class="postbox schedule-tab-block wpvivid-setting-addon" style="margin-bottom: 10px; padding-bottom: 0;">
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('DB Copy Count', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('DB Copy Count', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input type="text" class="all-options" option="setting" name="staging_db_insert_count" value="<?php esc_attr_e($staging_db_insert_count); ?>"
+                <input type="text" class="all-options" option="setting" name="staging_db_insert_count" value="<?php echo esc_attr($staging_db_insert_count); ?>"
                        placeholder="10000" onkeyup="value=value.replace(/\D/g,'')" />
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e( 'Number of DB rows, that are copied within one ajax query. The higher value makes the database copy process faster. 
+                <?php esc_html_e( 'Number of DB rows, that are copied within one ajax query. The higher value makes the database copy process faster. 
                 Please try a high value to find out the highest possible value. If you encounter timeout errors, try lower values until no 
                 more errors occur.', 'wpvivid-backuprestore' ); ?>
             </div>
 
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('DB Replace Count', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('DB Replace Count', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input type="text" class="all-options" option="setting" name="staging_db_replace_count" value="<?php esc_attr_e($staging_db_replace_count); ?>"
+                <input type="text" class="all-options" option="setting" name="staging_db_replace_count" value="<?php echo esc_attr($staging_db_replace_count); ?>"
                        placeholder="5000" onkeyup="value=value.replace(/\D/g,'')" />
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e( 'Number of DB rows, that are processed within one ajax query. The higher value makes the DB replacement process faster. 
+                <?php esc_html_e( 'Number of DB rows, that are processed within one ajax query. The higher value makes the DB replacement process faster. 
                 If timeout erros occur, decrease the value because this process consumes a lot of memory.', 'wpvivid-backuprestore' ); ?>
             </div>
 
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('File Copy Count', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('File Copy Count', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input type="text" class="all-options" option="setting" name="staging_file_copy_count" value="<?php esc_attr_e($staging_file_copy_count); ?>"
+                <input type="text" class="all-options" option="setting" name="staging_file_copy_count" value="<?php echo esc_attr($staging_file_copy_count); ?>"
                        placeholder="500" onkeyup="value=value.replace(/\D/g,'')" />
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e( 'Number of files to copy that will be copied within one ajax request. The higher value makes the file copy process faster. 
+                <?php esc_html_e( 'Number of files to copy that will be copied within one ajax request. The higher value makes the file copy process faster. 
                 Please try a high value to find out the highest possible value. If you encounter timeout errors, try lower values until no more errors occur.', 'wpvivid-backuprestore' ); ?>
             </div>
 
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('Max File Size', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Max File Size', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input type="text" class="all-options" option="setting" name="staging_exclude_file_size" value="<?php esc_attr_e($staging_exclude_file_size); ?>"
+                <input type="text" class="all-options" option="setting" name="staging_exclude_file_size" value="<?php echo esc_attr($staging_exclude_file_size); ?>"
                        placeholder="30" onkeyup="value=value.replace(/\D/g,'')" />MB
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e( 'Maximum size of the files copied to a staging site. All files larger than this value will be ignored. If you set the value of 0 MB, all files will be copied to a staging site.', 'wpvivid-backuprestore' ); ?>
+                <?php esc_html_e( 'Maximum size of the files copied to a staging site. All files larger than this value will be ignored. If you set the value of 0 MB, all files will be copied to a staging site.', 'wpvivid-backuprestore' ); ?>
             </div>
 
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('Staging Memory Limit', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Staging Memory Limit', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input type="text" class="all-options" option="setting" name="staging_memory_limit" value="<?php esc_attr_e($staging_memory_limit); ?>"
+                <input type="text" class="all-options" option="setting" name="staging_memory_limit" value="<?php echo esc_attr($staging_memory_limit); ?>"
                        placeholder="256" onkeyup="value=value.replace(/\D/g,'')" />MB
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e('Adjust this value to apply for a temporary PHP memory limit for the plugin to create a staging site. 
+                <?php esc_html_e('Adjust this value to apply for a temporary PHP memory limit for the plugin to create a staging site. 
                 We set this value to 256M by default. Increase the value if you encounter a memory exhausted error. Note: some 
                 web hosting providers may not support this.', 'wpvivid-backuprestore'); ?>
             </div>
 
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('PHP Script Execution Timeout', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('PHP Script Execution Timeout', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input type="text" class="all-options" option="setting" name="staging_max_execution_time" value="<?php esc_attr_e($staging_max_execution_time); ?>"
+                <input type="text" class="all-options" option="setting" name="staging_max_execution_time" value="<?php echo esc_attr($staging_max_execution_time); ?>"
                        placeholder="900" onkeyup="value=value.replace(/\D/g,'')" />
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e( 'The time-out is not your server PHP time-out. With the execution time exhausted, our plugin will shut down the progress of 
+                <?php esc_html_e( 'The time-out is not your server PHP time-out. With the execution time exhausted, our plugin will shut down the progress of 
                 creating a staging site. If the progress  encounters a time-out, that means you have a medium or large sized website. Please try to 
                 scale the value bigger.', 'wpvivid-backuprestore' ); ?>
             </div>
 
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('Delay Between Requests', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Delay Between Requests', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input type="text" class="all-options" option="setting" name="staging_request_timeout" value="<?php esc_attr_e($staging_request_timeout); ?>"
+                <input type="text" class="all-options" option="setting" name="staging_request_timeout" value="<?php echo esc_attr($staging_request_timeout); ?>"
                        placeholder="1500" onkeyup="value=value.replace(/\D/g,'')" />ms
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e( 'A lower value will help speed up the process of creating a staging site. However, if your server has a limit on the number of requests, a higher value is recommended.', 'wpvivid-backuprestore' ); ?>
+                <?php esc_html_e( 'A lower value will help speed up the process of creating a staging site. However, if your server has a limit on the number of requests, a higher value is recommended.', 'wpvivid-backuprestore' ); ?>
             </div>
 
             <div class="wpvivid-element-space-bottom">
-                <strong><?php _e('Retrying', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('Retrying', 'wpvivid-backuprestore'); ?></strong>
                 <select option="setting" name="staging_resume_count">
                     <?php
                     for($resume_count=3; $resume_count<10; $resume_count++){
                         if($resume_count === $staging_resume_count){
-                            _e('<option selected="selected" value="'.$resume_count.'">'.$resume_count.'</option>');
+                           echo '<option selected="selected" value="'.esc_attr($resume_count).'">'.esc_html($resume_count).'</option>';
                         }
                         else{
-                            _e('<option value="'.$resume_count.'">'.$resume_count.'</option>');
+                            echo'<option value="'.esc_attr($resume_count).'">'.esc_html($resume_count).'</option>';
                         }
                     }
                     ?>
-                </select><strong><?php _e(' times when encountering a time-out error', 'wpvivid-backuprestore'); ?></strong>
+                </select><strong><?php esc_html_e(' times when encountering a time-out error', 'wpvivid-backuprestore'); ?></strong>
             </div>
 
             <div class="wpvivid-element-space-bottom">
                 <label>
-                    <input type="checkbox" option="setting" name="not_need_login" <?php esc_attr_e($staging_not_need_login_check); ?> />
-                    <span><strong><?php _e('Anyone can visit the staging site', 'wpvivid-backuprestore'); ?></strong></span>
+                    <input type="checkbox" option="setting" name="not_need_login" <?php echo esc_attr($staging_not_need_login_check); ?> />
+                    <span><strong><?php esc_html_e('Anyone can visit the staging site', 'wpvivid-backuprestore'); ?></strong></span>
                 </label>
             </div>
 
             <div class="wpvivid-element-space-bottom">
-                <span><?php _e('When the option is checked, anyone will be able to visit the staging site without the need to login. Uncheck it to request a login to visit the staging site.', 'wpvivid-backuprestore'); ?></span>
+                <span><?php esc_html_e('When the option is checked, anyone will be able to visit the staging site without the need to login. Uncheck it to request a login to visit the staging site.', 'wpvivid-backuprestore'); ?></span>
             </div>
 
             <div class="wpvivid-element-space-bottom">
                 <label>
-                    <input type="checkbox" option="setting" name="staging_overwrite_permalink" <?php esc_attr_e($staging_overwrite_permalink_check); ?> />
-                    <span><strong><?php _e('Keep permalink when transferring website', 'wpvivid-backuprestore'); ?></strong></span>
+                    <input type="checkbox" option="setting" name="staging_overwrite_permalink" <?php echo esc_attr($staging_overwrite_permalink_check); ?> />
+                    <span><strong><?php esc_html_e('Keep permalink when transferring website', 'wpvivid-backuprestore'); ?></strong></span>
                 </label>
             </div>
 
             <div class="wpvivid-element-space-bottom">
-                <span><?php _e('When checked, this option allows you to keep the current permalink structure when you create a staging site or push a staging site to live.', 'wpvivid-backuprestore'); ?></span>
+                <span><?php esc_html_e('When checked, this option allows you to keep the current permalink structure when you create a staging site or push a staging site to live.', 'wpvivid-backuprestore'); ?></span>
             </div>
 
             <div class="wpvivid-element-space-bottom">
                 <label>
-                    <input type="checkbox" option="setting" name="staging_keep_setting" <?php esc_attr_e($staging_keep_setting); ?> />
-                    <span><strong><?php _e('Keep staging sites when deleting the plugin', 'wpvivid-backuprestore'); ?></strong></span>
+                    <input type="checkbox" option="setting" name="staging_keep_setting" <?php echo esc_attr($staging_keep_setting); ?> />
+                    <span><strong><?php esc_html_e('Keep staging sites when deleting the plugin', 'wpvivid-backuprestore'); ?></strong></span>
                 </label>
             </div>
 
             <div class="wpvivid-element-space-bottom">
-                <span><?php _e('With this option checked, all staging sites you have created will be retained when the plugin is deleted, just in case you still need them later. The sites will show up again after the plugin is reinstalled.', 'wpvivid-backuprestore'); ?></span>
+                <span><?php esc_html_e('With this option checked, all staging sites you have created will be retained when the plugin is deleted, just in case you still need them later. The sites will show up again after the plugin is reinstalled.', 'wpvivid-backuprestore'); ?></span>
             </div>
         </div>
-        <div><input class="button-primary wpvividstg_save_setting" type="submit" value="<?php esc_attr_e( 'Save Changes', 'wpvivid-backuprestore' ); ?>" /></div>
+        <div><input class="button-primary wpvividstg_save_setting" type="submit" value="<?php echo esc_attr( 'Save Changes'); ?>" /></div>
         <script>
             jQuery('.wpvividstg_save_setting').click(function()
             {
@@ -407,7 +407,7 @@ class WPvivid_Staging_Setting_Free
                         jQuery('.wpvividstg_save_setting').css({'pointer-events': 'auto', 'opacity': '1'});
                         if (jsonarray.result === 'success')
                         {
-                            location.href='<?php echo apply_filters('wpvividstg_get_admin_url', '') . 'admin.php?page=wpvividstg-setting'; ?>';
+                            location.href='<?php echo esc_url(apply_filters('wpvividstg_get_admin_url', '')) . 'admin.php?page=wpvividstg-setting'; ?>';
                         }
                         else {
                             alert(jsonarray.error);
@@ -462,14 +462,19 @@ class WPvivid_Staging_Setting_Free
 
     public function save_setting()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         $ret=array();
         try
         {
             if(isset($_POST['setting'])&&!empty($_POST['setting']))
             {
-                $json_setting = $_POST['setting'];
+                $json_setting = sanitize_text_field($_POST['setting']);
                 $json_setting = stripslashes($json_setting);
                 $setting = json_decode($json_setting, true);
                 if (is_null($setting))
@@ -502,10 +507,10 @@ class WPvivid_Staging_Setting_Free
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 }

@@ -82,7 +82,7 @@ abstract class AbstractUploadId implements UploadIdInterface
             if (isset($data[$key])) {
                 $this->data[$key] = $data[$key];
             } else {
-                throw new InvalidArgumentException("A required key [$key] was missing from the UploadId.");
+                throw new InvalidArgumentException(esc_html("A required key [$key] was missing from the UploadId."));
             }
         }
     }

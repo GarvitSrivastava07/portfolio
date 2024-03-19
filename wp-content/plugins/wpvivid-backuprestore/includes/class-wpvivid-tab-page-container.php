@@ -46,8 +46,8 @@ class WPvivid_Tab_Page_Container
     {
         $class = '';
         ?>
-        <div id="<?php echo $this->container_id?>">
-            <h2 class="nav-tab-wrapper <?php esc_attr_e($class); ?>" style="padding-bottom:0!important;">
+        <div id="<?php echo esc_attr($this->container_id)?>">
+            <h2 class="nav-tab-wrapper <?php echo esc_attr($class); ?>" style="padding-bottom:0!important;">
                 <?php
                 $this->display_tabs();
                 ?>
@@ -112,14 +112,14 @@ class WPvivid_Tab_Page_Container
             ?>
         </div>
         <script>
-            jQuery('#<?php echo $this->container_id?>').on("click",".<?php echo $this->container_id?>-tab",function()
+            jQuery('#<?php echo esc_attr($this->container_id)?>').on("click",".<?php echo esc_attr($this->container_id)?>-tab",function()
             {
-                jQuery('#<?php echo $this->container_id?>').find( '.<?php echo $this->container_id?>-tab' ).each(function()
+                jQuery('#<?php echo esc_attr($this->container_id)?>').find( '.<?php echo esc_attr($this->container_id)?>-tab' ).each(function()
                 {
                     jQuery(this).removeClass( "nav-tab-active" );
                 });
 
-                jQuery('#<?php echo $this->container_id?>').find( '.<?php echo $this->container_id?>-content' ).each(function()
+                jQuery('#<?php echo esc_attr($this->container_id)?>').find( '.<?php echo esc_attr($this->container_id)?>-content' ).each(function()
                 {
                     jQuery(this).hide();
                 });
@@ -131,18 +131,18 @@ class WPvivid_Tab_Page_Container
                 jQuery(this).addClass( "nav-tab-active" );
             });
 
-            jQuery('#<?php echo $this->container_id?>').on("click",".nav-tab-delete-img",function(event)
+            jQuery('#<?php echo esc_attr($this->container_id)?>').on("click",".nav-tab-delete-img",function(event)
             {
                 event.stopPropagation();
                 var redirect=jQuery(this).attr('redirect');
                 jQuery(this).parent().hide();
 
-                jQuery('#<?php echo $this->container_id?>').find( '.<?php echo $this->container_id?>-tab' ).each(function()
+                jQuery('#<?php echo esc_attr($this->container_id)?>').find( '.<?php echo esc_attr($this->container_id)?>-tab' ).each(function()
                 {
                     jQuery(this).removeClass( "nav-tab-active" );
                 });
 
-                jQuery('#<?php echo $this->container_id?>').find( '.<?php echo $this->container_id?>-content' ).each(function()
+                jQuery('#<?php echo esc_attr($this->container_id)?>').find( '.<?php echo esc_attr($this->container_id)?>-content' ).each(function()
                 {
                     jQuery(this).hide();
                 });
@@ -154,14 +154,14 @@ class WPvivid_Tab_Page_Container
 
             jQuery(document).ready(function($)
             {
-                jQuery(document).on('<?php echo $this->container_id?>-show', function(event,id,redirect)
+                jQuery(document).on('<?php echo esc_attr($this->container_id)?>-show', function(event,id,redirect)
                 {
-                    jQuery('#<?php echo $this->container_id?>').find( '.<?php echo $this->container_id?>-tab' ).each(function()
+                    jQuery('#<?php echo esc_attr($this->container_id)?>').find( '.<?php echo esc_attr($this->container_id)?>-tab' ).each(function()
                     {
                         jQuery(this).removeClass( "nav-tab-active" );
                     });
 
-                    jQuery('#<?php echo $this->container_id?>').find( '.<?php echo $this->container_id?>-content' ).each(function()
+                    jQuery('#<?php echo esc_attr($this->container_id)?>').find( '.<?php echo esc_attr($this->container_id)?>-content' ).each(function()
                     {
                         jQuery(this).hide();
                     });
@@ -210,14 +210,14 @@ class WPvivid_Tab_Page_Container
                 $class.=' wpvivid-transparency-tab';
             }
 
-            echo '<a id="wpvivid_tab_'.$tab['slug'].'" class="'.$class.'" style="'.$style.'">';
+            echo '<a id="wpvivid_tab_'.esc_attr($tab['slug']).'" class="'.esc_attr($class).'" style="'.esc_attr($style).'">';
 
             if(isset($tab['can_delete']))
             {
-                echo '<div style="margin-right: 15px;">'.__($tab['title'], 'wpvivid-backuprestore').'</div>';
+                echo '<div style="margin-right: 15px;">'.esc_html($tab['title']).'</div>';
                 if(isset($tab['redirect']))
                 {
-                    echo '<div class="nav-tab-delete-img" redirect="'.$tab['redirect'].'">
+                    echo '<div class="nav-tab-delete-img" redirect="'.esc_url($tab['redirect']).'">
                           <img src="'.esc_url( WPVIVID_PLUGIN_URL.'/admin/partials/images/delete-tab.png' ).'" style="vertical-align:middle; cursor:pointer;">
                        </div>';
                 }
@@ -230,7 +230,7 @@ class WPvivid_Tab_Page_Container
             }
             else
             {
-                echo __($tab['title'], 'wpvivid-backuprestore');
+                echo esc_html($tab['title']);
             }
             echo '</a>';
         }
@@ -258,7 +258,7 @@ class WPvivid_Tab_Page_Container
 
             $class=$this->container_id.'-content';
 
-            echo '<div id="wpvivid_page_'.$tab['slug'].'" class="'.$class.'" style="'.$style.'">';
+            echo '<div id="wpvivid_page_'.esc_attr($tab['slug']).'" class="'.esc_attr($class).'" style="'.esc_attr($style).'">';
             call_user_func($tab['page']);
             echo '</div>';
         }

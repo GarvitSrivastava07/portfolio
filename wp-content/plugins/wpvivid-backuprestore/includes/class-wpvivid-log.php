@@ -25,11 +25,11 @@ class WPvivid_Log
         }
         if(file_exists($this->log_file))
         {
-            @unlink( $this->log_file);
+            @wp_delete_file( $this->log_file);
         }
         $this->log_file_handle = fopen($this->log_file, 'a');
         $offset=get_option('gmt_offset');
-        $time =date("Y-m-d H:i:s",time()+$offset*60*60);
+        $time =gmdate("Y-m-d H:i:s",time()+$offset*60*60);
         $text='Log created: '.$time."\n";
         $text.='Type: '.$describe."\n";
         fwrite($this->log_file_handle,$text);
@@ -49,7 +49,7 @@ class WPvivid_Log
         }
         if($delete==1)
         {
-            unlink( $this->log_file);
+            wp_delete_file( $this->log_file);
         }
         $this->log_file_handle = fopen($this->log_file, 'a');
 
@@ -61,7 +61,7 @@ class WPvivid_Log
         if ($this->log_file_handle)
         {
             $offset=get_option('gmt_offset');
-            $time =date("Y-m-d H:i:s",time()+$offset*60*60);
+            $time =gmdate("Y-m-d H:i:s",time()+$offset*60*60);
             $text='['.$time.']'.'['.$type.']'.$log."\n";
             fwrite($this->log_file_handle,$text );
         }
@@ -170,7 +170,7 @@ class WPvivid_Log
             }
 
             $offset=get_option('gmt_offset');
-            $time =date("Y-m-d H:i:s",time()+$offset*60*60);
+            $time =gmdate("Y-m-d H:i:s",time()+$offset*60*60);
             $text='['.$time.']'.'[notice]'.$log."\n";
             fwrite($this->log_file_handle,$text );
         }

@@ -35,7 +35,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
     {
         ?>
         <div class="storage-providers" remote_type="sftp" onclick="select_remote_storage(event, 'storage_account_sftp');">
-            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/storage-sftp.png'); ?>" style="vertical-align:middle;"/><?php _e('SFTP', 'wpvivid-backuprestore'); ?>
+            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/storage-sftp.png'); ?>" style="vertical-align:middle;"/><?php esc_html_e('SFTP', 'wpvivid-backuprestore'); ?>
         </div>
         <?php
     }
@@ -45,7 +45,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
         ?>
         <div id="storage_account_sftp" class="storage-account-page" style="display:none;">
             <div style="padding: 0 10px 10px 0;">
-                <strong><?php _e('Enter Your SFTP Account', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('Enter Your SFTP Account', 'wpvivid-backuprestore'); ?></strong>
             </div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
@@ -58,7 +58,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -70,7 +70,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the server address.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the server address.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -82,7 +82,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the user name.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the user name.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -94,7 +94,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the user password.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the user password.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -106,7 +106,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the server port.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the server port.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -118,7 +118,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter an absolute path and a custom subdirectory (optional) for holding the backups of current website. For example, /var/customfolder/', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter an absolute path and a custom subdirectory (optional) for holding the backups of current website. For example, /var/customfolder/', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -126,13 +126,13 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="sftp" name="default" checked /><?php _e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="sftp" name="default" checked /><?php esc_html_e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -145,7 +145,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to connect to SFTP server and add it to the storage list below.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Click the button to connect to SFTP server and add it to the storage list below.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -160,7 +160,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
         ?>
         <div id="remote_storage_edit_sftp" class="postbox storage-account-block remote-storage-edit" style="display:none;">
             <div style="padding: 0 10px 10px 0;">
-                <strong><?php _e('Enter Your SFTP Account', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('Enter Your SFTP Account', 'wpvivid-backuprestore'); ?></strong>
             </div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
@@ -173,7 +173,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -185,7 +185,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the server address.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the server address.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -197,7 +197,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the user name.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the user name.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -209,7 +209,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the user password.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the user password.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -221,7 +221,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the server port.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the server port.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -233,7 +233,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter an absolute path and a custom subdirectory (optional) for holding the backups of current website. For example, /var/customfolder/', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter an absolute path and a custom subdirectory (optional) for holding the backups of current website. For example, /var/customfolder/', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -246,7 +246,7 @@ class WPvivid_SFTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to save the changes.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Click the button to save the changes.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>

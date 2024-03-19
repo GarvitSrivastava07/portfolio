@@ -336,7 +336,7 @@ class WPvivid_Google_Http_MediaFileUpload
     $error = "Failed to start the resumable upload (HTTP {$message})";
     $this->client->getLogger()->error($error);
 
-    throw new WPvivid_Google_Exception($error);
+    throw new WPvivid_Google_Exception(esc_html($error));
   }
 
   private function transformToUploadUrl()

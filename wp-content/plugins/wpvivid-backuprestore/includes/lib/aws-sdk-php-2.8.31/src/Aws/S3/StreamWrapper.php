@@ -771,7 +771,7 @@ class StreamWrapper
         }
 
         // This is triggered when doing things like lstat() or stat()
-        trigger_error(implode("\n", (array) $errors), E_USER_WARNING);
+        trigger_error(implode("\n", array_map('esc_html', (array) $errors)), E_USER_WARNING);
 
         return false;
     }

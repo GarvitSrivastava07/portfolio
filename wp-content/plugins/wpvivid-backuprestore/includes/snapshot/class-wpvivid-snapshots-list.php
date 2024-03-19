@@ -50,7 +50,7 @@ if ( ! class_exists( 'WPvivid_Snapshots_List_Ex' ) )
 
         public function _column_wpvivid_time( $data )
         {
-            $time = date('M-d-Y H:i', $data['time']);
+            $time = gmdate('M-d-Y H:i', $data['time']);
             echo '<td>' . esc_html( $time ) . '</td>';
         }
 
@@ -161,124 +161,6 @@ if ( ! class_exists( 'WPvivid_Snapshots_List_Ex' ) )
             <?php
         }
 
-        protected function pagination( $which )
-        {
-            if ( empty( $this->_pagination_args ) )
-            {
-                return;
-            }
-
-            $total_items     = $this->_pagination_args['total_items'];
-            $total_pages     = $this->_pagination_args['total_pages'];
-            $infinite_scroll = false;
-            if ( isset( $this->_pagination_args['infinite_scroll'] ) )
-            {
-                $infinite_scroll = $this->_pagination_args['infinite_scroll'];
-            }
-
-            if ( 'top' === $which && $total_pages > 1 )
-            {
-                $this->screen->render_screen_reader_content( 'heading_pagination' );
-            }
-
-            $output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items ), number_format_i18n( $total_items ) ) . '</span>';
-
-            $current              = $this->get_pagenum();
-
-            $page_links = array();
-
-            $total_pages_before = '<span class="paging-input">';
-            $total_pages_after  = '</span></span>';
-
-            $disable_first = $disable_last = $disable_prev = $disable_next = false;
-
-            if ( $current == 1 ) {
-                $disable_first = true;
-                $disable_prev  = true;
-            }
-            if ( $current == 2 ) {
-                $disable_first = true;
-            }
-            if ( $current == $total_pages ) {
-                $disable_last = true;
-                $disable_next = true;
-            }
-            if ( $current == $total_pages - 1 ) {
-                $disable_last = true;
-            }
-
-            if ( $disable_first ) {
-                $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&laquo;</span>';
-            } else {
-                $page_links[] = sprintf(
-                    "<div class='first-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                    __( 'First page' ),
-                    '&laquo;'
-                );
-            }
-
-            if ( $disable_prev ) {
-                $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&lsaquo;</span>';
-            } else {
-                $page_links[] = sprintf(
-                    "<div class='prev-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                    $current,
-                    __( 'Previous page' ),
-                    '&lsaquo;'
-                );
-            }
-
-            if ( 'bottom' === $which ) {
-                $html_current_page  = $current;
-                $total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page' ) . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
-            } else {
-                $html_current_page = sprintf(
-                    "%s<input class='current-page' id='current-page-selector-filelist' type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' /><span class='tablenav-paging-text'>",
-                    '<label for="current-page-selector-filelist" class="screen-reader-text">' . __( 'Current Page' ) . '</label>',
-                    $current,
-                    strlen( $total_pages )
-                );
-            }
-            $html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
-            $page_links[]     = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging' ), $html_current_page, $html_total_pages ) . $total_pages_after;
-
-            if ( $disable_next ) {
-                $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&rsaquo;</span>';
-            } else {
-                $page_links[] = sprintf(
-                    "<div class='next-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                    $current,
-                    __( 'Next page' ),
-                    '&rsaquo;'
-                );
-            }
-
-            if ( $disable_last ) {
-                $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&raquo;</span>';
-            } else {
-                $page_links[] = sprintf(
-                    "<div class='last-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                    __( 'Last page' ),
-                    '&raquo;'
-                );
-            }
-
-            $pagination_links_class = 'pagination-links';
-            if ( ! empty( $infinite_scroll ) ) {
-                $pagination_links_class .= ' hide-if-js';
-            }
-            $output .= "\n<span class='$pagination_links_class'>" . join( "\n", $page_links ) . '</span>';
-
-            if ( $total_pages ) {
-                $page_class = $total_pages < 2 ? ' one-page' : '';
-            } else {
-                $page_class = ' no-pages';
-            }
-            $this->_pagination = "<div class='tablenav-pages{$page_class}'>$output</div>";
-
-            echo $this->_pagination;
-        }
-
         protected function display_tablenav( $which ) {
             $css_type = '';
             if ( 'top' === $which ) {
@@ -293,7 +175,7 @@ if ( ! class_exists( 'WPvivid_Snapshots_List_Ex' ) )
             if ( $total_pages >1 && 'top' === $which)
             {
                 ?>
-                <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php esc_attr_e($css_type); ?>">
+                <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php echo esc_attr($css_type); ?>">
                     <input type="submit" id="wpvivid_delete_snapshots_action" class="button action" value="Delete the selected snapshots">
                     <?php
                     $this->extra_tablenav( $which );
@@ -307,7 +189,7 @@ if ( ! class_exists( 'WPvivid_Snapshots_List_Ex' ) )
             else if($total_pages >1)
             {
                 ?>
-                <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php esc_attr_e($css_type); ?>">
+                <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php echo esc_attr($css_type); ?>">
                     <?php
                     $this->extra_tablenav( $which );
                     $this->pagination( $which );
@@ -334,7 +216,7 @@ if ( ! class_exists( 'WPvivid_Snapshots_List_Ex' ) )
 
             $this->screen->render_screen_reader_content( 'heading_list' );
             ?>
-            <table class="wp-list-table <?php echo implode( ' ', $this->get_table_classes() ); ?>">
+            <table class="wp-list-table <?php echo esc_attr(implode( ' ', $this->get_table_classes() )); ?>">
                 <thead>
                 <tr>
                     <?php $this->print_column_headers(); ?>

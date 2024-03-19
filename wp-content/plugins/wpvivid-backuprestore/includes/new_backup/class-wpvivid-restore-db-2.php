@@ -205,6 +205,8 @@ class WPvivid_Restore_DB_2
 
     public function get_sql_file($path)
     {
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip=new WPvivid_ZipClass();
         return $zip->list_file($path);
     }
@@ -228,6 +230,9 @@ class WPvivid_Restore_DB_2
         if (!class_exists('WPvivid_PclZip'))
             include_once WPVIVID_PLUGIN_DIR . '/includes/zip/class-wpvivid-pclzip.php';
 
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
+
         if(!defined('PCLZIP_TEMPORARY_DIR'))
             define(PCLZIP_TEMPORARY_DIR,dirname($root_path));
 
@@ -250,6 +255,9 @@ class WPvivid_Restore_DB_2
     {
         if (!class_exists('WPvivid_PclZip'))
             include_once WPVIVID_PLUGIN_DIR . '/includes/zip/class-wpvivid-pclzip.php';
+
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
 
         if(!defined('PCLZIP_TEMPORARY_DIR'))
             define(PCLZIP_TEMPORARY_DIR,dirname($root_path));
@@ -1766,7 +1774,7 @@ class WPvivid_Restore_DB_2
         $ret['replace_row']=$current_row;
         $ret['max_replace_row']=$max_replace_row;
         $ret['current_replace_table_finish']=$replace_current_table_finish;
-        $this->log->WriteLog(json_encode($ret), 'notice');
+        $this->log->WriteLog(wp_json_encode($ret), 'notice');
         return $ret;
     }
 
@@ -2278,7 +2286,7 @@ class WPvivid_Restore_DB_2
             $tmp_sql_file=$local_path.$sql_file_name;
             if(file_exists($tmp_sql_file))
             {
-                @unlink($tmp_sql_file);
+                @wp_delete_file($tmp_sql_file);
             }
         }
 

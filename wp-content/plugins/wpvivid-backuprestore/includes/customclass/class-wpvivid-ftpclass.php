@@ -33,7 +33,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
     {
         ?>
         <div class="storage-providers" remote_type="ftp" onclick="select_remote_storage(event, 'storage_account_ftp');">
-            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/storage-ftp.png'); ?>" style="vertical-align:middle;"/><?php _e('FTP', 'wpvivid-backuprestore'); ?>
+            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/storage-ftp.png'); ?>" style="vertical-align:middle;"/><?php esc_html_e('FTP', 'wpvivid-backuprestore'); ?>
         </div>
         <?php
     }
@@ -42,7 +42,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
     {
         ?>
         <div id="storage_account_ftp" class="storage-account-page" style="display:none;">
-            <div style="padding: 0 10px 10px 0;"><strong><?php _e('Enter Your FTP Account', 'wpvivid-backuprestore'); ?></strong></div>
+            <div style="padding: 0 10px 10px 0;"><strong><?php esc_html_e('Enter Your FTP Account', 'wpvivid-backuprestore'); ?></strong></div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
                 <form>
@@ -54,7 +54,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -66,7 +66,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i style="margin-right: 10px;"><?php _e('Enter the FTP server.', 'wpvivid-backuprestore'); ?></i>
+                            <i style="margin-right: 10px;"><?php esc_html_e('Enter the FTP server.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -78,7 +78,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <a href="https://docs.wpvivid.com/wpvivid-backup-pro-ftp-change-ftp-default-port.html"><?php _e('Pro feature: Change the FTP default port number', 'wpvivid-backuprestore'); ?></a>
+                            <a href="https://docs.wpvivid.com/wpvivid-backup-pro-ftp-change-ftp-default-port.html"><?php esc_html_e('Pro feature: Change the FTP default port number', 'wpvivid-backuprestore'); ?></a>
                         </div>
                     </td>
                 </tr>
@@ -90,7 +90,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your FTP server user name.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter your FTP server user name.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -102,7 +102,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the FTP server password.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the FTP server password.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -114,7 +114,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter an absolute path and a custom subdirectory (optional) for holding the backups of current website. For example, /home/username/customfolder', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter an absolute path and a custom subdirectory (optional) for holding the backups of current website. For example, /home/username/customfolder', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -122,13 +122,13 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="ftp" name="default" checked /><?php _e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="ftp" name="default" checked /><?php esc_html_e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -136,13 +136,13 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="ftp" name="passive" checked /><?php _e('Uncheck this to enable FTP active mode.', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="ftp" name="passive" checked /><?php esc_html_e('Uncheck this to enable FTP active mode.', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Uncheck the option to use FTP active mode when transferring files. Make sure the FTP server you are configuring supports the active FTP mode.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Uncheck the option to use FTP active mode when transferring files. Make sure the FTP server you are configuring supports the active FTP mode.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -155,7 +155,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to connect to FTP server and add it to the storage list below.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Click the button to connect to FTP server and add it to the storage list below.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -169,7 +169,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
     {
         ?>
         <div id="remote_storage_edit_ftp" class="postbox storage-account-block remote-storage-edit" style="display:none;">
-            <div style="padding: 0 10px 10px 0;"><strong><?php _e('Enter Your FTP Account', 'wpvivid-backuprestore'); ?></strong></div>
+            <div style="padding: 0 10px 10px 0;"><strong><?php esc_html_e('Enter Your FTP Account', 'wpvivid-backuprestore'); ?></strong></div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
                 <form>
@@ -181,7 +181,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -193,7 +193,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i style="margin-right: 10px;"><?php _e('Enter the FTP server.', 'wpvivid-backuprestore'); ?></i>
+                            <i style="margin-right: 10px;"><?php esc_html_e('Enter the FTP server.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -205,7 +205,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter your FTP server user name.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter your FTP server user name.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -217,7 +217,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter the FTP server password.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter the FTP server password.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -229,7 +229,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Enter an absolute path and a custom subdirectory (optional) for holding the backups of current website. For example, /home/username/customfolder', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Enter an absolute path and a custom subdirectory (optional) for holding the backups of current website. For example, /home/username/customfolder', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -237,13 +237,13 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     <td class="plugin-title column-primary">
                         <div class="wpvivid-storage-select">
                             <label>
-                                <input type="checkbox" option="edit-ftp" name="passive" checked /><?php _e('Uncheck this to enable FTP active mode.', 'wpvivid-backuprestore'); ?>
+                                <input type="checkbox" option="edit-ftp" name="passive" checked /><?php esc_html_e('Uncheck this to enable FTP active mode.', 'wpvivid-backuprestore'); ?>
                             </label>
                         </div>
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Uncheck the option to use FTP active mode when transferring files. Make sure the FTP server you are configuring supports the active FTP mode.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Uncheck the option to use FTP active mode when transferring files. Make sure the FTP server you are configuring supports the active FTP mode.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -256,7 +256,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to save the changes.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('Click the button to save the changes.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -443,13 +443,13 @@ class WPvivid_FTPClass extends WPvivid_Remote{
                 return array('result'=>WPVIVID_FAILED,'error'=>'Failed to create a backup. Make sure you have sufficient privileges to perform the operation.');
             }*/
         }
-        $temp_file = md5(rand());
+        $temp_file = md5(wp_rand());
         $temp_path = trailingslashit(WP_CONTENT_DIR).WPvivid_Setting::get_backupdir().DIRECTORY_SEPARATOR.$temp_file;
         file_put_contents($temp_path,print_r($temp_file,true));
         if(! ftp_put($conn,trailingslashit($path).$temp_file,$temp_path,FTP_BINARY)){
             return array('result'=>WPVIVID_FAILED,'error'=>'Failed to add FTP storage. It can be because the FTP folder permissions are insufficient, or calling PHP ftp_put function of your web server failed. Please make sure the folder has write permission and the ftp_put function works properly.');
         }
-        @unlink($temp_path);
+        @wp_delete_file($temp_path);
         @ftp_delete($conn,trailingslashit($path).$temp_file);
         return array('result'=>WPVIVID_SUCCESS);
     }
@@ -634,7 +634,7 @@ class WPvivid_FTPClass extends WPvivid_Remote{
             }
 
             if ($status != FTP_FINISHED || $res !== TRUE) {
-                @unlink($local_path);
+                @wp_delete_file($local_path);
                 return array('result' => WPVIVID_FAILED, 'error' => 'Downloading ' . $remote_file . ' failed. ' . $remote_file . ' might be deleted or network doesn\'t work properly. Please verify the file and confirm the network connection and try again later.');
             }
 

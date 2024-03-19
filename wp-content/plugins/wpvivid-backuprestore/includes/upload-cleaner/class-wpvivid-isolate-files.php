@@ -270,7 +270,7 @@ class WPvivid_Isolate_Files
         $delete_media_when_delete_file=get_option('wpvivid_uc_delete_media_when_delete_file',false);
         foreach ($files as $file)
         {
-            @unlink($root.DIRECTORY_SEPARATOR.$file);
+            @wp_delete_file($root.DIRECTORY_SEPARATOR.$file);
 
             if($delete_media_when_delete_file)
             {
@@ -292,7 +292,7 @@ class WPvivid_Isolate_Files
         $delete_media_when_delete_file=get_option('wpvivid_uc_delete_media_when_delete_file',false);
         foreach ($files as $file)
         {
-            @unlink($root.DIRECTORY_SEPARATOR.$file['path']);
+            @wp_delete_file($root.DIRECTORY_SEPARATOR.$file['path']);
 
             if($delete_media_when_delete_file)
             {

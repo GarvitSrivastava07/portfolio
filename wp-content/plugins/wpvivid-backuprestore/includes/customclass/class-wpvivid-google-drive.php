@@ -81,7 +81,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                     $auth_id = uniqid('wpvivid-auth-');
                     $res = $this -> compare_php_version();
                     if($res['result'] == WPVIVID_FAILED){
-                        echo '<div class="notice notice-warning is-dismissible"><p>'.$res['error'].'</p></div>';
+                        echo '<div class="notice notice-warning is-dismissible"><p>'.esc_html($res['error']).'</p></div>';
                         return ;
                     }
                     try {
@@ -100,14 +100,14 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                     catch (Exception $e){
                         if($e->getMessage() === 'file does not exist'){
                             $error_msg = __('Authentication failed, the client_secrets.json file is missing. Please make sure the client_secrets.json file is in wpvivid-backuprestore\includes\customclass directory.', 'wpvivid-backuprestore');
-                            echo '<div class="notice notice-error"><p>'.$error_msg.'</p></div>';
+                            echo '<div class="notice notice-error"><p>'.esc_html($error_msg).'</p></div>';
                         }
                         else if($e->getMessage() === 'invalid json for auth config'){
                             $error_msg = __('Authentication failed, the format of the client_secrets.json file is incorrect. Please delete and re-install the plugin to recreate the file.', 'wpvivid-backuprestore');
-                            echo '<div class="notice notice-error"><p>'.$error_msg.'</p></div>';
+                            echo '<div class="notice notice-error"><p>'.esc_html($error_msg).'</p></div>';
                         }
                         else{
-                            echo '<div class="notice notice-error"><p>'.$e->getMessage().'</p></div>';
+                            echo '<div class="notice notice-error"><p>'.esc_html($e->getMessage()).'</p></div>';
                         }
                     }
                 }
@@ -126,7 +126,9 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                         {
                             if (isset($value['auth_id']) && isset($_GET['auth_id']) && $value['auth_id'] == sanitize_text_field($_GET['auth_id']))
                             {
-                                _e('<div class="notice notice-success is-dismissible"><p>You have authenticated the Google Drive account as your remote storage.</p></div>', 'wpvivid-backuprestore');
+                                echo '<div class="notice notice-success is-dismissible"><p>';
+                                esc_html_e('You have authenticated the Google Drive account as your remote storage.', 'wpvivid-backuprestore');
+                                echo '</p></div>';
                                 return;
                             }
                         }
@@ -170,7 +172,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                         }
                     }
                     catch (Exception $e){
-                        echo '<div class="notice notice-error"><p>'.$e->getMessage().'</p></div>';
+                        echo '<div class="notice notice-error"><p>'.esc_html($e->getMessage()).'</p></div>';
                     }
                 }
                 else if($_GET['action']=='wpvivid_google_drive')
@@ -185,7 +187,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                         }
                     }
                     catch (Exception $e){
-                        _e('<div class="notice notice-error"><p>'.$e->getMessage().'</p></div>');
+                        echo '<div class="notice notice-error"><p>'.esc_html($e->getMessage()).'</p></div>';
                     }
                 }
             }
@@ -193,7 +195,9 @@ class Wpvivid_Google_drive extends WPvivid_Remote
     }
 
     public function wpvivid_show_notice_add_google_drive_success(){
-        echo '<div class="notice notice-success is-dismissible"><p>'.__('You have authenticated the Google Drive account as your remote storage.', 'wpvivid-backuprestore').'</p></div>';
+        echo '<div class="notice notice-success is-dismissible"><p>';
+        esc_html_e('You have authenticated the Google Drive account as your remote storage.', 'wpvivid-backuprestore');
+        echo '</p></div>';
     }
     public function wpvivid_show_notice_add_google_drive_error(){
         global $wpvivid_plugin;
@@ -205,7 +209,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
     {
         ?>
         <div class="storage-providers storage-providers-active" remote_type="googledrive" onclick="select_remote_storage(event, 'storage_account_google_drive');">
-            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/stroage-google-drive.png'); ?>" style="vertical-align:middle;"/><?php _e('Google Drive', 'wpvivid-backuprestore'); ?>
+            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/stroage-google-drive.png'); ?>" style="vertical-align:middle;"/><?php esc_html_e('Google Drive', 'wpvivid-backuprestore'); ?>
         </div>
         <?php
     }
@@ -219,13 +223,13 @@ class Wpvivid_Google_drive extends WPvivid_Remote
             ?>
             <div id="storage_account_google_drive" class="storage-account-page">
                 <div style="background-color:#f1f1f1; padding: 10px;">
-                    <?php _e('Please read <a target="_blank" href="https://wpvivid.com/privacy-policy" style="text-decoration: none;">this privacy policy</a> for use of our Google Drive authorization app (none of your backup data is sent to us).', 'wpvivid-backuprestore'); ?>
+                    <?php esc_html_e('Please read <a target="_blank" href="https://wpvivid.com/privacy-policy" style="text-decoration: none;">this privacy policy</a> for use of our Google Drive authorization app (none of your backup data is sent to us).', 'wpvivid-backuprestore'); ?>
                 </div>
                 <div style="color:#8bc34a; padding: 10px 10px 10px 0;">
                     <strong>Authentication is done, please continue to enter the storage information, then click 'Add Now' button to save it.</strong>
                 </div>
                 <div style="padding: 10px 10px 10px 0;">
-                    <strong><?php _e('Enter Your Google Drive Information', 'wpvivid-backuprestore'); ?></strong>
+                    <strong><?php esc_html_e('Enter Your Google Drive Information', 'wpvivid-backuprestore'); ?></strong>
                 </div>
                 <table class="wp-list-table widefat plugins" style="width:100%;">
                     <tbody>
@@ -237,19 +241,19 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                         </td>
                         <td class="column-description desc">
                             <div class="wpvivid-storage-form-desc">
-                                <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                                <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td class="plugin-title column-primary">
                             <div class="wpvivid-storage-form">
-                                <input type="text" class="regular-text" autocomplete="off" name="path" value="<?php esc_attr_e($root_path.WPVIVID_GOOGLEDRIVE_DEFAULT_FOLDER); ?>" readonly="readonly" />
+                                <input type="text" class="regular-text" autocomplete="off" name="path" value="<?php echo esc_attr($root_path.WPVIVID_GOOGLEDRIVE_DEFAULT_FOLDER); ?>" readonly="readonly" />
                             </div>
                         </td>
                         <td class="column-description desc">
                             <div class="wpvivid-storage-form-desc">
-                                <i><?php _e('All backups will be uploaded to this directory.', 'wpvivid-backuprestore'); ?></i>
+                                <i><?php esc_html_e('All backups will be uploaded to this directory.', 'wpvivid-backuprestore'); ?></i>
                             </div>
                         </td>
                     </tr>
@@ -261,7 +265,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                         </td>
                         <td class="column-description desc">
                             <div class="wpvivid-storage-form-desc">
-                                <a href="https://docs.wpvivid.com/wpvivid-backup-pro-google-drive-custom-folder-name.html"><?php _e('Pro feature: Create a directory for storing the backups of the site', 'wpvivid-backuprestore'); ?></a>
+                                <a href="https://docs.wpvivid.com/wpvivid-backup-pro-google-drive-custom-folder-name.html"><?php esc_html_e('Pro feature: Create a directory for storing the backups of the site', 'wpvivid-backuprestore'); ?></a>
                             </div>
                         </td>
                     </tr>
@@ -269,13 +273,13 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                         <td class="plugin-title column-primary">
                             <div class="wpvivid-storage-select">
                                 <label>
-                                    <input type="checkbox" option="googledrive" name="default" checked /><?php _e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
+                                    <input type="checkbox" option="googledrive" name="default" checked /><?php esc_html_e('Set as the default remote storage.', 'wpvivid-backuprestore'); ?>
                                 </label>
                             </div>
                         </td>
                         <td class="column-description desc">
                             <div class="wpvivid-storage-form-desc">
-                                <i><?php _e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
+                                <i><?php esc_html_e('Once checked, all this sites backups sent to a remote storage destination will be uploaded to this storage by default.', 'wpvivid-backuprestore'); ?></i>
                             </div>
                         </td>
                     </tr>
@@ -287,7 +291,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                         </td>
                         <td class="column-description desc">
                             <div class="wpvivid-storage-form-desc">
-                                <i><?php _e('Click the button to add the storage.', 'wpvivid-backuprestore'); ?></i>
+                                <i><?php esc_html_e('Click the button to add the storage.', 'wpvivid-backuprestore'); ?></i>
                             </div>
                         </td>
                     </tr>
@@ -401,10 +405,10 @@ class Wpvivid_Google_drive extends WPvivid_Remote
             ?>
             <div id="storage_account_google_drive" class="storage-account-page">
                 <div style="background-color:#f1f1f1; padding: 10px;">
-                    <?php _e('Please read <a target="_blank" href="https://wpvivid.com/privacy-policy" style="text-decoration: none;">this privacy policy</a> for use of our Google Drive authorization app (none of your backup data is sent to us).', 'wpvivid-backuprestore'); ?>
+                    Please read <a target="_blank" href="https://wpvivid.com/privacy-policy" style="text-decoration: none;">this privacy policy</a> for use of our Google Drive authorization app (none of your backup data is sent to us).
                 </div>
                 <div style="padding: 10px 10px 10px 0;">
-                    <strong><?php _e('To add Google Drive, please get Google authentication first. Once authenticated, you will be redirected to this page, then you can add storage information and save it', 'wpvivid-backuprestore'); ?></strong>
+                    <strong><?php esc_html_e('To add Google Drive, please get Google authentication first. Once authenticated, you will be redirected to this page, then you can add storage information and save it', 'wpvivid-backuprestore'); ?></strong>
                 </div>
                 <table class="wp-list-table widefat plugins" style="width:100%;">
                     <tbody>
@@ -416,7 +420,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                         </td>
                         <td class="column-description desc">
                             <div class="wpvivid-storage-form-desc">
-                                <i><?php _e('Click to get Google authentication.', 'wpvivid-backuprestore'); ?></i>
+                                <i><?php esc_html_e('Click to get Google authentication.', 'wpvivid-backuprestore'); ?></i>
                             </div>
                         </td>
                     </tr>
@@ -429,7 +433,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
             <script>
                 function wpvivid_google_drive_auth()
                 {
-                    location.href = '<?php echo admin_url() . 'admin.php?page=WPvivid' . '&action=wpvivid_google_drive_auth'?>';
+                    location.href = '<?php echo esc_url(admin_url()) . 'admin.php?page=WPvivid' . '&action=wpvivid_google_drive_auth'?>';
                 }
             </script>
             <?php
@@ -442,7 +446,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
         ?>
         <div id="remote_storage_edit_googledrive" class="postbox storage-account-block remote-storage-edit" style="display:none;">
             <div style="padding: 0 10px 10px 0;">
-                <strong><?php _e('Enter Your Google Drive Information', 'wpvivid-backuprestore'); ?></strong>
+                <strong><?php esc_html_e('Enter Your Google Drive Information', 'wpvivid-backuprestore'); ?></strong>
             </div>
             <table class="wp-list-table widefat plugins" style="width:100%;">
                 <tbody>
@@ -454,7 +458,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
+                            <i><?php esc_html_e('A name to help you identify the storage if you have multiple remote storage connected.', 'wpvivid-backuprestore'); ?></i>
                         </div>
                     </td>
                 </tr>
@@ -466,7 +470,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                     </td>
                     <td class="column-description desc">
                         <div class="wpvivid-storage-form-desc">
-                            <i><?php _e('Click the button to save the changes.', 'wpvivid-backuprestore');?></i>
+                            <i><?php esc_html_e('Click the button to save the changes.', 'wpvivid-backuprestore');?></i>
                         </div>
                     </td>
                 </tr>
@@ -493,7 +497,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                     alert(wpvividlion.remoteexist);
                 }
                 else {
-                    location.href = '<?php echo admin_url() . 'admin.php?page=WPvivid' . '&action=wpvivid_google_drive_update_auth&name='?>' + name + '&id=' + wpvivid_editing_storage_id;
+                    location.href = '<?php echo esc_url(admin_url()) . 'admin.php?page=WPvivid' . '&action=wpvivid_google_drive_update_auth&name='?>' + name + '&id=' + wpvivid_editing_storage_id;
                 }
             }
         </script>
@@ -662,7 +666,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                 }
 
                 $remote_options=WPvivid_Setting::get_remote_option($this->options['id']);
-                $this->options['token']=json_decode(json_encode($token),1);
+                $this->options['token']=json_decode(wp_json_encode($token),1);
                 if($remote_options!==false)
                 {
                     if(!isset($this->options['token']['refresh_token'])){
@@ -802,7 +806,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
             $retry_times++;
             fclose($handle);
             $client->setDefer(false);
-            $message = 'A exception ('.get_class($e).') occurred '.$e->getMessage().' (Code: '.$e->getCode().', line '.$e->getLine().' in '.$e->getFile().') ';
+            $message = 'A exception ('.get_class($e).') occurred '.esc_html($e->getMessage()).' (Code: '.$e->getCode().', line '.$e->getLine().' in '.$e->getFile().') ';
             if($retry_times < 15)
             {
                 $wpvivid_plugin->wpvivid_log->WriteLog('Upload Google_Service_Exception, '.$message.', retry times: '.$retry_times,'notice');
@@ -868,7 +872,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                     }
                 }
 
-                $this->options['token']=json_decode(json_encode($token),1);
+                $this->options['token']=json_decode(wp_json_encode($token),1);
                 if(!isset($this->options['token']['refresh_token'])){
                     $this->options['token']['refresh_token'] = $tmp_refresh_token;
                 }
@@ -1185,7 +1189,7 @@ class Wpvivid_Google_drive extends WPvivid_Remote
                 die();
             }
 
-            $json = $_POST['remote'];
+            $json = sanitize_text_field($_POST['remote']);
             $json = stripslashes($json);
             $remote_options = json_decode($json, true);
             if (is_null($remote_options)) {
@@ -1194,7 +1198,11 @@ class Wpvivid_Google_drive extends WPvivid_Remote
 
             $remote_options['path'] = WPVIVID_GOOGLEDRIVE_DEFAULT_FOLDER;
             $remote_options=array_merge($remote_options,$tmp_remote_options);
-
+            if(!class_exists('WPvivid_Remote_collection'))
+            {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
+                $wpvivid_plugin->remote_collection=new WPvivid_Remote_collection();
+            }
             $ret = $wpvivid_plugin->remote_collection->add_remote($remote_options);
 
             if ($ret['result'] == 'success') {
@@ -1230,10 +1238,10 @@ class Wpvivid_Google_drive extends WPvivid_Remote
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 }

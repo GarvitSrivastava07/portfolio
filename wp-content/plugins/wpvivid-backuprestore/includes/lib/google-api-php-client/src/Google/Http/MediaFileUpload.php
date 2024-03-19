@@ -334,7 +334,7 @@ class Google_Http_MediaFileUpload
     $error = "Failed to start the resumable upload (HTTP {$message})";
     $this->client->getLogger()->error($error);
 
-    throw new Google_Exception($error);
+    throw new Google_Exception(esc_html($error));
   }
 
   private function transformToUploadUrl()

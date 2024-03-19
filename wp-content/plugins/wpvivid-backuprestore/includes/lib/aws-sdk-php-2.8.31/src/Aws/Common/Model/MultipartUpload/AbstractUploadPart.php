@@ -94,7 +94,7 @@ abstract class AbstractUploadPart implements UploadPartInterface
             if (isset($data[$key])) {
                 $this->{$property} = $data[$key];
             } else {
-                throw new InvalidArgumentException("A required key [$key] was missing from the upload part.");
+                throw new InvalidArgumentException(esc_html("A required key [$key] was missing from the upload part."));
             }
         }
     }

@@ -14,7 +14,7 @@ require_once WPVIVID_PLUGIN_DIR . '/includes/customclass/class-wpvivid-google-dr
 require_once WPVIVID_PLUGIN_DIR . '/includes/customclass/class-wpvivid-dropbox.php';
 require_once WPVIVID_PLUGIN_DIR . '/includes/customclass/class-wpvivid-one-drive.php';
 require_once WPVIVID_PLUGIN_DIR . '/includes/customclass/class-wpvivid-s3compat.php';
-require_once WPVIVID_PLUGIN_DIR . '/includes/customclass/class-wpvivid-send-to-site.php';
+
 
 class WPvivid_Remote_collection
 {

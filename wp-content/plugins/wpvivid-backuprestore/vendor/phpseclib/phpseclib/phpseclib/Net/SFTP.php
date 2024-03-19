@@ -291,6 +291,10 @@ class Net_SFTP extends Net_SSH2
      */
     var $canonicalize_paths = true;
 
+    var $file_types = array();
+    var $attributes = array();
+    var $open_flags = array();
+
     /**
      * Default Constructor.
      *

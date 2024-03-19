@@ -201,7 +201,7 @@ class SignatureV4 extends AbstractSignature implements EndpointSignatureInterfac
     {
         if ($request->getMethod() !== 'POST') {
             throw new \InvalidArgumentException('Expected a POST request but '
-                . 'received a ' . $request->getMethod() . ' request.');
+                . 'received a ' . esc_html($request->getMethod()) . ' request.');
         }
 
         $cloned = RequestFactory::getInstance()

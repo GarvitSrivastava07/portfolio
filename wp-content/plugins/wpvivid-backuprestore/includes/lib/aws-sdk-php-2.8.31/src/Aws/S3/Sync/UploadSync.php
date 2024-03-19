@@ -42,7 +42,7 @@ class UploadSync extends AbstractSync
 
         if (!($resource = fopen($filename, 'r'))) {
             // @codeCoverageIgnoreStart
-            throw new RuntimeException('Could not open ' . $file->getPathname() . ' for reading');
+            throw new RuntimeException('Could not open ' . esc_html($file->getPathname()) . ' for reading');
             // @codeCoverageIgnoreEnd
         }
 

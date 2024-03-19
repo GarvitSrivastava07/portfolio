@@ -83,7 +83,7 @@ class DownloadSyncBuilder extends AbstractSyncBuilder
 
         if (!is_dir($this->directory) && !mkdir($this->directory, 0777, true)) {
             // @codeCoverageIgnoreStart
-            throw new RuntimeException('Unable to create root download directory: ' . $this->directory);
+            throw new RuntimeException('Unable to create root download directory: ' . esc_html($this->directory));
             // @codeCoverageIgnoreEnd
         }
 

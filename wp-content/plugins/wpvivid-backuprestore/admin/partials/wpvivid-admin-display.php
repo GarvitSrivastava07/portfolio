@@ -16,8 +16,6 @@ include_once WPVIVID_PLUGIN_DIR .'/admin/partials/wpvivid-remote-storage-page-di
 include_once WPVIVID_PLUGIN_DIR .'/admin/partials/wpvivid-settings-page-display.php';
 include_once WPVIVID_PLUGIN_DIR .'/admin/partials/wpvivid-schedule-page-display.php';
 include_once WPVIVID_PLUGIN_DIR .'/admin/partials/wpvivid-website-info-page-display.php';
-include_once WPVIVID_PLUGIN_DIR .'/admin/partials/wpvivid-logs-page-display.php';
-include_once WPVIVID_PLUGIN_DIR .'/admin/partials/wpvivid-log-read-page-display.php';
 
 if (!defined('WPVIVID_PLUGIN_DIR'))
 {
@@ -46,7 +44,7 @@ foreach ($page_array as $page_name){
     <h1><?php
         $plugin_display_name = 'WPvivid Backup Plugin';
         $plugin_display_name = apply_filters('wpvivid_display_pro_name', $plugin_display_name);
-        echo __('WPvivid Backup Plugin', 'wpvivid-backuprestore');
+        esc_html_e('WPvivid Backup Plugin', 'wpvivid-backuprestore');
         ?></h1>
     <div id="wpvivid_backup_notice">
         <?php
@@ -60,7 +58,9 @@ foreach ($page_array as $page_name){
                     $default_remote_storage=$value;
                 }
                 if($default_remote_storage == ''){
-                    echo '<div class="notice notice-warning is-dismissible"><p>'.__('Warning: There is no default remote storage available for the scheduled backups, please set up it first.', 'wpvivid-backuprestore').'</p></div>';
+                    echo '<div class="notice notice-warning is-dismissible"><p>';
+                    esc_html_e('Warning: There is no default remote storage available for the scheduled backups, please set up it first.', 'wpvivid-backuprestore');
+                    echo '</p></div>';
                 }
             }
         }
@@ -269,7 +269,10 @@ foreach ($page_array as $page_name){
                     {
                         if($sub_page === 'storage_account_google_drive' || $sub_page === 'storage_account_dropbox' || $sub_page === 'storage_account_one_drive')
                         {
-                            echo "switchstorageTabs('$sub_tab','$sub_page');";
+                            ?>
+                            switchstorageTabs('<?php echo esc_attr($sub_tab); ?>','<?php echo esc_attr($sub_page) ?>');
+                            <?php
+
                         }
                     }
                 }

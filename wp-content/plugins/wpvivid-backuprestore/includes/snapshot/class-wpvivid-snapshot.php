@@ -245,7 +245,7 @@ class WPvivid_Snapshot_Ex
             <div id="wpvivid_quick_snapshot_message_box" style="padding:20px 0;">
                 <p style="text-align:center;font-size:24px;">
                     <span id="wpvivid_quick_snapshot_message">Are you sure you want to create a snapshot now?</span>
-                    <span id="wpvivid_quick_snapshot_loading"><img src="<?php echo admin_url().'/images/loading.gif'; ?>"></span>
+                    <span id="wpvivid_quick_snapshot_loading"><img src="<?php echo esc_url(admin_url()).'/images/loading.gif'; ?>"></span>
                 </p>
                 <p style="text-align:center;" id="wpvivid_quick_create_snapshot_comment_box">
                     <span class="dashicons dashicons-welcome-write-blog wpvivid-dashicons-green" style="margin-top:0.2em;"></span>
@@ -527,7 +527,7 @@ class WPvivid_Snapshot_Ex
         $this->options->check_tables();
         ?>
         <div class="wrap" style="max-width:1720px;">
-            <h1><?php esc_attr_e( apply_filters('wpvivid_white_label_display', 'WPvivid').' Plugins - Snapshots', 'wpvivid' ); ?></h1>
+            <h1><?php echo esc_html( apply_filters('wpvivid_white_label_display', 'WPvivid').' Plugins - Snapshots'); ?></h1>
 
             <?php
             if(!class_exists('WPvivid_Tab_Page_Container'))
@@ -550,7 +550,7 @@ class WPvivid_Snapshot_Ex
         ?>
         <div class="wrap wpvivid-canvas">
             <div class="icon32"></div>
-            <h1><?php esc_attr_e( apply_filters('wpvivid_white_label_display', 'WPvivid').' Plugins - Snapshots', 'wpvivid' ); ?></h1>
+            <h1><?php echo esc_html( apply_filters('wpvivid_white_label_display', 'WPvivid').' Plugins - Snapshots' ); ?></h1>
             <div id="wpvivid_backup_notice"></div>
             <div id="poststuff">
                 <div id="post-body" class="metabox-holder columns-2">
@@ -617,10 +617,10 @@ class WPvivid_Snapshot_Ex
                 <div style="float:right;">
                     <span>Local Time:</span>
                     <span>
-                        <a href="<?php esc_attr_e(apply_filters('wpvivid_get_admin_url', '').'options-general.php'); ?>">
+                        <a href="<?php echo esc_attr(apply_filters('wpvivid_get_admin_url', '').'options-general.php'); ?>">
                             <?php
                             $offset=get_option('gmt_offset');
-                            echo esc_html(date("l, F-d-Y H:i",time()+$offset*60*60));
+                            echo esc_html(gmdate("l, F-d-Y H:i",time()+$offset*60*60));
                             ?>
                         </a>
                     </span>
@@ -896,7 +896,7 @@ class WPvivid_Snapshot_Ex
                 var Obj=jQuery(this);
                 var snapshot_id=Obj.closest('tr').attr('slug');
 
-                var descript = '<?php _e('Are you sure you want to restore this snapshot?', 'wpvivid'); ?>';
+                var descript = '<?php esc_html_e('Are you sure you want to restore this snapshot?', 'wpvivid'); ?>';
                 var ret = confirm(descript);
                 if (ret === true)
                 {
@@ -991,7 +991,7 @@ class WPvivid_Snapshot_Ex
                 var Obj=jQuery(this);
                 var snapshot_id=Obj.closest('tr').attr('slug');
 
-                var descript = '<?php _e('Are you sure you want to delete this snapshot?', 'wpvivid'); ?>';
+                var descript = '<?php esc_html_e('Are you sure you want to delete this snapshot?', 'wpvivid'); ?>';
                 var ret = confirm(descript);
                 if (ret === true)
                 {
@@ -1037,11 +1037,11 @@ class WPvivid_Snapshot_Ex
                 });
                 if( count === 0 )
                 {
-                    alert('<?php _e('Please select at least one item.','wpvivid'); ?>');
+                    alert('<?php esc_html_e('Please select at least one item.','wpvivid'); ?>');
                 }
                 else
                 {
-                    var descript = '<?php _e('Are you sure to delete the selected snapshots? These snapshots will be deleted permanently.', 'wpvivid'); ?>';
+                    var descript = '<?php esc_html_e('Are you sure to delete the selected snapshots? These snapshots will be deleted permanently.', 'wpvivid'); ?>';
 
                     var ret = confirm(descript);
                     if (ret === true)
@@ -1144,7 +1144,7 @@ class WPvivid_Snapshot_Ex
                         <p>
                             <label class="wpvivid-checkbox">
                                 <span>Enable Quick Snapshot</span>
-                                <input type="checkbox" option="setting" name="quick_snapshot" <?php esc_attr_e($quick_snapshot); ?> />
+                                <input type="checkbox" option="setting" name="quick_snapshot" <?php echo esc_attr($quick_snapshot); ?> />
                                 <span class="wpvivid-checkbox-checkmark"></span>
                             </label>
                         </p>
@@ -1252,7 +1252,13 @@ class WPvivid_Snapshot_Ex
 
     public function create_snapshot()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         if(isset($_POST['comment'])&&!empty($_POST['comment']))
         {
@@ -1282,13 +1288,19 @@ class WPvivid_Snapshot_Ex
             }
         }
 
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
     public function get_snapshot_progress()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         set_time_limit(300);
         $snapshot=new WPvivid_Snapshot_Function_Ex();
@@ -1297,13 +1309,19 @@ class WPvivid_Snapshot_Ex
         $ret['progress'] = '<p><span class="wpvivid-span-progress"><span class="wpvivid-span-processed-progress wpvivid-span-processed-percent-progress" style="width:'.$progress['main_percent'].'">'.$progress['main_percent'].' completed</span></span></p>         
                                      <p><span class="dashicons dashicons-welcome-write-blog wpvivid-dashicons-grey"></span><span>Action:</span><span>'.$progress['doing'].'</span></p>';
 
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
     public function resume_create_snapshot()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         set_time_limit(300);
         $snapshot=new WPvivid_Snapshot_Function_Ex();
@@ -1324,13 +1342,19 @@ class WPvivid_Snapshot_Ex
             }
         }
 
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
     public function restore_snapshot()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         if(isset($_POST['id']))
         {
@@ -1344,7 +1368,7 @@ class WPvivid_Snapshot_Ex
                 $ret['progress'] = '<p><span class="wpvivid-span-progress"><span class="wpvivid-span-processed-progress wpvivid-span-processed-percent-progress" style="width:100%">100% completed</span></span></p>         
                                      <p><span class="dashicons dashicons-welcome-write-blog wpvivid-dashicons-grey"></span><span>Action:</span><span>Restoring the snapshot completed.</span></p>';
             }
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
 
         die();
@@ -1352,7 +1376,13 @@ class WPvivid_Snapshot_Ex
 
     public function get_restore_snapshot_status()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         set_time_limit(300);
         $snapshot=new WPvivid_Snapshot_Function_Ex();
@@ -1384,13 +1414,19 @@ class WPvivid_Snapshot_Ex
             $ret['finished']=$finished;
         }
 
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
     public function delete_snapshot()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         if(isset($_POST['id']))
         {
@@ -1411,7 +1447,7 @@ class WPvivid_Snapshot_Ex
                 $ret['html']=$html;
             }
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         die();
     }
@@ -1449,7 +1485,13 @@ class WPvivid_Snapshot_Ex
 
     public function set_setting()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         if(isset($_POST['setting'])&&!empty($_POST['setting']))
         {
@@ -1460,7 +1502,7 @@ class WPvivid_Snapshot_Ex
             {
                 $ret['result']='failed';
                 $ret['error']='json decode failed';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -1483,7 +1525,7 @@ class WPvivid_Snapshot_Ex
             $this->options->update_option('wpvivid_snapshot_setting',$old_setting);
         }
         $ret['result']='success';
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
@@ -1501,36 +1543,36 @@ class WPvivid_Snapshot_Ex
         ?>
         <div class="postbox">
             <h2>
-                <div style="float: left; margin-right: 5px;"><span style="margin: 0; padding: 0"><?php _e('Current Version: ', 'wpvivid-backuprestore'); ?><?php echo $wpvivid_snapshot_version; ?></span></div>
+                <div style="float: left; margin-right: 5px;"><span style="margin: 0; padding: 0"><?php esc_html_e('Current Version: ', 'wpvivid-backuprestore'); ?><?php echo esc_html($wpvivid_snapshot_version); ?></span></div>
                 <div style="float: left; margin-right: 5px;"><span style="margin: 0; padding: 0">|</span></div>
                 <div style="float: left; margin-left: 0;">
-                    <span style="margin: 0; padding: 0"><a href="https://wordpress.org/plugins/wpvivid-snapshot-database/#developers" target="_blank" style="text-decoration: none;"><?php _e('ChangeLog', 'wpvivid-backuprestore'); ?></a></span>
+                    <span style="margin: 0; padding: 0"><a href="https://wordpress.org/plugins/wpvivid-snapshot-database/#developers" target="_blank" style="text-decoration: none;"><?php esc_html_e('ChangeLog', 'wpvivid-backuprestore'); ?></a></span>
                 </div>
                 <div style="clear: both;"></div>
             </h2>
         </div>
         <div id="wpvivid_backup_schedule_part"></div>
         <div class="postbox">
-            <h2><span><?php _e('Troubleshooting', 'wpvivid-backuprestore'); ?></span></h2>
+            <h2><span><?php esc_html_e('Troubleshooting', 'wpvivid-backuprestore'); ?></span></h2>
             <div class="inside">
                 <table class="widefat" cellpadding="0">
                     <tbody>
                     <tr class="alternate">
-                        <td class="row-title"><?php _e('<a href="https://docs.wpvivid.com/wpvivid-database-snapshots-create-database-snapshots-wordpress.html" target="_blank">Create Database Snapshots</a>', 'wpvivid-backuprestore'); ?></td>
+                        <td class="row-title"><a href="https://docs.wpvivid.com/wpvivid-database-snapshots-create-database-snapshots-wordpress.html" target="_blank"><?php esc_html_e('Create Database Snapshots', 'wpvivid-backuprestore'); ?></a></td>
                     </tr>
                     <tr>
-                        <td class="row-title"><?php _e('<a href="https://docs.wpvivid.com/wpvivid-database-snapshots-restore-database-snapshots-wordpress.html" target="_blank">Restore Database Snapshots</a>', 'wpvivid-backuprestore'); ?></td>
+                        <td class="row-title"><a href="https://docs.wpvivid.com/wpvivid-database-snapshots-restore-database-snapshots-wordpress.html" target="_blank"><?php esc_html_e('Restore Database Snapshots', 'wpvivid-backuprestore'); ?></a></td>
                     </tr>
                     </tbody>
                 </table>
             </div>
         </div>
         <div class="postbox">
-            <h2><span><?php _e('Support', 'wpvivid-backuprestore'); ?></span></h2>
+            <h2><span><?php esc_html_e('Support', 'wpvivid-backuprestore'); ?></span></h2>
             <div class="inside">
                 <table class="widefat" cellpadding="0">
                     <tbody>
-                    <tr class="alternate"><td class="row-title"><a href="https://wordpress.org/support/plugin/wpvivid-snapshot-database" target="_blank"><?php _e('Get Support on Forum', 'wpvivid-backuprestore'); ?></a></td></tr>
+                    <tr class="alternate"><td class="row-title"><a href="https://wordpress.org/support/plugin/wpvivid-snapshot-database" target="_blank"><?php esc_html_e('Get Support on Forum', 'wpvivid-backuprestore'); ?></a></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1555,12 +1597,12 @@ class WPvivid_Snapshot_Ex
                             <ul class="" >
                                 <li>
                                     <span class="dashicons dashicons-camera-alt wpvivid-dashicons-grey"></span>
-                                    <a href="https://docs.wpvivid.com/wpvivid-database-snapshots-create-database-snapshots-wordpress.html"><b><?php _e('Create Database Snapshots', 'wpvivid'); ?></b></a>
+                                    <a href="https://docs.wpvivid.com/wpvivid-database-snapshots-create-database-snapshots-wordpress.html"><b><?php esc_html_e('Create Database Snapshots', 'wpvivid'); ?></b></a>
                                     <small><span style="float: right;"><a href="#" style="text-decoration: none;"><span class="dashicons dashicons-migrate wpvivid-dashicons-grey"></span></a></span></small><br>
                                 </li>
                                 <li>
                                     <span class="dashicons dashicons-camera-alt wpvivid-dashicons-grey"></span>
-                                    <a href="https://docs.wpvivid.com/wpvivid-database-snapshots-restore-database-snapshots-wordpress.html"><b><?php _e('Restore Database Snapshots', 'wpvivid'); ?></b></a>
+                                    <a href="https://docs.wpvivid.com/wpvivid-database-snapshots-restore-database-snapshots-wordpress.html"><b><?php esc_html_e('Restore Database Snapshots', 'wpvivid'); ?></b></a>
                                     <small><span style="float: right;"><a href="#" style="text-decoration: none;"><span class="dashicons dashicons-migrate wpvivid-dashicons-grey"></span></a></span></small><br>
                                 </li>
                             </ul>
@@ -1572,9 +1614,9 @@ class WPvivid_Snapshot_Ex
                         <div class="inside">
                             <ul class="">
                                 <li><span class="dashicons dashicons-admin-comments wpvivid-dashicons-green"></span>
-                                    <a href="https://wordpress.org/support/plugin/snapshot-database/"><b><?php _e('Get Support on Forum', 'wpvivid'); ?></b></a>
+                                    <a href="https://wordpress.org/support/plugin/snapshot-database/"><b><?php esc_html_e('Get Support on Forum', 'wpvivid'); ?></b></a>
                                     <br>
-                                    <?php _e('If you need any help with our plugin, start a thread on the plugin support forum and we will respond shortly.', 'wpvivid'); ?>
+                                    <?php esc_html_e('If you need any help with our plugin, start a thread on the plugin support forum and we will respond shortly.', 'wpvivid'); ?>
                                 </li>
                             </ul>
 

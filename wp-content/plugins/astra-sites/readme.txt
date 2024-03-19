@@ -5,7 +5,7 @@ Tags: Elementor,Beaver Builder,Templates,Gutenberg,Block Editor,Astra Starter Si
 Requires at least: 4.4
 Requires PHP: 7.4
 Tested up to: 6.4
-Stable tag: 4.0.13
+Stable tag: 4.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -134,6 +134,13 @@ We are open to suggestions and would love to work on topics that our users are l
 8. Free Images by Pixabay right inside the WordPress media popup.
 
 == Changelog ==
+
+v4.1.0 - 19-March-2024
+- New: Introduced local language support in AI building.
+- New: Added an upload image feature when selecting images for your site.
+- Improvement: Enhanced AI building for a better user experience.
+- Improvement: Consolidated Logo, Font, and Color Palette support into one screen on the Classic Builder.
+- Improvement: Enhanced and optimised code for an improved user experience.
 
 v4.0.13 - 21-February-2024
 - Fix: Resolved an issue where the AI description won't get generated on WordPress.com sites.

@@ -152,10 +152,10 @@ class WPvivid_Schedule
             $weekly_start_time = $weekly_tmp;
         }
 
-        $date_now = date("Y-m-",time());
+        $date_now = gmdate("Y-m-",time());
         $monthly_tmp = $date_now.$day.' '.$current_day;
         if(strtotime('now')>strtotime($monthly_tmp)){
-            $date_now = date("Y-m-",strtotime('+1 month'));
+            $date_now = gmdate("Y-m-",strtotime('+1 month'));
             $monthly_start_time = $date_now.$day.' '.$current_day;
         }
         else{

@@ -88,7 +88,7 @@ class UploadBodyListener implements EventSubscriberInterface
                 $command->remove($this->sourceParameter);
                 $command->set($this->bodyParameter, EntityBody::factory($body));
             } else {
-                throw new InvalidArgumentException("You must specify a non-null value for the {$this->bodyParameter} or {$this->sourceParameter} parameters.");
+                throw new InvalidArgumentException(esc_html("You must specify a non-null value for the {$this->bodyParameter} or {$this->sourceParameter} parameters."));
             }
         }
     }

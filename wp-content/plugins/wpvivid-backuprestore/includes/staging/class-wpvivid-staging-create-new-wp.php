@@ -71,8 +71,8 @@ class WPvivid_Staging_Install_Wordpress_Free
             remove_all_actions($hook_name);
         }
 
-        $result = @wp_install($title, $username, $email, 0, '', md5(rand()));
-        $wpvivid_plugin->staging->log->WriteLog(json_encode($result), 'notice');
+        $result = @wp_install($title, $username, $email, 0, '', md5(wp_rand()));
+        $wpvivid_plugin->staging->log->WriteLog(wp_json_encode($result), 'notice');
         $user_id = $result['user_id'];
 
         $db_field = 'ID';
@@ -85,7 +85,7 @@ class WPvivid_Staging_Install_Wordpress_Free
         ) )
         {
             $wpvivid_plugin->staging->log->WriteLog('User not create ,so we create it.', 'notice');
-            $user_id       = wp_create_user( $username, md5(rand()), $email );
+            $user_id       = wp_create_user( $username, md5(wp_rand()), $email );
             update_user_option( $user_id, 'default_password_nag', true, true );
         }
 

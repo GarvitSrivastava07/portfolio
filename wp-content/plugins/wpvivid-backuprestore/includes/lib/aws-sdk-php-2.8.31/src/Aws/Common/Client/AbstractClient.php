@@ -121,7 +121,7 @@ abstract class AbstractClient extends Client implements AwsClientInterface
             ));
             return $result['endpoint'];
         } catch (\InvalidArgumentException $e) {
-            throw new InvalidArgumentException($e->getMessage(), 0, $e);
+            throw new InvalidArgumentException(esc_html($e->getMessage()), 0, esc_attr($e));
         }
     }
 

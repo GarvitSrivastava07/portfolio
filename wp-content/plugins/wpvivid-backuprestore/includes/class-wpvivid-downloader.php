@@ -71,7 +71,7 @@ class WPvivid_downloader
             {
                 if(filesize($local_file)>$file_info['size'])
                 {
-                    @unlink($local_file);
+                    @wp_delete_file($local_file);
                 }
                 $need_download_files[$file_info['file_name']]=$file_info;
             }
@@ -125,6 +125,11 @@ class WPvivid_downloader
 
         global $wpvivid_plugin;
 
+        if(!class_exists('WPvivid_Remote_collection'))
+        {
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
+            $wpvivid_plugin->remote_collection=new WPvivid_Remote_collection();
+        }
         $remote=$wpvivid_plugin->remote_collection->get_remote($remote_option);
 
         $ret=$remote->download($file,$local_path,array($this,'download_callback_v2'));
@@ -176,6 +181,11 @@ class WPvivid_downloader
 
         @set_time_limit(60);
 
+        if(!class_exists('WPvivid_Remote_collection'))
+        {
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
+            $wpvivid_plugin->remote_collection=new WPvivid_Remote_collection();
+        }
         $remote=$wpvivid_plugin->remote_collection->get_remote($remote);
 
         $result =$remote->cleanup($files);

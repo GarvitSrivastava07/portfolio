@@ -68,7 +68,7 @@ class HashUtils
     public static function validateAlgorithm($algorithm)
     {
         if (!in_array($algorithm, hash_algos(), true)) {
-            throw new InvalidArgumentException("The hashing algorithm specified ({$algorithm}) does not exist.");
+            throw new InvalidArgumentException(esc_html("The hashing algorithm specified ({$algorithm}) does not exist."));
         }
 
         return true;

@@ -67,7 +67,7 @@ class ResumableDownload
         // If a string is passed, then assume that the download should stream to a file on disk
         if (is_string($target)) {
             if (!($target = fopen($target, 'a+'))) {
-                throw new RuntimeException("Unable to open {$target} for writing");
+                throw new RuntimeException(esc_html("Unable to open {$target} for writing"));
             }
             // Always append to the file
             fseek($target, 0, SEEK_END);
@@ -168,7 +168,7 @@ class ResumableDownload
             $actual = $this->target->getContentMd5();
             if ($actual != $expected) {
                 throw new UnexpectedValueException(
-                    "Message integrity check failed. Expected {$expected} but got {$actual}."
+                    esc_html("Message integrity check failed. Expected {$expected} but got {$actual}.")
                 );
             }
         }

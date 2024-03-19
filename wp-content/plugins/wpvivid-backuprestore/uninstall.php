@@ -15,7 +15,7 @@ function wpvivid_clear_free_dir($directory){
                         wpvivid_clear_free_dir($subFile);
                     }
                     if(is_file($subFile)){
-                        unlink($subFile);
+                        wp_delete_file($subFile);
                     }
                 }
             }

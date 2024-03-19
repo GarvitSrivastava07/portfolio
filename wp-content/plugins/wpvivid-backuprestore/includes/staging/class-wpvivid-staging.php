@@ -70,34 +70,34 @@ class WPvivid_Staging_Free
             ?>
             <div class="postbox">
                 <h2>
-                    <div style="float: left; margin-right: 5px;"><span style="margin: 0; padding: 0"><?php _e('Current Version: ', 'wpvivid-backuprestore'); ?><?php echo $wpvivid_version; ?></span></div>
+                    <div style="float: left; margin-right: 5px;"><span style="margin: 0; padding: 0"><?php esc_html_e('Current Version: ', 'wpvivid-backuprestore'); ?><?php echo esc_html($wpvivid_version); ?></span></div>
                     <div style="float: left; margin-right: 5px;"><span style="margin: 0; padding: 0">|</span></div>
                     <div style="float: left; margin-left: 0;">
-                        <span style="margin: 0; padding: 0"><a href="https://wordpress.org/plugins/wpvivid-backuprestore/#developers" target="_blank" style="text-decoration: none;"><?php _e('ChangeLog', 'wpvivid-backuprestore'); ?></a></span>
+                        <span style="margin: 0; padding: 0"><a href="https://wordpress.org/plugins/wpvivid-backuprestore/#developers" target="_blank" style="text-decoration: none;"><?php esc_html_e('ChangeLog', 'wpvivid-backuprestore'); ?></a></span>
                     </div>
                     <div style="clear: both;"></div>
                 </h2>
             </div>
             <div id="wpvivid_backup_schedule_part"></div>
             <div class="postbox">
-                <h2><span><?php _e('Troubleshooting', 'wpvivid-backuprestore'); ?></span></h2>
+                <h2><span><?php esc_html_e('Troubleshooting', 'wpvivid-backuprestore'); ?></span></h2>
                 <div class="inside">
                     <table class="widefat" cellpadding="0">
                         <tbody>
                         <tr class="alternate">
-                            <td class="row-title"><?php _e('Read <a href="https://docs.wpvivid.com/troubleshooting-issues-wpvivid-backup-plugin.html" target="_blank">Troubleshooting page</a> for faster solutions.', 'wpvivid-backuprestore'); ?></td>
+                            <td class="row-title">'Read <a href="https://docs.wpvivid.com/troubleshooting-issues-wpvivid-backup-plugin.html" target="_blank">Troubleshooting page</a> for faster solutions.'</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="postbox">
-                <h2><span><?php _e('How-to', 'wpvivid-backuprestore'); ?></span></h2>
+                <h2><span><?php esc_html_e('How-to', 'wpvivid-backuprestore'); ?></span></h2>
                 <div class="inside">
                     <table class="widefat" cellpadding="0">
                         <tbody>
-                        <tr class="alternate"><td class="row-title"><a href="https://docs.wpvivid.com/wpvivid-backup-pro-create-staging-site.html" target="_blank"><?php _e('Create A Staging Site', 'wpvivid-backuprestore'); ?></a></td></tr>
-                        <tr><td class="row-title"><a href="https://docs.wpvivid.com/wpvivid-staging-pro-create-fresh-install.html" target="_blank"><?php _e('Create A Fresh WordPress Install', 'wpvivid-backuprestore'); ?></a></td></tr>
+                        <tr class="alternate"><td class="row-title"><a href="https://docs.wpvivid.com/wpvivid-backup-pro-create-staging-site.html" target="_blank"><?php esc_html_e('Create A Staging Site', 'wpvivid-backuprestore'); ?></a></td></tr>
+                        <tr><td class="row-title"><a href="https://docs.wpvivid.com/wpvivid-staging-pro-create-fresh-install.html" target="_blank"><?php esc_html_e('Create A Fresh WordPress Install', 'wpvivid-backuprestore'); ?></a></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -307,7 +307,13 @@ class WPvivid_Staging_Free
 
     public function get_custom_database_size(){
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             $ret['result']='success';
@@ -330,13 +336,13 @@ class WPvivid_Staging_Free
             $db_size = size_format($base_table_size, 2);
 
             $ret['database_size'] = $db_size;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -412,7 +418,13 @@ class WPvivid_Staging_Free
 
     public function get_custom_files_size(){
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             $upload_dir = wp_upload_dir();
@@ -448,31 +460,37 @@ class WPvivid_Staging_Free
             $ret['content_size'] = size_format($content_size, 2);
             $ret['additional_size'] = size_format($additional_size, 2);
             $ret['total_file_size'] = size_format($core_size+$themes_size+$plugins_size+$uploads_size+$content_size+$additional_size, 2);
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
     
     public function get_custom_include_path(){
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['is_staging'])) {
-                $is_staging = $_POST['is_staging'];
+                $is_staging = sanitize_key($_POST['is_staging']);
 
                 $node_array = array();
-
-                if ($_POST['tree_node']['node']['id'] == '#') {
+                $node_id=sanitize_text_field($_POST['tree_node']['node']['id']);
+                if ($node_id == '#') {
                     $path = ABSPATH;
 
                     if (!empty($_POST['tree_node']['path'])) {
-                        $path = $_POST['tree_node']['path'];
+                        $path = sanitize_text_field($_POST['tree_node']['path']);
                     }
 
                     if (isset($_POST['select_prev_dir']) && $_POST['select_prev_dir'] === '1') {
@@ -489,7 +507,7 @@ class WPvivid_Staging_Free
                         )
                     );
                 } else {
-                    $path = $_POST['tree_node']['node']['id'];
+                    $path = sanitize_text_field($_POST['tree_node']['node']['id']);
                 }
 
                 if (file_exists($path)) {
@@ -555,31 +573,37 @@ class WPvivid_Staging_Free
                 }
 
                 $ret['nodes'] = $node_array;
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     public function get_custom_exclude_path(){
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try{
             if (isset($_POST['is_staging'])) {
-                $is_staging = $_POST['is_staging'];
+                $is_staging = sanitize_key($_POST['is_staging']);
                 $node_array = array();
-
-                if ($_POST['tree_node']['node']['id'] == '#') {
+                $node_id=sanitize_text_field($_POST['tree_node']['node']['id']);
+                if ( $node_id== '#') {
                     $path = ABSPATH;
 
                     if (!empty($_POST['tree_node']['path'])) {
-                        $path = $_POST['tree_node']['path'];
+                        $path = sanitize_text_field($_POST['tree_node']['path']);
                     }
 
                     $node_array[] = array(
@@ -592,7 +616,7 @@ class WPvivid_Staging_Free
                         )
                     );
                 } else {
-                    $path = $_POST['tree_node']['node']['id'];
+                    $path = sanitize_text_field($_POST['tree_node']['node']['id']);
                 }
 
                 if (file_exists($path)) {
@@ -654,27 +678,32 @@ class WPvivid_Staging_Free
                 }
 
                 $ret['nodes'] = $node_array;
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     public function get_custom_themes_plugins_info_ex(){
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try{
             if (isset($_POST['is_staging']) && !empty($_POST['is_staging']))
             {
                 if ($_POST['is_staging'] == '1')
                 {
                     $is_staging_site = true;
-                    $staging_site_id = $_POST['id'];
+                    $staging_site_id = sanitize_key($_POST['id']);
 
                     $task = new WPvivid_Staging_Task($staging_site_id);
                     $ret = $this->get_staging_directory_info($task->get_site_path());
@@ -696,7 +725,7 @@ class WPvivid_Staging_Free
                 //}
             }
 
-            $themes_path = $is_staging_site == false ? get_theme_root() : $_POST['staging_path'] . DIRECTORY_SEPARATOR . 'wp-content' . DIRECTORY_SEPARATOR . 'themes';
+            $themes_path = $is_staging_site == false ? get_theme_root() : sanitize_text_field($_POST['staging_path'])  . DIRECTORY_SEPARATOR . 'wp-content' . DIRECTORY_SEPARATOR . 'themes';
 
             $exclude_themes_list = '';
 
@@ -715,7 +744,7 @@ class WPvivid_Staging_Free
 
                 if(isset($_POST['subsite']))
                 {
-                    switch_to_blog($_POST['subsite']);
+                    switch_to_blog(sanitize_key($_POST['subsite']));
                     $ct = wp_get_theme();
                     if( $ct->get_stylesheet()==$file)
                     {
@@ -759,7 +788,7 @@ class WPvivid_Staging_Free
             }
 
             $exclude_plugin_list = '';
-            $path = $is_staging_site == false ? WP_PLUGIN_DIR : $_POST['staging_path'] . DIRECTORY_SEPARATOR . 'wp-content' . DIRECTORY_SEPARATOR . 'plugins';
+            $path = $is_staging_site == false ? WP_PLUGIN_DIR : sanitize_text_field($_POST['staging_path']) . DIRECTORY_SEPARATOR . 'wp-content' . DIRECTORY_SEPARATOR . 'plugins';
             $plugin_info = array();
 
             if (!function_exists('get_plugins'))
@@ -768,7 +797,7 @@ class WPvivid_Staging_Free
 
             if(isset($_POST['subsite']))
             {
-                switch_to_blog($_POST['subsite']);
+                switch_to_blog(sanitize_key($_POST['subsite']));
                 $current   = get_option( 'active_plugins', array() );
                 restore_current_blog();
             }
@@ -822,12 +851,12 @@ class WPvivid_Staging_Free
             $ret['result'] = 'success';
             $ret['theme_list'] = $exclude_themes_list;
             $ret['plugin_list'] .= $exclude_plugin_list;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -851,12 +880,18 @@ class WPvivid_Staging_Free
     public function get_custom_database_tables_info()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             global $wpdb;
             $db = array();
             $use_additional_db = false;
-            $staging_site_id = $_POST['id'];
+            $staging_site_id = sanitize_key($_POST['id']);
             if(empty($_POST['id']))
             {
                 $get_site_mu_single=false;
@@ -905,7 +940,7 @@ class WPvivid_Staging_Free
             $ret['result'] = 'success';
             $ret['html'] = '';
             if (empty($prefix)) {
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -946,7 +981,7 @@ class WPvivid_Staging_Free
             if (is_null($tables)) {
                 $ret['result'] = 'failed';
                 $ret['error'] = 'Failed to retrieve the table information for the database. Please try again.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -1142,12 +1177,12 @@ class WPvivid_Staging_Free
 
             $ret['html'] .= $base_table_html . $other_table_html . $woo_table_html;
             $ret['tables_info'] = $tables_info;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -1499,7 +1534,7 @@ class WPvivid_Staging_Free
         wp_logout();
         ?>
         <script>
-            location.href='<?php echo $redirectTo; ?>';
+            location.href='<?php echo esc_url($redirectTo); ?>';
         </script>
         <?php
     }
@@ -1523,10 +1558,15 @@ class WPvivid_Staging_Free
         }
         else
         {
-            $user_data = get_user_by( 'login', $_POST['log'] );
-
-            if( !$user_data ) {
-                $user_data = get_user_by( 'email', $_POST['log'] );
+            $user_data = get_user_by( 'login', sanitize_user($_POST['log']) );
+            if( !$user_data )
+            {
+                $user_data = get_user_by( 'email', sanitize_email($_POST['log']) );
+                $log=sanitize_email($_POST['log']);
+            }
+            else
+            {
+                $log=sanitize_user($_POST['log']);
             }
 
             if( $user_data )
@@ -1537,13 +1577,15 @@ class WPvivid_Staging_Free
                     $rememberme = isset( $_POST['rememberme'] ) ? true : false;
 
                     wp_set_auth_cookie( $user_data->ID, $rememberme );
-                    wp_set_current_user( $user_data->ID, $_POST['log'] );
-                    do_action( 'wp_login', $_POST['log'], get_userdata( $user_data->ID ) );
+                    wp_set_current_user( $user_data->ID, $log );
+                    do_action( 'wp_login', $log, get_userdata( $user_data->ID ) );
 
                     $redirect_to = get_site_url() . '/wp-admin/';
 
-                    if( !empty( $_POST['redirect_to'] ) ) {
-                        $redirectTo = wp_safe_redirect($_POST['redirect_to']);
+                    if( !empty( $_POST['redirect_to'] ) )
+                    {
+                        $url=sanitize_url($_POST['redirect_to']);
+                        $redirectTo = wp_safe_redirect($url);
                     }
 
                     header( 'Location:' . $redirectTo );
@@ -1568,10 +1610,16 @@ class WPvivid_Staging_Free
     public function delete_site()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['id'])) {
-                $id = $_POST['id'];
+                $id = sanitize_key($_POST['id']);
             } else {
                 die();
             }
@@ -1590,12 +1638,12 @@ class WPvivid_Staging_Free
                 $html = ob_get_clean();
             }
             $ret['html'] = $html;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -1612,10 +1660,16 @@ class WPvivid_Staging_Free
 
     public function delete_cancel_staging_site(){
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['staging_site_info'])) {
-                $json = $_POST['staging_site_info'];
+                $json = sanitize_text_field($_POST['staging_site_info']);
                 $json = stripslashes($json);
                 $staging_site_info = json_decode($json, true);
                 $site_path = $staging_site_info['staging_path'];
@@ -1652,13 +1706,13 @@ class WPvivid_Staging_Free
                 }
 
                 $ret['result'] = 'success';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -1754,7 +1808,13 @@ class WPvivid_Staging_Free
     public function check_staging_dir()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             $ret['result'] = 'success';
@@ -1762,7 +1822,7 @@ class WPvivid_Staging_Free
             {
                 $ret['result']='failed';
                 $ret['error']='A site path is required.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -1773,7 +1833,7 @@ class WPvivid_Staging_Free
             {
                 $ret['result']='failed';
                 $ret['error']='A table prefix is required.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -1791,7 +1851,7 @@ class WPvivid_Staging_Free
             {
                 $ret['result'] = 'failed';
                 $ret['error'] = 'We are not able to authenticate the staging directory, please contact us.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -1813,7 +1873,7 @@ class WPvivid_Staging_Free
 
             if(isset($_POST['additional_db']))
             {
-                $additional_db_json = $_POST['additional_db'];
+                $additional_db_json = sanitize_text_field($_POST['additional_db']);
                 $additional_db_json = stripslashes($additional_db_json);
                 $additional_db_options = json_decode($additional_db_json, true);
                 if($additional_db_options['additional_database_check'] === '1')
@@ -1854,13 +1914,13 @@ class WPvivid_Staging_Free
                     $ret['error'] = 'The table prefix already exists.';
                 }
             }
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -1868,13 +1928,19 @@ class WPvivid_Staging_Free
     public function check_filesystem_permissions()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try{
             if(!isset($_POST['path']) || empty($_POST['path']) || !is_string($_POST['path']))
             {
                 $ret['result']='failed';
                 $ret['error']='A site path is required.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -1900,7 +1966,7 @@ class WPvivid_Staging_Free
             {
                 $ret['result']='failed';
                 $ret['error']='The directory where the staging site will be installed is not writable. Please set the permissions of the directory to 755 then try it again.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
@@ -1913,23 +1979,23 @@ class WPvivid_Staging_Free
                     @rmdir($des_path);
                 $ret['result']='failed';
                 $ret['error']='The directory where the staging site will be installed is not writable. Please set the permissions of the directory to 755 then try it again.';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 
             fclose($mk_res);
-            @unlink($test_file_path);
+            @wp_delete_file($test_file_path);
             if(file_exists($des_path))
                 @rmdir($des_path);
 
             $ret['result'] = 'success';
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -1947,22 +2013,27 @@ class WPvivid_Staging_Free
         );
 
         $loop = new WP_Query( $args );
-        $string = '<ul>';
+        echo '<ul>';
         while( $loop->have_posts())
         {
             $loop->the_post();
-            $string .= '<li><a href="' . get_permalink( $loop->post->ID ) . '"> ' .get_the_title( $loop->post->ID ) . '</a> ( '. get_the_modified_date() .') </li>';
+            echo '<li><a href="' . esc_url(get_permalink( $loop->post->ID )) . '"> ' .esc_html(get_the_title( $loop->post->ID ) ). '</a> ( '. esc_url(get_the_modified_date()) .') </li>';
         }
-        $string .= '</ul>';
-        $string.='<input id="wpvivid_update_post" type="button" class="button button-primary" value="Update">';
-        echo $string;
+        echo '</ul>';
+        echo'<input id="wpvivid_update_post" type="button" class="button button-primary" value="Update">';
 
     }
 
     public function get_staging_progress()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         $task_id=get_option('wpvivid_current_running_staging_task','');
         if(empty($task_id))
@@ -1985,7 +2056,7 @@ class WPvivid_Staging_Free
                 $ret['result']='success';
                 $ret['log']='';
                 $ret['continue']=0;
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
         }
@@ -2147,13 +2218,13 @@ class WPvivid_Staging_Free
             $ret['log']=$buffer;
             $ret['percent']=$staging_percent;
             $ret['result']='success';
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $ret['result']='failed';
             $ret['error']=$error->getMessage();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
 
         die();
@@ -2162,14 +2233,20 @@ class WPvivid_Staging_Free
     public function cancel_staging()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         $task_id=get_option('wpvivid_current_running_staging_task','');
         if(empty($task_id))
         {
             $ret['result']='success';
             $ret['log']='';
             $ret['continue']=0;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
 
@@ -2179,23 +2256,29 @@ class WPvivid_Staging_Free
             $task->cancel_staging();
 
             $ret['result']='success';
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $ret['result']='failed';
             $ret['error']=$error->getMessage();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         die();
     }
 
     public function test_additional_database_connect(){
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['database_info']) && !empty($_POST['database_info']) && is_string($_POST['database_info'])) {
-                $data = $_POST['database_info'];
+                $data = sanitize_text_field($_POST['database_info']);
                 $data = stripslashes($data);
                 $json = json_decode($data, true);
                 $db_user = sanitize_text_field($json['db_user']);
@@ -2208,7 +2291,7 @@ class WPvivid_Staging_Free
                 if (!empty($db->error->errors['db_connect_fail']['0'])) {
                     $ret['result'] = 'failed';
                     $ret['error'] = 'Failed to connect to MySQL server. Please try again later.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -2217,25 +2300,31 @@ class WPvivid_Staging_Free
                 if (!$db->ready) {
                     $ret['result'] = 'failed';
                     $ret['error'] = 'Unable to connect to MySQL database. Please try again later.';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
                 $ret['result'] = 'success';
 
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     public function update_staging_exclude_extension(){
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['type']) && !empty($_POST['type']) && is_string($_POST['type']) &&
                 isset($_POST['exclude_content']) && !empty($_POST['exclude_content']) && is_string($_POST['exclude_content'])) {
@@ -2276,13 +2365,13 @@ class WPvivid_Staging_Free
                 self::wpvivid_set_staging_history($staging_option);
 
                 $ret['result'] = 'success';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -2331,7 +2420,13 @@ class WPvivid_Staging_Free
     public function start_staging()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         $this->end_shutdown_function=false;
         register_shutdown_function(array($this,'deal_staging_shutdown_error'));
@@ -2353,11 +2448,11 @@ class WPvivid_Staging_Free
             {
                 if(isset($_POST['path']) && isset($_POST['table_prefix']) && isset($_POST['custom_dir']) && isset($_POST['additional_db']))
                 {
-                    $json = $_POST['custom_dir'];
+                    $json = sanitize_text_field($_POST['custom_dir']);
                     $json = stripslashes($json);
                     $staging_options = json_decode($json, true);
 
-                    $additional_db_json = $_POST['additional_db'];
+                    $additional_db_json = sanitize_text_field($_POST['additional_db']);
                     $additional_db_json = stripslashes($additional_db_json);
                     $additional_db_options = json_decode($additional_db_json, true);
 
@@ -2386,7 +2481,7 @@ class WPvivid_Staging_Free
                     $option['data']['path']['src_path'] = $src_path;
                     $option['data']['path']['des_path'] = $des_path;
 
-                    $table_prefix = $_POST['table_prefix'];
+                    $table_prefix = sanitize_text_field($_POST['table_prefix']);
 
                     $option['data']['restore'] = false;
                     $option['data']['copy']=false;
@@ -2445,20 +2540,26 @@ class WPvivid_Staging_Free
     public function set_restart_staging_id()
     {
         global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if(isset($_POST['id']))
             {
-                $task_id = $_POST['id'];
+                $task_id = sanitize_key($_POST['id']);
                 update_option('wpvivid_current_running_staging_task', $task_id);
                 $ret['result'] = 'success';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }

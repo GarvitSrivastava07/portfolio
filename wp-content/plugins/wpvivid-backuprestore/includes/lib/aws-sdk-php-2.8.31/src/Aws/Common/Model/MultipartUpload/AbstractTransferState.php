@@ -157,7 +157,7 @@ abstract class AbstractTransferState implements TransferStateInterface
             if (array_key_exists($property, $data)) {
                 $this->{$property} = $data[$property];
             } else {
-                throw new RuntimeException("The {$property} property could be restored during unserialization.");
+                throw new RuntimeException(esc_html("The {$property} property could be restored during unserialization."));
             }
         }
     }

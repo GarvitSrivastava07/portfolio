@@ -205,7 +205,7 @@ abstract class AbstractTransfer extends AbstractHasDispatcher implements Transfe
                 $this->dispatch(self::AFTER_COMPLETE, $eventData);
             }
         } catch (\Exception $e) {
-            throw new MultipartUploadException($this->state, $e);
+            throw new MultipartUploadException(esc_attr($this->state), esc_attr($e));
         }
 
         return $result;

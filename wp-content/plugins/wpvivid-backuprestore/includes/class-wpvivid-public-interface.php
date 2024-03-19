@@ -53,36 +53,6 @@ class WPvivid_Public_Interface
         return $ret;
     }
 
-    public function backup_now($task_id){
-        global $wpvivid_plugin;
-        if (!isset($task_id)||empty($task_id)||!is_string($task_id))
-        {
-            $ret['error']=__('Error occurred while parsing the request data. Please try to run backup again.', 'wpvivid-backuprestore');
-            return $ret;
-        }
-        $task_id=sanitize_key($task_id);
-        $ret['result']='success';
-        $txt = '<mainwp>' . base64_encode( serialize( $ret ) ) . '</mainwp>';
-        // Close browser connection so that it can resume AJAX polling
-        header( 'Content-Length: ' . ( ( ! empty( $txt ) ) ? strlen( $txt ) : '0' ) );
-        header( 'Connection: close' );
-        header( 'Content-Encoding: none' );
-        if ( session_id() ) {
-            session_write_close();
-        }
-        echo $txt;
-        // These two added - 19-Feb-15 - started being required on local dev machine, for unknown reason (probably some plugin that started an output buffer).
-        if ( ob_get_level() ) {
-            ob_end_flush();
-        }
-        flush();
-
-        $wpvivid_plugin->flush($task_id);
-        //Start backup site
-        $wpvivid_plugin->backup($task_id);
-        $ret['result']='success';
-    }
-
     public function get_status(){
         $ret['result']='success';
         $list_tasks=array();

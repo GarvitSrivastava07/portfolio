@@ -31,7 +31,8 @@ if (!defined('WPVIVID_PLUGIN_DIR')){
     die;
 }
 
-class WPvivid {
+class WPvivid
+{
 
 	protected $plugin_name;
 
@@ -72,9 +73,60 @@ class WPvivid {
 		$this->end_shutdown_function = false;
 
 		$this->restore_data=false;
+		$this->remote_collection=false;
+        add_action('plugins_loaded', array($this, 'load_remote_storage'),10);
 
-		//Load dependent files
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-setting.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-tools.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-schedule.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-taskmanager.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-backuplist.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/staging/class-wpvivid-staging.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-public-interface.php';
+
+        if(!$this->wpvivid_check_staging_pro_active())
+        {
+            $this->staging=new WPvivid_Staging_Free();
+        }
+
+        $this->init_cron();
+
+        include_once WPVIVID_PLUGIN_DIR . '/includes/new_backup/class-wpvivid-backup2.php';
+        $this->backup2=new WPvivid_Backup_2();
+
+        include_once WPVIVID_PLUGIN_DIR . '/includes/new_backup/class-wpvivid-restore2.php';
+        new WPvivid_Restore_2();
+
+        include_once WPVIVID_PLUGIN_DIR . '/includes/customclass/class-wpvivid-send-to-site.php';
+        new WPvivid_Send_to_site();
+
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-error-log.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-backup.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-upload.php';
+
+        $this->wpvivid_log=new WPvivid_Log();
+        $this->wpvivid_download_log=new WPvivid_Log();
+
+        add_action('init', array($this, 'init_pclzip_tmp_folder'));
+
+		if(is_admin())
+        {
+            $this->load_admin();
+            $this->set_locale();
+        }
+
+		/*
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-error-log.php';
+
         $this->load_dependencies();
+
+        $this->wpvivid_log=new WPvivid_Log();
+        $this->wpvivid_download_log=new WPvivid_Log();
+		//Load dependent files
+
 
         //A flag to determine whether plugin had been initialized
 		$init=get_option('wpvivid_init', 'not init');
@@ -90,25 +142,56 @@ class WPvivid {
             $this->init_remote_option();
             WPvivid_Setting::update_option('wpvivid_remote_init','init');
         }
+		*/
 
-        //Define the locale for this plugin for internationalization.
-		$this->set_locale();
-		//Register hook
-        if(is_admin())
-        {
-            $this->define_admin_hook();
-            //Add ajax hook
-            $this->load_ajax_hook_for_admin();
-        }
+	}
 
-        //add_filter('pre_update_option',array( $this,'wpjam_pre_update_option_cache'),10,2);
+	public function load_admin()
+    {
+        require_once WPVIVID_PLUGIN_DIR . '/admin/class-wpvivid-admin.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-tab-page-container.php' ;
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-downloader.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-mail-report.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-function-realize.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-backup-uploader.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-crypt.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-migrate.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-db-method.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-additional-db-method.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-export-import.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-exporter.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-importer.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-interface-mainwp.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/upload-cleaner/class-wpvivid-uploads-cleaner.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/snapshot/class-wpvivid-snapshot.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-restore-data.php';
+
+        $this->function_realize=new WPvivid_Function_Realize();
+        $this->migrate=new WPvivid_Migrate();
+        $this->backup_uploader=new Wpvivid_BackupUploader();
+        $this->interface_mainwp = new WPvivid_Interface_MainWP();
+
+        $export_import = new WPvivid_Export_Import();
+        $cleaner=new WPvivid_Uploads_Cleaner();
+
+        new WPvivid_Snapshot_Ex();
+
+        $this->admin = new WPvivid_Admin($this->get_plugin_name(), $this->get_version());
+        add_filter('wpvivid_pre_add_remote',array($this, 'pre_add_remote'),10,2);
+        add_filter('wpvivid_get_log_list', array( $this, 'wpvivid_get_log_list' ), 10);
+        add_action('wpvivid_get_log_list_output', array( $this, 'wpvivid_get_log_list_output' ));
+        //add_action('plugins_loaded', array($this, 'load_remote_storage'),10);
+
+        $this->load_ajax_hook_for_admin();
 
         add_filter('wpvivid_add_backup_list', array( $this, 'wpvivid_add_backup_list' ), 10, 3);
+        add_action('wpvivid_add_backup_list_output', array( $this, 'wpvivid_add_backup_list_output' ), 10);
         add_filter('wpvivid_add_remote_storage_list', array( $this, 'wpvivid_add_remote_storage_list' ), 10);
         add_filter('wpvivid_schedule_add_remote_pic', array( $this, 'wpvivid_schedule_add_remote_pic' ), 10);
         add_filter('wpvivid_get_remote_directory', array( $this, 'wpvivid_get_remote_directory' ), 10);
-        add_filter('wpvivid_get_log_list', array( $this, 'wpvivid_get_log_list' ), 10);
+
         add_filter('wpvivid_get_last_backup_message', array( $this, 'wpvivid_get_last_backup_message' ), 10);
+        add_action('wpvivid_get_last_backup_message_output', array( $this, 'wpvivid_get_last_backup_message_output' ), 10);
         add_filter('wpvivid_schedule_local_remote', array( $this, 'wpvivid_schedule_local_remote' ), 10);
         add_filter('wpvivid_remote_storage', array( $this, 'wpvivid_remote_storage'), 10);
         add_filter('wpvivid_add_remote_notice', array($this, 'wpvivid_add_remote_notice'), 10, 2);
@@ -125,8 +208,6 @@ class WPvivid {
         add_action('wpvivid_handle_upload_succeed',array($this,'wpvivid_deal_upload_succeed'),9);
 
         add_action('wpvivid_handle_backup_failed',array($this,'wpvivid_mark_task'),20);
-        add_action('init', array($this, 'init_pclzip_tmp_folder'));
-        add_action('plugins_loaded', array($this, 'load_remote_storage'),10);
 
         add_action('wpvivid_before_setup_page',array($this,'clean_cache'));
         add_filter('wpvivid_check_type_database', array($this, 'wpvivid_check_type_database'), 10, 2);
@@ -139,12 +220,7 @@ class WPvivid {
         add_filter('wpvivid_get_mainwp_sync_data', array($this, 'get_mainwp_sync_data'), 10);
         //
         add_filter('wpvivid_get_zip_object_class_ex',array($this, 'get_zip_object_class'));
-		//Initialisation schedule hook
-        $this->init_cron();
-        //Initialisation log object
-        $this->wpvivid_log=new WPvivid_Log();
-        $this->wpvivid_download_log=new WPvivid_Log();
-	}
+    }
 
 	public function init_cron()
     {
@@ -161,24 +237,14 @@ class WPvivid {
 
 	private function load_dependencies()
     {
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-schedule.php';
 
-		require_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-i18n.php';
-        require_once WPVIVID_PLUGIN_DIR . '/admin/class-wpvivid-admin.php';
-
-		include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-setting.php';
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-error-log.php';
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-backuplist.php';
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-restore-data.php';
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-taskmanager.php';
 
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-downloader.php';
-		include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-backup.php';
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-mail-report.php';
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-restore.php';
 
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-mail-report.php';
+
+
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-function-realize.php';
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-upload.php';
 
@@ -191,14 +257,10 @@ class WPvivid {
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-public-interface.php';
 
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-additional-db-method.php';
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-restore-db-extra.php';
 
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-export-import.php';
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-exporter.php';
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-importer.php';
-
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-tab-page-container.php' ;
-        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-tools.php';
 
         include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-interface-mainwp.php';
 
@@ -253,46 +315,18 @@ class WPvivid {
         }
     }
 
-    public function load_remote_storage(){
+    public function load_remote_storage()
+    {
+        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-remote-collection.php';
         $this->remote_collection=new WPvivid_Remote_collection();
     }
 
 	private function set_locale()
     {
+        require_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-i18n.php';
 		$plugin_i18n = new WPvivid_i18n();
         add_action('plugins_loaded',array( $plugin_i18n,'load_plugin_textdomain'));
 	}
-
-    private function define_admin_hook()
-    {
-        $this->admin = new WPvivid_Admin($this->get_plugin_name(), $this->get_version());
-
-        add_action('admin_enqueue_scripts',array( $this->admin,'enqueue_styles'));
-        add_action('admin_enqueue_scripts',array( $this->admin,'enqueue_scripts'));
-        // Add menu item
-
-        if(is_multisite())
-        {
-            add_action('network_admin_menu',array( $this->admin,'add_plugin_admin_menu'));
-        }
-        else
-        {
-            add_action('admin_menu',array( $this->admin,'add_plugin_admin_menu'));
-        }
-
-        add_action('admin_bar_menu',array( $this->admin,'add_toolbar_items'),100);
-        //show admin bar
-        add_action('admin_head',array( $this->admin,'wpvivid_get_siteurl'),100);
-
-        // Add Settings link to the plugin
-        $plugin_basename = plugin_basename( plugin_dir_path( __DIR__ ) . 'wpvivid-backuprestore.php' );
-        add_filter('plugin_action_links_' . $plugin_basename, array( $this->admin,'add_action_links'));
-
-        add_filter('wpvivid_pre_add_remote',array($this, 'pre_add_remote'),10,2);
-
-        add_filter('wpvivid_add_tab_page', array($this->admin, 'wpvivid_add_default_tab_page'));
-        //
-    }
 
     public function pre_add_remote($remote,$id)
     {
@@ -442,14 +476,20 @@ class WPvivid {
      */
     public function prepare_backup()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         $this->end_shutdown_function=false;
         register_shutdown_function(array($this,'deal_prepare_shutdown_error'));
         try
         {
             if(isset($_POST['backup'])&&!empty($_POST['backup']))
             {
-                $json = $_POST['backup'];
+                $json = sanitize_text_field($_POST['backup']);
                 $json = stripslashes($json);
                 $backup_options = json_decode($json, true);
                 if (is_null($backup_options))
@@ -470,7 +510,7 @@ class WPvivid {
                 if($ret['result']!=WPVIVID_SUCCESS)
                 {
                     $this->end_shutdown_function=true;
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -483,7 +523,7 @@ class WPvivid {
                     if(isset($ret['check']['result']) && $ret['check']['result'] == WPVIVID_FAILED)
                     {
                         $this->end_shutdown_function=true;
-                        echo json_encode(array('result' => WPVIVID_FAILED,'error' => $ret['check']['error']));
+                        echo wp_json_encode(array('result' => WPVIVID_FAILED,'error' => $ret['check']['error']));
                         die();
                     }*/
 
@@ -492,7 +532,7 @@ class WPvivid {
                     $ret['html'] = $html;
                 }
                 $this->end_shutdown_function=true;
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
         }
@@ -504,13 +544,18 @@ class WPvivid {
             $ret['error'] = $message;
             $id=uniqid('wpvivid-');
             $log_file_name=$id.'_backup';
+
+            if(!class_exists('WPvivid_Log'))
+            {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
+            }
             $log=new WPvivid_Log();
             $log->CreateLogFile($log_file_name,'no_folder','backup');
             $log->WriteLog($message,'notice');
             $log->CloseFile();
             WPvivid_error_log::create_error_log($log->log_file);
             error_log($message);
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
     }
@@ -534,12 +579,16 @@ class WPvivid {
             }
             $id = uniqid('wpvivid-');
             $log_file_name = $id . '_backup';
+            if(!class_exists('WPvivid_Log'))
+            {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
+            }
             $log = new WPvivid_Log();
             $log->CreateLogFile($log_file_name, 'no_folder', 'backup');
             $log->WriteLog($ret['error'], 'notice');
             $log->CloseFile();
             WPvivid_error_log::create_error_log($log->log_file);
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
     }
@@ -609,7 +658,13 @@ class WPvivid {
      */
     public function delete_ready_task()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             WPvivid_taskmanager::delete_ready_task();
             $ret['result'] = 'success';
@@ -617,10 +672,10 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
     /**
@@ -630,12 +685,18 @@ class WPvivid {
      */
     public function backup_now()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (!isset($_POST['task_id']) || empty($_POST['task_id']) || !is_string($_POST['task_id'])) {
                 $ret['result'] = 'failed';
                 $ret['error'] = __('Error occurred while parsing the request data. Please try to run backup again.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
             $task_id = sanitize_key($_POST['task_id']);
@@ -644,7 +705,7 @@ class WPvivid {
             if (WPvivid_taskmanager::is_tasks_backup_running()) {
                 $ret['result'] = 'failed';
                 $ret['error'] = __('A task is already running. Please wait until the running task is complete, and try again.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
             //flush buffer
@@ -658,13 +719,7 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
-            die();
-        }
-        catch (Error $error) {
-            $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
-            error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -676,7 +731,13 @@ class WPvivid {
      */
     public function view_backup_log()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             if (isset($_POST['id']) && !empty($_POST['id']) && is_string($_POST['id']))
@@ -687,7 +748,7 @@ class WPvivid {
                 {
                     $json['result'] = 'failed';
                     $json['error'] = __('Retrieving the backup information failed while showing log. Please try again later.', 'wpvivid-backuprestore');
-                    echo json_encode($json);
+                    echo wp_json_encode($json);
                     die();
                 }
 
@@ -695,7 +756,7 @@ class WPvivid {
                 {
                     $json['result'] = 'failed';
                     $json['error'] = __('The log not found.', 'wpvivid-backuprestore');
-                    echo json_encode($json);
+                    echo wp_json_encode($json);
                     die();
                 }
 
@@ -705,7 +766,7 @@ class WPvivid {
                 {
                     $json['result'] = 'failed';
                     $json['error'] = __('Unable to open the log file.', 'wpvivid-backuprestore');
-                    echo json_encode($json);
+                    echo wp_json_encode($json);
                     die();
                 }
 
@@ -718,18 +779,18 @@ class WPvivid {
 
                 $json['result'] = 'success';
                 $json['data'] = $buffer;
-                echo json_encode($json);
+                echo wp_json_encode($json);
             } else {
                 $json['result'] = 'failed';
                 $json['error'] = __('Reading the log failed. Please try again.', 'wpvivid-backuprestore');
-                echo json_encode($json);
+                echo wp_json_encode($json);
             }
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -741,12 +802,18 @@ class WPvivid {
      */
     public function read_last_backup_log()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (!isset($_POST['log_file_name']) || empty($_POST['log_file_name']) || !is_string($_POST['log_file_name'])) {
                 $json['result'] = 'failed';
                 $json['error'] = __('Reading the log failed. Please try again.', 'wpvivid-backuprestore');
-                echo json_encode($json);
+                echo wp_json_encode($json);
                 die();
             }
             $option = sanitize_text_field($_POST['log_file_name']);
@@ -755,7 +822,7 @@ class WPvivid {
             if (!file_exists($log_file_name)) {
                 $json['result'] = 'failed';
                 $json['error'] = __('The log not found.', 'wpvivid-backuprestore');
-                echo json_encode($json);
+                echo wp_json_encode($json);
                 die();
             }
 
@@ -764,7 +831,7 @@ class WPvivid {
             if (!$file) {
                 $json['result'] = 'failed';
                 $json['error'] = __('Unable to open the log file.', 'wpvivid-backuprestore');
-                echo json_encode($json);
+                echo wp_json_encode($json);
                 die();
             }
 
@@ -776,12 +843,12 @@ class WPvivid {
 
             $json['result'] = 'success';
             $json['data'] = $buffer;
-            echo json_encode($json);
+            echo wp_json_encode($json);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -793,7 +860,13 @@ class WPvivid {
      */
     public function view_backup_task_log()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['id']) && !empty($_POST['id']) && is_string($_POST['id'])) {
                 $backup_task_id = sanitize_key($_POST['id']);
@@ -801,7 +874,7 @@ class WPvivid {
                 if (!$option) {
                     $json['result'] = 'failed';
                     $json['error'] = __('Retrieving the backup information failed while showing log. Please try again later.', 'wpvivid-backuprestore');
-                    echo json_encode($json);
+                    echo wp_json_encode($json);
                     die();
                 }
 
@@ -810,7 +883,7 @@ class WPvivid {
                 if (!file_exists($log_file_name)) {
                     $json['result'] = 'failed';
                     $json['error'] = __('The log not found.', 'wpvivid-backuprestore');
-                    echo json_encode($json);
+                    echo wp_json_encode($json);
                     die();
                 }
 
@@ -819,7 +892,7 @@ class WPvivid {
                 if (!$file) {
                     $json['result'] = 'failed';
                     $json['error'] = __('Unable to open the log file.', 'wpvivid-backuprestore');
-                    echo json_encode($json);
+                    echo wp_json_encode($json);
                     die();
                 }
 
@@ -831,17 +904,17 @@ class WPvivid {
 
                 $json['result'] = 'success';
                 $json['data'] = $buffer;
-                echo json_encode($json);
+                echo wp_json_encode($json);
             } else {
                 $json['result'] = 'failed';
                 $json['error'] = __('Reading the log failed. Please try again.', 'wpvivid-backuprestore');
-                echo json_encode($json);
+                echo wp_json_encode($json);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -853,20 +926,26 @@ class WPvivid {
      */
     public function backup_cancel()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             /*if (isset($_POST['task_id']) && !empty($_POST['task_id']) && is_string($_POST['task_id'])) {
                 $task_id = sanitize_key($_POST['task_id']);
                 $json = $this->function_realize->_backup_cancel($task_id);
-                echo json_encode($json);
+                echo wp_json_encode($json);
             }*/
             $json = $this->function_realize->_backup_cancel();
-            echo json_encode($json);
+            echo wp_json_encode($json);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -894,7 +973,7 @@ class WPvivid {
             if ($ret['result'] != WPVIVID_SUCCESS)
             {
                 $this->end_shutdown_function=true;
-                //echo json_encode($ret);
+                //echo wp_json_encode($ret);
                 die();
             }
 
@@ -928,13 +1007,17 @@ class WPvivid {
             $ret['error'] = $message;
             $id=uniqid('wpvivid-');
             $log_file_name=$id.'_backup';
+            if(!class_exists('WPvivid_Log'))
+            {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
+            }
             $log=new WPvivid_Log();
             $log->CreateLogFile($log_file_name,'no_folder','backup');
             $log->WriteLog($message,'notice');
             $log->CloseFile();
             WPvivid_error_log::create_error_log($log->log_file);
             error_log($message);
-            //echo json_encode($ret);
+            //echo wp_json_encode($ret);
             die();
         }
     }
@@ -965,7 +1048,7 @@ class WPvivid {
         {
             $ret['result'] = 'failed';
             $ret['error'] = __('A task is already running. Please wait until the running task is complete, and try again.', 'wpvivid-backuprestore');
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
 
@@ -1160,6 +1243,8 @@ class WPvivid {
     }
 
     public function check_backup_file_json($file_name){
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip=new WPvivid_ZipClass();
 
         $general_setting=WPvivid_Setting::get_setting(true, "");
@@ -1444,6 +1529,8 @@ class WPvivid {
         $res=$backup_task->get_backup_result();
         if(!empty($res['files']))
         {
+            if(!class_exists('WPvivid_mail_report'))
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-mail-report.php';
             WPvivid_mail_report::send_report_mail($task);
         }
         $this->wpvivid_check_clear_litespeed_rule($task['id']);
@@ -1515,6 +1602,8 @@ class WPvivid {
         WPvivid_error_log::create_error_log($this->wpvivid_log->log_file);
         WPvivid_Schedule::clear_monitor_schedule($task['id']);
         $this->add_clean_backing_up_data_event($task['id']);
+        if(!class_exists('WPvivid_mail_report'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-mail-report.php';
         WPvivid_mail_report::send_report_mail($task);
         $this->wpvivid_check_clear_litespeed_rule($task['id']);
     }
@@ -1801,7 +1890,13 @@ class WPvivid {
 
     public function task_monitor_ex()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         $tasks=WPvivid_Setting::get_tasks();
         $task_id='';
@@ -1968,6 +2063,7 @@ class WPvivid {
         }
         if($check_db)
         {
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-db-method.php';
             $db_method=new WPvivid_DB_Method();
             $ret=$db_method->check_db($alter_fcgi);
             if($ret['result']==WPVIVID_FAILED)
@@ -2250,7 +2346,7 @@ class WPvivid {
         if(!$from_mainwp) {
             $ret['result'] = 'success';
             $ret['task_id'] = $txt;
-            $txt = json_encode($ret);
+            $txt = wp_json_encode($ret);
         }
         else{
             $ret['result']='success';
@@ -2263,7 +2359,7 @@ class WPvivid {
         }
         if (session_id())
             session_write_close();
-        echo $txt;
+        echo wp_json_encode($ret);
 
         if(function_exists('fastcgi_finish_request'))
         {
@@ -2276,59 +2372,6 @@ class WPvivid {
             flush();
         }
     }
-    /*private function flush($task_id)
-    {
-        $ret['result']='success';
-        $ret['task_id']=$task_id;
-        $json=json_encode($ret);
-        if(!headers_sent())
-        {
-            header('Content-Length: '.strlen($json));
-            header('Connection: close');
-            header('Content-Encoding: none');
-        }
-
-
-        if (session_id())
-            session_write_close();
-        echo $json;
-
-        if(function_exists('fastcgi_finish_request'))
-        {
-            fastcgi_finish_request();
-        }
-        else
-        {
-            if(ob_get_level()>0)
-                ob_flush();
-            flush();
-        }
-    }*/
-    /**
-     * return initialization download page data
-     *
-     * @var string $task_id
-     *
-     * @since 0.9.1
-     */
-    /*public function init_download_page()
-    {
-        $this->ajax_check_security();
-        try {
-            if (isset($_POST['backup_id']) && !empty($_POST['backup_id']) && is_string($_POST['backup_id'])) {
-                $backup_id = sanitize_key($_POST['backup_id']);
-                $ret = $this->init_download($backup_id);
-                echo json_encode($ret);
-            }
-        }
-        catch (Exception $error) {
-            $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
-            error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
-            die();
-        }
-        die();
-    }*/
 
     /**
      * return initialization download page data
@@ -2339,7 +2382,13 @@ class WPvivid {
      */
     public function init_download_page()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['backup_id']) && !empty($_POST['backup_id']) && is_string($_POST['backup_id'])) {
                 $backup_id = sanitize_key($_POST['backup_id']);
@@ -2347,7 +2396,7 @@ class WPvivid {
                 if ($backup === false) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'backup id not found';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -2426,24 +2475,30 @@ class WPvivid {
                 $files_list->display();
                 $ret['html'] = ob_get_clean();
 
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     public function get_download_page_ex()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['backup_id']) && !empty($_POST['backup_id']) && is_string($_POST['backup_id'])) {
                 if (isset($_POST['page'])) {
-                    $page = $_POST['page'];
+                    $page = sanitize_key($_POST['page']);
                 } else {
                     $page = 1;
                 }
@@ -2453,7 +2508,7 @@ class WPvivid {
                 if ($backup === false) {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'backup id not found';
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
 
@@ -2530,13 +2585,13 @@ class WPvivid {
                 $files_list->display();
                 $ret['html'] = ob_get_clean();
 
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -2552,7 +2607,13 @@ class WPvivid {
      */
     public function prepare_download_backup()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         $this->end_shutdown_function=false;
         register_shutdown_function(array($this,'deal_prepare_download_shutdown_error'));
         $id=uniqid('wpvivid-');
@@ -2567,8 +2628,7 @@ class WPvivid {
             }
             $download_info = array();
             $download_info['backup_id'] = sanitize_key($_POST['backup_id']);
-            //$download_info['file_name']=sanitize_file_name($_POST['file_name']);
-            $download_info['file_name'] = $_POST['file_name'];
+            $download_info['file_name'] = sanitize_file_name($_POST['file_name']);
             @set_time_limit(600);
             if (session_id())
                 session_write_close();
@@ -2577,8 +2637,7 @@ class WPvivid {
             $downloader->ready_download($download_info);
 
             $ret['result'] = 'success';
-            $json = json_encode($ret);
-            echo $json;
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
@@ -2590,6 +2649,10 @@ class WPvivid {
             else {
                 $id = uniqid('wpvivid-');
                 $log_file_name = $id . '_download';
+                if(!class_exists('WPvivid_Log'))
+                {
+                    include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
+                }
                 $log = new WPvivid_Log();
                 $log->CreateLogFile($log_file_name, 'no_folder', 'download');
                 $log->WriteLog($message, 'error');
@@ -2598,7 +2661,7 @@ class WPvivid {
             }
             error_log($message);
             $this->end_shutdown_function=true;
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         $this->wpvivid_download_log->CloseFile();
@@ -2608,7 +2671,13 @@ class WPvivid {
 
     public function get_download_progress()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['backup_id'])) {
                 $backup_id = sanitize_key($_POST['backup_id']);
@@ -2685,13 +2754,13 @@ class WPvivid {
                         }
                     }
                 }
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -2720,13 +2789,17 @@ class WPvivid {
             else {
                 $id = uniqid('wpvivid-');
                 $log_file_name = $id . '_download';
+                if(!class_exists('WPvivid_Log'))
+                {
+                    include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
+                }
                 $log = new WPvivid_Log();
                 $log->CreateLogFile($log_file_name, 'no_folder', 'download');
                 $log->WriteLog($ret['error'], 'notice');
                 $log->CloseFile();
                 WPvivid_error_log::create_error_log($log->log_file);
             }
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
     }
@@ -2765,7 +2838,13 @@ class WPvivid {
      */
     public function download_backup()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_REQUEST['backup_id']) && isset($_REQUEST['file_name'])) {
                 if (!empty($_REQUEST['backup_id']) && is_string($_REQUEST['backup_id'])) {
@@ -2776,7 +2855,7 @@ class WPvivid {
 
                 if (!empty($_REQUEST['file_name']) && is_string($_REQUEST['file_name'])) {
                     //$file_name=sanitize_file_name($_REQUEST['file_name']);
-                    $file_name = $_REQUEST['file_name'];
+                    $file_name = sanitize_text_field($_REQUEST['file_name']);
                 } else {
                     die();
                 }
@@ -2837,11 +2916,11 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         $admin_url = admin_url();
-        echo '<a href="'.$admin_url.'admin.php?page=WPvivid">file not found. please retry again.</a>';
+        echo '<a href="'.esc_url($admin_url).'admin.php?page=WPvivid">file not found. please retry again.</a>';
         die();
     }
 
@@ -2852,20 +2931,26 @@ class WPvivid {
      */
     public function get_backup_list()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try
         {
             $json['result'] = 'success';
             $html = '';
             $html = apply_filters('wpvivid_add_backup_list', $html);
             $json['html'] = $html;
-            echo json_encode($json);
+            echo wp_json_encode($json);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -2877,26 +2962,32 @@ class WPvivid {
      */
     public function delete_backup()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             if (isset($_POST['backup_id']) && !empty($_POST['backup_id']) && is_string($_POST['backup_id']) && isset($_POST['force']))
             {
                 if ($_POST['force'] == 0 || $_POST['force'] == 1)
                 {
-                    $force_del = $_POST['force'];
+                    $force_del = sanitize_key($_POST['force']);
                 } else {
                     $force_del = 0;
                 }
                 $backup_id = sanitize_key($_POST['backup_id']);
                 $ret = $this->delete_backup_by_id($backup_id, $force_del);
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -2908,7 +2999,13 @@ class WPvivid {
      */
     public function delete_backup_array()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             if (isset($_POST['backup_id']) && !empty($_POST['backup_id']) && is_array($_POST['backup_id']))
@@ -2923,14 +3020,14 @@ class WPvivid {
                 $html = '';
                 $html = apply_filters('wpvivid_add_backup_list', $html);
                 $ret['html'] = $html;
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -2989,19 +3086,26 @@ class WPvivid {
 
     public function delete_task()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             if (isset($_POST['task_id']) && !empty($_POST['task_id']) && is_string($_POST['task_id'])) {
                 $task_id = sanitize_key($_POST['task_id']);
                 WPvivid_taskmanager::delete_task($task_id);
 
-                echo $json['result'] = 'success';
+                $json['result'] = 'success';
+                echo wp_json_encode($json);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3013,19 +3117,25 @@ class WPvivid {
      */
     public function add_remote()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (empty($_POST) || !isset($_POST['remote']) || !is_string($_POST['remote']) || !isset($_POST['type']) || !is_string($_POST['type'])) {
                 die();
             }
-            $json = $_POST['remote'];
+            $json = sanitize_text_field($_POST['remote']);
             $json = stripslashes($json);
             $remote_options = json_decode($json, true);
             if (is_null($remote_options)) {
                 die();
             }
 
-            $remote_options['type'] = $_POST['type'];
+            $remote_options['type'] = sanitize_text_field($_POST['type']);
             if ($remote_options['type'] == 'amazons3')
             {
                 if(isset($remote_options['s3Path']))
@@ -3065,10 +3175,10 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
     /**
@@ -3079,7 +3189,13 @@ class WPvivid {
     public function delete_remote()
     {
         try {
-            $this->ajax_check_security('manage_options');
+            check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+            $check=is_admin()&&current_user_can('manage_options');
+            $check=apply_filters('wpvivid_ajax_check_security',$check);
+            if(!$check)
+            {
+                die();
+            };
             if (empty($_POST) || !isset($_POST['remote_id']) || !is_string($_POST['remote_id'])) {
                 die();
             }
@@ -3113,10 +3229,10 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
@@ -3128,7 +3244,13 @@ class WPvivid {
     public function retrieve_remote()
     {
         try {
-            $this->ajax_check_security();
+            check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+            $check=is_admin()&&current_user_can('administrator');
+            $check=apply_filters('wpvivid_ajax_check_security',$check);
+            if(!$check)
+            {
+                die();
+            }
             if (empty($_POST) || !isset($_POST['remote_id']) || !is_string($_POST['remote_id'])) {
                 die();
             }
@@ -3151,10 +3273,10 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
     /**
@@ -3164,32 +3286,38 @@ class WPvivid {
      */
     public function edit_remote()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (empty($_POST) || !isset($_POST['remote']) || !is_string($_POST['remote']) || !isset($_POST['id']) || !is_string($_POST['id']) || !isset($_POST['type']) || !is_string($_POST['type'])) {
                 die();
             }
-            $json = $_POST['remote'];
+            $json = sanitize_text_field($_POST['remote']);
             $json = stripslashes($json);
             $remote_options = json_decode($json, true);
             if (is_null($remote_options)) {
                 die();
             }
-            $remote_options['type'] = $_POST['type'];
+            $remote_options['type'] = sanitize_text_field($_POST['type']);
             if ($remote_options['type'] == 'amazons3')
             {
                 if(isset($remote_options['s3Path']))
                     $remote_options['s3Path'] = rtrim($remote_options['s3Path'], "/");
             }
-
-            $old_remote=WPvivid_Setting::get_remote_option($_POST['id']);
+            $id=sanitize_key($_POST['id']);
+            $old_remote=WPvivid_Setting::get_remote_option($id);
             foreach ($old_remote as $key=>$value)
             {
                 if(isset($remote_options[$key]))
                     $old_remote[$key]=$remote_options[$key];
             }
 
-            $ret = $this->remote_collection->update_remote($_POST['id'], $old_remote);
+            $ret = $this->remote_collection->update_remote($id, $old_remote);
 
             if ($ret['result'] == 'success') {
                 $ret['result'] = WPVIVID_SUCCESS;
@@ -3224,10 +3352,10 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
     /**
@@ -3237,7 +3365,13 @@ class WPvivid {
      */
     public function list_remote()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             $ret['result'] = 'success';
             $html = '';
@@ -3259,10 +3393,10 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
     /**
@@ -3272,29 +3406,35 @@ class WPvivid {
      */
     public function test_remote_connection()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (empty($_POST) || !isset($_POST['remote']) || !is_string($_POST['remote']) || !isset($_POST['type']) || !is_string($_POST['type'])) {
                 die();
             }
-            $json = $_POST['remote'];
+            $json = sanitize_text_field($_POST['remote']);
             $json = stripslashes($json);
             $remote_options = json_decode($json, true);
             if (is_null($remote_options)) {
                 die();
             }
 
-            $remote_options['type'] = $_POST['type'];
+            $remote_options['type'] = sanitize_text_field($_POST['type']);
             $remote = $this->remote_collection->get_remote($remote_options);
             $ret = $remote->test_connect();
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
     /**
@@ -3304,19 +3444,25 @@ class WPvivid {
      */
     public function get_schedule()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             $schedule = WPvivid_Schedule::get_schedule();
-            $schedule['next_start'] = date("l, F d, Y H:i", $schedule['next_start']);
+            $schedule['next_start'] = gmdate("l, F d, Y H:i", $schedule['next_start']);
             $ret['result'] = 'success';
             $ret['data'] = $schedule;
             $ret['user_history'] = WPvivid_Setting::get_user_history('remote_selected');
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3326,7 +3472,9 @@ class WPvivid {
     {
         try
         {
-            if($this->restore_data->has_restore())
+            $dir=WPvivid_Setting::get_backupdir();
+            $restore_data_file=WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR.'wpvivid_restoredata';
+            if(file_exists($restore_data_file))
             {
                 $ret['has_exist_restore']=1;
             }
@@ -3348,9 +3496,34 @@ class WPvivid {
 
         return $ret;
     }
+
+    public function check_max_allow_packet_ex()
+    {
+        $max_all_packet_warning=false;
+        global $wpdb;
+        $wpdb->get_results('SET NAMES utf8mb4', ARRAY_A);
+        $max_allowed_packet = $wpdb->get_results('SELECT @@session.max_allowed_packet;',ARRAY_N);
+        if($max_allowed_packet)
+        {
+            if(is_array($max_allowed_packet)&&isset($max_allowed_packet[0])&&isset($max_allowed_packet[0][0]))
+            {
+                if($max_allowed_packet[0][0]<16777216){
+                    $max_all_packet_warning = 'max_allowed_packet = '.size_format($max_allowed_packet[0][0]).' is too small. The recommended value is 16M or higher. Too small value could lead to a failure when importing a larger database.';
+                }
+            }
+        }
+        return $max_all_packet_warning;
+    }
+
     public function init_restore_page()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             if (!isset($_POST['backup_id']) || empty($_POST['backup_id']) || !is_string($_POST['backup_id']))
@@ -3358,7 +3531,7 @@ class WPvivid {
                 die();
             }
 
-            $this->restore_data = new WPvivid_restore_data();
+            //$this->restore_data = new WPvivid_restore_data();
             $ret_scan_last_restore = $this->scan_last_restore();
 
             $backup_id = sanitize_key($_POST['backup_id']);
@@ -3385,15 +3558,12 @@ class WPvivid {
                 $ret['is_migrate_ui'] = 0;
             }
 
-
-
             $ret['skip_backup_old_site'] = 1;
             $ret['skip_backup_old_database'] = 1;
 
             $ret = array_merge($ret, $ret_scan_last_restore);
 
-            $restore_db_data = new WPvivid_RestoreDB();
-            $ret['max_allow_packet_warning'] = $restore_db_data->check_max_allow_packet_ex();
+            $ret['max_allow_packet_warning'] = $this->check_max_allow_packet_ex();
 
             $common_setting = WPvivid_Setting::get_option('wpvivid_common_setting');
             if(isset($common_setting['restore_memory_limit']) && !empty($common_setting['restore_memory_limit'])){
@@ -3431,12 +3601,13 @@ class WPvivid {
 
             if ($ret['result'] == WPVIVID_FAILED)
             {
-                $this->wpvivid_handle_restore_error($ret['error'], 'Init restore page');
+                //$this->wpvivid_handle_restore_error($ret['error'], 'Init restore page');
             }
 
             $has_zero_date=$backup_item->check_has_zero_date();
             if($has_zero_date)
             {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-db-method.php';
                 $db_method = new WPvivid_DB_Method();
                 $ret_sql_mode = $db_method->get_sql_mode();
                 if(preg_match('/NO_ZERO_DATE/', $ret_sql_mode['mysql_mode']))
@@ -3445,13 +3616,13 @@ class WPvivid {
                 }
             }
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3459,7 +3630,13 @@ class WPvivid {
 
     public function get_restore_file_is_migrate()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (!isset($_POST['backup_id']) || empty($_POST['backup_id']) || !is_string($_POST['backup_id'])) {
                 die();
@@ -3493,15 +3670,15 @@ class WPvivid {
             }
 
             if ($ret['result'] == WPVIVID_FAILED) {
-                $this->wpvivid_handle_restore_error($ret['error'], 'Init restore page');
+                //$this->wpvivid_handle_restore_error($ret['error'], 'Init restore page');
             }
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3509,17 +3686,23 @@ class WPvivid {
 
     public function delete_last_restore_data()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             $this->restore_data = new WPvivid_restore_data();
             $this->restore_data->clean_restore_data();
             $ret['result'] = 'success';
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3532,7 +3715,13 @@ class WPvivid {
      */
     public function prepare_restore()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (!isset($_POST['backup_id']) || empty($_POST['backup_id']) || !is_string($_POST['backup_id'])) {
                 die();
@@ -3553,12 +3742,12 @@ class WPvivid {
                 $ret['is_migrate'] = 0;
             }
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3570,7 +3759,13 @@ class WPvivid {
      */
     public function download_restore_file()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (!isset($_POST['backup_id']) || empty($_POST['backup_id']) || !is_string($_POST['backup_id'])
                 || !isset($_POST['file_name']) || empty($_POST['file_name']) || !is_string($_POST['file_name'])) {
@@ -3581,14 +3776,19 @@ class WPvivid {
 
             $backup_id = sanitize_key($_POST['backup_id']);
             //$file_name=sanitize_file_name($_POST['file_name']);
-            $file_name = $_POST['file_name'];
+            $file_name = sanitize_text_field($_POST['file_name']);
 
             $file['file_name'] = $file_name;
-            $file['size'] = $_POST['size'];
-            $file['md5'] = $_POST['md5'];
+            $file['size'] = sanitize_key($_POST['size']);
+
+            if(isset($_POST['md5']))
+            {
+                $file['md5'] = sanitize_key($_POST['md5']);
+            }
+
             $backup = WPvivid_Backuplist::get_backup_by_id($backup_id);
             if (!$backup) {
-                echo json_encode(array('result' => WPVIVID_FAILED, 'error' => 'backup not found'));
+                echo wp_json_encode(array('result' => WPVIVID_FAILED, 'error' => 'backup not found'));
                 die();
             }
 
@@ -3597,7 +3797,7 @@ class WPvivid {
             $remote_option = $backup_item->get_remote();
 
             if ($remote_option === false) {
-                echo json_encode(array('result' => WPVIVID_FAILED, 'error' => 'Retrieving the cloud storage information failed while downloading backups. Please try again later.'));
+                echo wp_json_encode(array('result' => WPVIVID_FAILED, 'error' => 'Retrieving the cloud storage information failed while downloading backups. Please try again later.'));
                 die();
             }
 
@@ -3606,7 +3806,7 @@ class WPvivid {
             $download_info = array();
             $download_info['backup_id'] = sanitize_key($_POST['backup_id']);
             //$download_info['file_name']=sanitize_file_name($_POST['file_name']);
-            $download_info['file_name'] = $_POST['file_name'];
+            $download_info['file_name'] = sanitize_text_field($_POST['file_name']);
             //set_time_limit(600);
             if (session_id())
                 session_write_close();
@@ -3615,12 +3815,12 @@ class WPvivid {
             $downloader->ready_download($download_info);
 
             $ret['result'] = 'success';
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3628,6 +3828,13 @@ class WPvivid {
 
     public function download_restore_progress()
     {
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             if (!isset($_POST['file_name'])) {
@@ -3636,7 +3843,7 @@ class WPvivid {
 
             $file_name=sanitize_text_field($_POST['file_name']);
 
-            $file_size = $_POST['size'];
+            $file_size = sanitize_key($_POST['size']);
 
             $task = WPvivid_taskmanager::get_download_task_v2($file_name);
 
@@ -3661,21 +3868,28 @@ class WPvivid {
                 else {
                     $ret['result'] = WPVIVID_FAILED;
                     $ret['error'] = 'not found download file';
-                    $this->wpvivid_handle_restore_error($ret['error'], 'Downloading backup file');
+                    //$this->wpvivid_handle_restore_error($ret['error'], 'Downloading backup file');
                 }
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             } else {
                 $ret['result'] = WPVIVID_SUCCESS;
                 $ret['status'] = $task['status'];
-                $ret['log'] = $task['download_descript'];
+                if(isset($task['download_descript']))
+                {
+                    $ret['log'] = $task['download_descript'];
+                }
+                else
+                {
+                    $ret['log'] = '';
+                }
                 $ret['error'] = $task['error'];
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3685,6 +3899,13 @@ class WPvivid {
     {
         try
         {
+            check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+            $check=is_admin()&&current_user_can('administrator');
+            $check=apply_filters('wpvivid_ajax_check_security',$check);
+            if(!$check)
+            {
+                die();
+            }
             if (!isset($_POST['backup_id'])) {
                 die();
             }
@@ -3698,6 +3919,7 @@ class WPvivid {
             $has_zero_date=$backup_item->check_has_zero_date();
             if($has_zero_date)
             {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-db-method.php';
                 $db_method = new WPvivid_DB_Method();
                 $ret_sql_mode = $db_method->get_sql_mode();
                 if(preg_match('/NO_ZERO_DATE/', $ret_sql_mode['mysql_mode']))
@@ -3707,12 +3929,12 @@ class WPvivid {
             }
 
             $ret['result']=WPVIVID_SUCCESS;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -3749,7 +3971,11 @@ class WPvivid {
     public function restore()
     {
         check_ajax_referer( 'wpvivid_ajax', 'nonce' );
-
+        $check=is_admin()&&current_user_can('administrator');
+        if(!$check)
+        {
+            die();
+        }
         $this->end_shutdown_function=false;
         register_shutdown_function(array($this,'deal_restore_shutdown_error'));
         if(!isset($_POST['backup_id'])||empty($_POST['backup_id'])||!is_string($_POST['backup_id']))
@@ -3770,7 +3996,8 @@ class WPvivid {
         $restore_options=array();
         if(isset($_POST['restore_options']))
         {
-            $json = stripslashes($_POST['restore_options']);
+            $json=sanitize_text_field($_POST['restore_options']);
+            $json = stripslashes($json);
             $restore_options = json_decode($json, 1);
             if(is_null($restore_options))
             {
@@ -3790,7 +4017,7 @@ class WPvivid {
                     $this->restore_data->save_error_log_to_debug();
                     $this->restore_data->delete_temp_files();
                     $this->_disable_maintenance_mode();
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     $this->end_shutdown_function=true;
                     die();
                 }
@@ -3800,7 +4027,7 @@ class WPvivid {
                     $this->restore_data->write_log('disable maintenance mode', 'notice');
                     $this->restore_data->delete_temp_files();
                     $this->_disable_maintenance_mode();
-                    echo json_encode(array('result' => 'finished'));
+                    echo wp_json_encode(array('result' => 'finished'));
                     $this->end_shutdown_function=true;
                     die();
                 }
@@ -3813,7 +4040,7 @@ class WPvivid {
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
-            echo $message;
+            echo esc_html($message);
             $this->end_shutdown_function=true;
             die();
         }
@@ -3835,7 +4062,7 @@ class WPvivid {
             $ret=$restore->restore();
             if($ret['result']==WPVIVID_FAILED&&$ret['error']=='A restore task is already running.')
             {
-                echo json_encode(array('result'=> WPVIVID_SUCCESS));
+                echo wp_json_encode(array('result'=> WPVIVID_SUCCESS));
                 $this->end_shutdown_function=true;
                 die();
             }
@@ -3850,7 +4077,7 @@ class WPvivid {
             $this->restore_data->write_log($message,'error');
             $this->restore_data->save_error_log_to_debug();
             $this->_disable_maintenance_mode();
-            echo json_encode(array('result'=>WPVIVID_FAILED,'error'=>$message));
+            echo wp_json_encode(array('result'=>WPVIVID_FAILED,'error'=>$message));
             $this->end_shutdown_function=true;
             die();
         }
@@ -3861,7 +4088,7 @@ class WPvivid {
             $this->_disable_maintenance_mode();
         }
 
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         $this->end_shutdown_function=true;
         die();
     }
@@ -3933,7 +4160,7 @@ class WPvivid {
                 $this->restore_data->save_error_log_to_debug();
                 //save_error_log_to_debug
                 $this->_disable_maintenance_mode();
-                echo json_encode(array('result'=>WPVIVID_FAILED,'error'=>$message));
+                echo wp_json_encode(array('result'=>WPVIVID_FAILED,'error'=>$message));
             }
             else {
                 $message = __('restore failed error unknown', 'wpvivid-backuprestore');
@@ -3942,7 +4169,7 @@ class WPvivid {
                 $this->restore_data->write_log($message,'error');
                 $this->restore_data->save_error_log_to_debug();
                 $this->_disable_maintenance_mode();
-                echo json_encode(array('result'=>WPVIVID_FAILED,'error'=>$message));
+                echo wp_json_encode(array('result'=>WPVIVID_FAILED,'error'=>$message));
             }
 
             die();
@@ -3958,6 +4185,11 @@ class WPvivid {
         try
         {
             check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+            $check=is_admin()&&current_user_can('administrator');
+            if(!$check)
+            {
+                die();
+            }
             if(!isset($_POST['backup_id'])||empty($_POST['backup_id'])||!is_string($_POST['backup_id']))
             {
                 $this->end_shutdown_function=true;
@@ -3981,19 +4213,19 @@ class WPvivid {
                     $this->restore_data->save_error_log_to_debug();
                 }
                 $ret['log'] = $this->restore_data->get_log_content();
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             } else {
                 $ret['result'] = 'failed';
                 $ret['error'] = __('The restore file not found. Please verify the file exists.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
     }
@@ -4065,7 +4297,7 @@ class WPvivid {
     {
         $message = 'A '.$error_type.' has occurred. class:'.get_class($error).';msg:'.$error->getMessage().';code:'.$error->getCode().';line:'.$error->getLine().';in_file:'.$error->getFile().';';
         error_log($message);
-        echo $message;
+        echo esc_html($message);
     }
 
     public function update_last_backup_time($task)
@@ -4084,17 +4316,23 @@ class WPvivid {
      */
     public function get_last_backup()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             $html = '';
             $html = apply_filters('wpvivid_get_last_backup_message', $html);
             $ret['data'] = $html;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -4108,25 +4346,9 @@ class WPvivid {
             $last_message=__('The last backup message not found.', 'wpvivid-backuprestore');
         }
         else{
-            /*$message['status']['start_time'] = date("l, F-d-Y H:i", strtotime($message['status']['start_time']));
-            if($message['status']['str'] == 'completed'){
-                $backup_status='Succeeded';
-                $last_message=$backup_status.', '.$message['status']['start_time'].' <a onclick="wpvivid_read_log(\''.'wpvivid_read_last_backup_log'.'\', \''.$message['log_file_name'].'\');" style="cursor:pointer;">   Log</a>';
-            }
-            elseif($message['status']['str'] == 'error'){
-                $backup_status='Failed';
-                $last_message=$backup_status.', '.$message['status']['start_time'].' <a onclick="wpvivid_read_log(\''.'wpvivid_read_last_backup_log'.'\', \''.$message['log_file_name'].'\');" style="cursor:pointer;">   Log</a>';
-            }
-            elseif($message['status']['str'] == 'cancel'){
-                $backup_status='Failed';
-                $last_message=$backup_status.', '.$message['status']['start_time'].' <a onclick="wpvivid_read_log(\''.'wpvivid_read_last_backup_log'.'\', \''.$message['log_file_name'].'\');" style="cursor:pointer;">   Log</a>';
-            }
-            else{
-                $last_message=__('The last backup message not found.', 'wpvivid-backuprestore');
-            }*/
             if(isset($message['status']['start_time']))
             {
-                $message['status']['start_time'] = date("l, F-d-Y H:i", strtotime($message['status']['start_time']));
+                $message['status']['start_time'] = gmdate("l, F-d-Y H:i", strtotime($message['status']['start_time']));
                 $last_message=$message['status']['start_time'];
             }
             else
@@ -4138,9 +4360,39 @@ class WPvivid {
         return $html;
     }
 
+    public function wpvivid_get_last_backup_message_output()
+    {
+        $message=WPvivid_Setting::get_last_backup_message('wpvivid_last_msg');
+        if(empty($message)){
+            ?>
+            <strong><?php esc_html_e('Last Backup: ', 'wpvivid-backuprestore'); ?></strong><?php esc_html_e('The last backup message not found.', 'wpvivid-backuprestore'); ?>
+            <?php
+        }
+        else{
+            if(isset($message['status']['start_time']))
+            {
+                ?>
+                <strong><?php esc_html_e('Last Backup: ', 'wpvivid-backuprestore'); ?></strong><?php echo esc_html(gmdate("l, F-d-Y H:i", strtotime($message['status']['start_time']))); ?>
+                <?php
+            }
+            else
+            {
+                ?>
+                <strong><?php esc_html_e('Last Backup: ', 'wpvivid-backuprestore'); ?></strong><?php esc_html_e('The last backup message not found.', 'wpvivid-backuprestore'); ?>
+                <?php
+            }
+        }
+    }
+
     public function list_tasks()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try
         {
             if (isset($_POST['backup_id']))
@@ -4161,13 +4413,13 @@ class WPvivid {
                 WPvivid_Setting::delete_option('wpvivid_backup_error_array');
             }
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -4231,7 +4483,7 @@ class WPvivid {
         $backup_success_count=WPvivid_Setting::get_option('wpvivid_backup_success_count');
         if(!empty($backup_success_count)){
             //$notice_msg = $backup_success_count.' backup tasks have been completed. Please switch to <a href="#" onclick="wpvivid_click_switch_page(\'wrap\', \'wpvivid_tab_log\', true);">Log</a> page to check the details.';
-            $notice_msg = sprintf(__('%d backup tasks have been completed. Please switch to <a href="#" onclick="wpvivid_click_switch_page(\'wrap\', \'wpvivid_tab_log\', true);">Log</a> page to check the details.', 'wpvivid-backuprestore'), $backup_success_count);
+            $notice_msg = sprintf('%d backup tasks have been completed. Please switch to <a href="#" onclick="wpvivid_click_switch_page(\'wrap\', \'wpvivid_tab_log\', true);">Log</a> page to check the details.', $backup_success_count);
             $success_notice_html='<div class="notice notice-success is-dismissible inline"><p>'.$notice_msg.'</p>
                                     <button type="button" class="notice-dismiss" onclick="click_dismiss_notice(this);">
                                     <span class="screen-reader-text">Dismiss this notice.</span>
@@ -4306,7 +4558,13 @@ class WPvivid {
      */
     public function get_dir()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             $dir = WPvivid_Setting::get_option('wpvivid_local_setting');
 
@@ -4332,12 +4590,12 @@ class WPvivid {
 
             $ret['result'] = 'success';
             $ret['path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir['path'];
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -4349,24 +4607,30 @@ class WPvivid {
      */
     public function set_security_lock()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             if (isset($_POST['backup_id']) && !empty($_POST['backup_id']) && is_string($_POST['backup_id']) && isset($_POST['lock'])) {
                 $backup_id = sanitize_key($_POST['backup_id']);
                 if ($_POST['lock'] == 0 || $_POST['lock'] == 1) {
-                    $lock = $_POST['lock'];
+                    $lock = sanitize_key($_POST['lock']);
                 } else {
                     $lock = 0;
                 }
 
                 $ret = WPvivid_Backuplist::set_security_lock($backup_id, $lock);
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -4378,16 +4642,22 @@ class WPvivid {
      */
     public function junk_files_info()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             $ret['result'] = 'success';
             $ret['data'] = $this->_junk_files_info_ex();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -4488,8 +4758,9 @@ class WPvivid {
 
     public function _junk_files_info_ex()
     {
-        try {
-            $log_dir = $this->wpvivid_log->GetSaveLogFolder();
+        try
+        {
+            $log_dir = WPvivid_tools::GetSaveLogFolder();
             $log_dir_byte = $this->GetDirectorySize($log_dir);
             $ret['log_dir_size'] = $this->formatBytes($log_dir_byte);
 
@@ -4559,7 +4830,7 @@ class WPvivid {
 
             $dir=WPvivid_Setting::get_backupdir();
             $dir=WP_CONTENT_DIR.DIRECTORY_SEPARATOR. $dir;
-            $path=str_replace('/',DIRECTORY_SEPARATOR,$this->wpvivid_log->GetSaveLogFolder());
+            $path=str_replace('/',DIRECTORY_SEPARATOR,WPvivid_tools::GetSaveLogFolder());
             if(substr($path, -1) == DIRECTORY_SEPARATOR)
             {
                 $path = substr($path, 0, -1);
@@ -4598,7 +4869,7 @@ class WPvivid {
         }
         catch (Exception $e)
         {
-            $ret['log_path'] = $log_dir = $this->wpvivid_log->GetSaveLogFolder();
+            $ret['log_path'] = $log_dir = WPvivid_tools::GetSaveLogFolder();
             $dir = WPvivid_Setting::get_backupdir();
             $ret['old_files_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . WPVIVID_DEFAULT_ROLLBACK_DIR;
             $dir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir;
@@ -4612,66 +4883,15 @@ class WPvivid {
         return $ret;
     }
 
-    public function _junk_files_info()
-    {
-        try {
-            $ret['log_path'] = $log_dir = $this->wpvivid_log->GetSaveLogFolder();
-            $log_dir_byte = $this->GetDirectorySize($ret['log_path']);
-            $ret['log_dir_size'] = $this->formatBytes($log_dir_byte);
-
-            $dir = WPvivid_Setting::get_backupdir();
-            $ret['old_files_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . WPVIVID_DEFAULT_ROLLBACK_DIR;
-            $dir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir;
-            $ret['junk_path'] = $dir;
-
-
-            $backup_dir_byte = $this->GetDirectorySize($dir);
-            $ret['backup_dir_size'] = $this->formatBytes($backup_dir_byte);
-
-            $ret['sum_size'] = $this->formatBytes($backup_dir_byte + $log_dir_byte);
-        }
-        catch (Exception $e)
-        {
-            $ret['log_path'] = $log_dir = $this->wpvivid_log->GetSaveLogFolder();
-            $dir = WPvivid_Setting::get_backupdir();
-            $ret['old_files_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . WPVIVID_DEFAULT_ROLLBACK_DIR;
-            $dir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir;
-            $ret['junk_path'] = $dir;
-            $ret['sum_size'] = '0';
-        }
-        /*
-         * try {
-            $dir = WPvivid_Setting::get_backupdir();
-
-            $ret['log_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir .DIRECTORY_SEPARATOR . 'wpvivid_log';
-            $log_dir_byte = $this->GetDirectorySize($ret['log_path']);
-            $ret['log_dir_size'] = $this->formatBytes($log_dir_byte);
-
-            $ret['old_files_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . WPVIVID_DEFAULT_ROLLBACK_DIR;
-            $dir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir;
-            $ret['junk_path'] = $dir;
-
-            $backup_dir_byte = $this->GetDirectorySize($dir);
-            $ret['backup_dir_size'] = $this->formatBytes($backup_dir_byte);
-
-            $ret['sum_size'] = $this->formatBytes($backup_dir_byte + $log_dir_byte);
-        }
-        catch (Exception $e)
-        {
-            $dir = WPvivid_Setting::get_backupdir();
-            $ret['log_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir .DIRECTORY_SEPARATOR . 'wpvivid_log';
-            $ret['old_files_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . WPVIVID_DEFAULT_ROLLBACK_DIR;
-            $dir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir;
-            $ret['junk_path'] = $dir;
-            $ret['sum_size'] = '0';
-        }
-         */
-        return $ret;
-    }
-
     public function get_out_of_date_info()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             $dir = WPvivid_Setting::get_backupdir();
             $dir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $dir;
@@ -4682,12 +4902,12 @@ class WPvivid {
             $ret['info'] = $info;
             $ret['info']['size'] = $this->formatBytes($info['size']);
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -4709,7 +4929,13 @@ class WPvivid {
 
     public function clean_out_of_date_backup()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try
         {
             $backup_ids=array();
@@ -4723,13 +4949,13 @@ class WPvivid {
             $html = apply_filters('wpvivid_add_backup_list', $html);
             $ret['html'] = $html;
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -4748,7 +4974,13 @@ class WPvivid {
 
     public function clean_local_storage()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try
         {
@@ -4756,7 +4988,7 @@ class WPvivid {
             {
                 die();
             }
-            $options=$_POST['options'];
+            $options=sanitize_text_field($_POST['options']);
             $options =stripslashes($options);
             $options=json_decode($options,true);
             if(is_null($options))
@@ -4767,7 +4999,7 @@ class WPvivid {
             {
                 $ret['result']=WPVIVID_FAILED;
                 $ret['msg']=__('Choose at least one type of junk files for deleting.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
             $delete_files = array();
@@ -4830,7 +5062,7 @@ class WPvivid {
             foreach ($delete_files as $file)
             {
                 if(file_exists($file))
-                    @unlink($file);
+                    @wp_delete_file($file);
             }
 
             foreach ($delete_folder as $folder)
@@ -4846,13 +5078,13 @@ class WPvivid {
             $html = apply_filters('wpvivid_get_log_list', $html);
             $ret['html'] = $html['html'];
             $ret['log_count'] = $html['log_count'];
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
 
@@ -4955,27 +5187,38 @@ class WPvivid {
 
     public function get_setting()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             if (isset($_POST['all']) && is_bool($_POST['all'])) {
-                $all = $_POST['all'];
+                $all = sanitize_key($_POST['all']);
                 if (!$all) {
                     if (isset($_POST['options_name']) && is_array($_POST['options_name'])) {
                         $options_name = $_POST['options_name'];
-                        $ret = WPvivid_Setting::get_setting($all, $options_name);
-                        echo json_encode($ret);
+                        $options_name_array=array();
+                        foreach ($options_name as $option_name)
+                        {
+                            $options_name_array[]=sanitize_text_field($option_name);
+                        }
+                        $ret = WPvivid_Setting::get_setting($all, $options_name_array);
+                        echo wp_json_encode($ret);
                     }
                 } else {
                     $options_name = array();
                     $ret = WPvivid_Setting::get_setting($all, $options_name);
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                 }
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -4983,23 +5226,29 @@ class WPvivid {
 
     public function update_setting()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             if (isset($_POST['options']) && !empty($_POST['options']) && is_string($_POST['options'])) {
-                $json = $_POST['options'];
+                $json = sanitize_text_field($_POST['options']);
                 $json = stripslashes($json);
                 $options = json_decode($json, true);
                 if (is_null($options)) {
                     die();
                 }
                 $ret = WPvivid_Setting::update_setting($options);
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -5007,15 +5256,22 @@ class WPvivid {
 
     function set_default_remote_storage()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             if (!isset($_POST['remote_storage']) || empty($_POST['remote_storage']) || !is_array($_POST['remote_storage'])) {
                 $ret['result'] = WPVIVID_FAILED;
                 $ret['error'] = __('Choose one storage from the list to be the default storage.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
             $remote_storage = $_POST['remote_storage'];
+            $remote_storage = array_map( 'sanitize_text_field', $remote_storage );
             WPvivid_Setting::update_user_history('remote_selected', $remote_storage);
             $ret['result'] = 'success';
             $html = '';
@@ -5041,12 +5297,12 @@ class WPvivid {
             $ret['remote_array'] = $remote_array;
             $success_msg = __('You have successfully changed your default remote storage.', 'wpvivid-backuprestore');
             $ret['notice'] = apply_filters('wpvivid_add_remote_notice', true, $success_msg);
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -5054,22 +5310,29 @@ class WPvivid {
 
     public function check_remote_alias_exist()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         if (!isset($_POST['remote_alias']))
         {
+            $remote_alias=sanitize_text_field($_POST['remote_alias']);
             $remoteslist=WPvivid_Setting::get_all_remote_options();
             foreach ($remoteslist as $key=>$value)
             {
-                if(isset($value['name'])&&$value['name'] == $_POST['remote_alias'])
+                if(isset($value['name'])&&$value['name'] == $remote_alias)
                 {
                     $ret['result']=WPVIVID_FAILED;
                     $ret['error']="Warning: The alias already exists in storage list.";
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
             }
             $ret['result']=WPVIVID_SUCCESS;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
             die();
         }
 
@@ -5077,16 +5340,22 @@ class WPvivid {
     }
 
     function get_default_remote_storage(){
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             $ret['result'] = 'success';
             $ret['remote_storage'] = WPvivid_Setting::get_user_history('remote_selected');
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -5100,38 +5369,49 @@ class WPvivid {
 
     public function get_general_setting()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             if (isset($_POST['all']) && is_bool($_POST['all'])) {
-                $all = $_POST['all'];
+                $all = sanitize_key($_POST['all']);
                 if (!$all) {
                     if (isset($_POST['options_name']) && is_array($_POST['options_name'])) {
                         $options_name = $_POST['options_name'];
-                        $ret['data']['setting'] = WPvivid_Setting::get_setting($all, $options_name);
+                        $options_name_array=array();
+                        foreach ($options_name as $option_name)
+                        {
+                            $options_name_array[]=sanitize_text_field($option_name);
+                        }
+                        $ret['data']['setting'] = WPvivid_Setting::get_setting($all, $options_name_array);
 
                         $schedule = WPvivid_Schedule::get_schedule();
-                        $schedule['next_start'] = date("l, F d, Y H:i", $schedule['next_start']);
+                        $schedule['next_start'] = gmdate("l, F d, Y H:i", $schedule['next_start']);
                         $ret['result'] = 'success';
                         $ret['data']['schedule'] = $schedule;
                         $ret['user_history'] = WPvivid_Setting::get_user_history('remote_selected');
-                        echo json_encode($ret);
+                        echo wp_json_encode($ret);
                     }
                 } else {
                     $options_name = array();
                     $ret['data']['setting'] = WPvivid_Setting::get_setting($all, $options_name);
                     $schedule = WPvivid_Schedule::get_schedule();
-                    $schedule['next_start'] = date("l, F d, Y H:i", $schedule['next_start']);
+                    $schedule['next_start'] = gmdate("l, F d, Y H:i", $schedule['next_start']);
                     $ret['result'] = 'success';
                     $ret['data']['schedule'] = $schedule;
                     $ret['user_history'] = WPvivid_Setting::get_user_history('remote_selected');
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                 }
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -5200,13 +5480,19 @@ class WPvivid {
 
     public function set_general_setting()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         $ret=array();
         try
         {
             if(isset($_POST['setting'])&&!empty($_POST['setting']))
             {
-                $json_setting = $_POST['setting'];
+                $json_setting = sanitize_text_field($_POST['setting']);
                 $json_setting = stripslashes($json_setting);
                 $setting = json_decode($json_setting, true);
                 if (is_null($setting)){
@@ -5215,7 +5501,7 @@ class WPvivid {
                 $ret = $this->check_setting_option($setting);
                 if($ret['result']!=WPVIVID_SUCCESS)
                 {
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
                 $options=WPvivid_Setting::get_setting(true, "");
@@ -5228,22 +5514,28 @@ class WPvivid {
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
     public function set_schedule(){
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
 
         $ret=array();
 
         try{
             if(isset($_POST['schedule'])&&!empty($_POST['schedule']))
             {
-                $json = $_POST['schedule'];
+                $json = sanitize_text_field($_POST['schedule']);
                 $json = stripslashes($json);
                 $schedule = json_decode($json, true);
                 if (is_null($schedule))
@@ -5253,14 +5545,14 @@ class WPvivid {
                 $ret = $this->check_schedule_option($schedule);
                 if($ret['result']!=WPVIVID_SUCCESS)
                 {
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
                 //set_schedule_ex
                 $ret=WPvivid_Schedule::set_schedule_ex($schedule);
                 if($ret['result']!='success')
                 {
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                     die();
                 }
             }
@@ -5269,10 +5561,10 @@ class WPvivid {
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
@@ -5414,82 +5706,86 @@ class WPvivid {
             return $ret;
         }
 
-        if(!isset($data['staging_db_insert_count']))
+        if(!$this->wpvivid_check_staging_pro_active())
         {
-            $ret['error']=__('The value of \'DB Copy Count\' can\'t be empty.', 'wpvivid-backuprestore');
-        }
-        $data['staging_db_insert_count']=sanitize_text_field($data['staging_db_insert_count']);
-        if(empty($data['staging_db_insert_count']) && $data['staging_db_insert_count'] != '0')
-        {
-            $ret['error']=__('The value of \'DB Copy Count\' can\'t be empty.', 'wpvivid-backuprestore');
-            return $ret;
+            if(!isset($data['staging_db_insert_count']))
+            {
+                $ret['error']=__('The value of \'DB Copy Count\' can\'t be empty.', 'wpvivid-backuprestore');
+            }
+            $data['staging_db_insert_count']=sanitize_text_field($data['staging_db_insert_count']);
+            if(empty($data['staging_db_insert_count']) && $data['staging_db_insert_count'] != '0')
+            {
+                $ret['error']=__('The value of \'DB Copy Count\' can\'t be empty.', 'wpvivid-backuprestore');
+                return $ret;
+            }
+
+            if(!isset($data['staging_db_replace_count']))
+            {
+                $ret['error']=__('The value of \'DB Replace Count\' can\'t be empty.', 'wpvivid-backuprestore');
+            }
+            $data['staging_db_replace_count']=sanitize_text_field($data['staging_db_replace_count']);
+            if(empty($data['staging_db_replace_count']) && $data['staging_db_replace_count'] != '0')
+            {
+                $ret['error']=__('The value of \'DB Replace Count\' can\'t be empty.', 'wpvivid-backuprestore');
+                return $ret;
+            }
+
+            if(!isset($data['staging_file_copy_count']))
+            {
+                $ret['error']=__('The value of \'File Copy Count\' can\'t be empty.', 'wpvivid-backuprestore');
+            }
+            $data['staging_file_copy_count']=sanitize_text_field($data['staging_file_copy_count']);
+            if(empty($data['staging_file_copy_count']) && $data['staging_file_copy_count'] != '0')
+            {
+                $ret['error']=__('The value of \'File Copy Count\' can\'t be empty.', 'wpvivid-backuprestore');
+                return $ret;
+            }
+
+            if(!isset($data['staging_exclude_file_size']))
+            {
+                $ret['error']=__('The value of \'Max File Size\' can\'t be empty.', 'wpvivid-backuprestore');
+            }
+            $data['staging_exclude_file_size']=sanitize_text_field($data['staging_exclude_file_size']);
+            if(empty($data['staging_exclude_file_size']) && $data['staging_exclude_file_size'] != '0')
+            {
+                $ret['error']=__('The value of \'Max File Size\' can\'t be empty.', 'wpvivid-backuprestore');
+                return $ret;
+            }
+
+            if(!isset($data['staging_memory_limit']))
+            {
+                $ret['error']=__('The value of \'Staging Memory Limit\' can\'t be empty.', 'wpvivid-backuprestore');
+            }
+            $data['staging_memory_limit']=sanitize_text_field($data['staging_memory_limit']);
+            if(empty($data['staging_memory_limit']) && $data['staging_memory_limit'] != '0')
+            {
+                $ret['error']=__('The value of \'Staging Memory Limit\' can\'t be empty.', 'wpvivid-backuprestore');
+                return $ret;
+            }
+
+            if(!isset($data['staging_max_execution_time']))
+            {
+                $ret['error']=__('The value of \'PHP Scripts Execution Timeout\' can\'t be empty.', 'wpvivid-backuprestore');
+            }
+            $data['staging_max_execution_time']=sanitize_text_field($data['staging_max_execution_time']);
+            if(empty($data['staging_max_execution_time']) && $data['staging_max_execution_time'] != '0')
+            {
+                $ret['error']=__('The value of \'PHP Scripts Execution Timeout\' can\'t be empty.', 'wpvivid-backuprestore');
+                return $ret;
+            }
+
+            if(!isset($data['staging_request_timeout']))
+            {
+                $ret['error']=__('The value of \'Delay Between Requests\' can\'t be empty.', 'wpvivid-backuprestore');
+            }
+            $data['staging_request_timeout']=sanitize_text_field($data['staging_request_timeout']);
+            if(empty($data['staging_request_timeout']) && $data['staging_request_timeout'] != '0')
+            {
+                $ret['error']=__('The value of \'Delay Between Requests\' can\'t be empty.', 'wpvivid-backuprestore');
+                return $ret;
+            }
         }
 
-        if(!isset($data['staging_db_replace_count']))
-        {
-            $ret['error']=__('The value of \'DB Replace Count\' can\'t be empty.', 'wpvivid-backuprestore');
-        }
-        $data['staging_db_replace_count']=sanitize_text_field($data['staging_db_replace_count']);
-        if(empty($data['staging_db_replace_count']) && $data['staging_db_replace_count'] != '0')
-        {
-            $ret['error']=__('The value of \'DB Replace Count\' can\'t be empty.', 'wpvivid-backuprestore');
-            return $ret;
-        }
-
-        if(!isset($data['staging_file_copy_count']))
-        {
-            $ret['error']=__('The value of \'File Copy Count\' can\'t be empty.', 'wpvivid-backuprestore');
-        }
-        $data['staging_file_copy_count']=sanitize_text_field($data['staging_file_copy_count']);
-        if(empty($data['staging_file_copy_count']) && $data['staging_file_copy_count'] != '0')
-        {
-            $ret['error']=__('The value of \'File Copy Count\' can\'t be empty.', 'wpvivid-backuprestore');
-            return $ret;
-        }
-
-        if(!isset($data['staging_exclude_file_size']))
-        {
-            $ret['error']=__('The value of \'Max File Size\' can\'t be empty.', 'wpvivid-backuprestore');
-        }
-        $data['staging_exclude_file_size']=sanitize_text_field($data['staging_exclude_file_size']);
-        if(empty($data['staging_exclude_file_size']) && $data['staging_exclude_file_size'] != '0')
-        {
-            $ret['error']=__('The value of \'Max File Size\' can\'t be empty.', 'wpvivid-backuprestore');
-            return $ret;
-        }
-
-        if(!isset($data['staging_memory_limit']))
-        {
-            $ret['error']=__('The value of \'Staging Memory Limit\' can\'t be empty.', 'wpvivid-backuprestore');
-        }
-        $data['staging_memory_limit']=sanitize_text_field($data['staging_memory_limit']);
-        if(empty($data['staging_memory_limit']) && $data['staging_memory_limit'] != '0')
-        {
-            $ret['error']=__('The value of \'Staging Memory Limit\' can\'t be empty.', 'wpvivid-backuprestore');
-            return $ret;
-        }
-
-        if(!isset($data['staging_max_execution_time']))
-        {
-            $ret['error']=__('The value of \'PHP Scripts Execution Timeout\' can\'t be empty.', 'wpvivid-backuprestore');
-        }
-        $data['staging_max_execution_time']=sanitize_text_field($data['staging_max_execution_time']);
-        if(empty($data['staging_max_execution_time']) && $data['staging_max_execution_time'] != '0')
-        {
-            $ret['error']=__('The value of \'PHP Scripts Execution Timeout\' can\'t be empty.', 'wpvivid-backuprestore');
-            return $ret;
-        }
-
-        if(!isset($data['staging_request_timeout']))
-        {
-            $ret['error']=__('The value of \'Delay Between Requests\' can\'t be empty.', 'wpvivid-backuprestore');
-        }
-        $data['staging_request_timeout']=sanitize_text_field($data['staging_request_timeout']);
-        if(empty($data['staging_request_timeout']) && $data['staging_request_timeout'] != '0')
-        {
-            $ret['error']=__('The value of \'Delay Between Requests\' can\'t be empty.', 'wpvivid-backuprestore');
-            return $ret;
-        }
         //
 
         if(!isset($data['path']))
@@ -5560,7 +5856,13 @@ class WPvivid {
 
     public function export_setting()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             if (isset($_REQUEST['setting']) && !empty($_REQUEST['setting']) && isset($_REQUEST['history']) && !empty($_REQUEST['history']) && isset($_REQUEST['review'])) {
                 $setting = sanitize_text_field($_REQUEST['setting']);
@@ -5589,7 +5891,7 @@ class WPvivid {
 
                 $json = WPvivid_Setting::export_setting_to_json($setting, $history, $review, $backup_list);
 
-                $parse = parse_url(home_url());
+                $parse = wp_parse_url(home_url());
                 $path = '';
                 if(isset($parse['path'])) {
                     $parse['path'] = str_replace('/', '_', $parse['path']);
@@ -5600,8 +5902,8 @@ class WPvivid {
                 $parse['host'] = str_replace('.', '_', $parse['host']);
                 $domain_tran = $parse['host'].$path;
                 $offset=get_option('gmt_offset');
-                $date_format = date("Ymd",time()+$offset*60*60);
-                $time_format = date("His",time()+$offset*60*60);
+                $date_format = gmdate("Ymd",time()+$offset*60*60);
+                $time_format = gmdate("His",time()+$offset*60*60);
                 $export_file_name = apply_filters('wpvivid_white_label_slug', 'wpvivid').'_setting-'.$domain_tran.'-'.$date_format.'-'.$time_format.'.json';
                 if (!headers_sent()) {
                     header('Content-Disposition: attachment; filename='.$export_file_name);
@@ -5612,13 +5914,13 @@ class WPvivid {
                     header('Content-Transfer-Encoding: binary');
                 }
 
-                echo json_encode($json);
+                echo wp_json_encode($json);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         exit;
@@ -5626,10 +5928,16 @@ class WPvivid {
 
     public function import_setting()
     {
-        $this->ajax_check_security('manage_options');
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('manage_options');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        };
         try {
             if (isset($_POST['data']) && !empty($_POST['data']) && is_string($_POST['data'])) {
-                $data = $_POST['data'];
+                $data = sanitize_text_field($_POST['data']);
                 $data = stripslashes($data);
                 $json = json_decode($data, true);
                 if (is_null($json)) {
@@ -5642,18 +5950,18 @@ class WPvivid {
                     do_action('wpvivid_reset_schedule');
                     $ret['result'] = 'success';
                     $ret['slug'] = apply_filters('wpvivid_white_label_slug', 'WPvivid');
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                 } else {
                     $ret['result'] = 'failed';
                     $ret['error'] = __('The selected file is not the setting file for WPvivid. Please upload the right file.', 'wpvivid-backuprestore');
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                 }
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -5661,14 +5969,20 @@ class WPvivid {
 
     public function test_send_mail()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['send_to']) && !empty($_POST['send_to']) && is_string($_POST['send_to'])) {
                 $send_to = sanitize_email($_POST['send_to']);
                 if (empty($send_to)) {
                     $ret['result'] = 'failed';
                     $ret['error'] = __('Invalid email address', 'wpvivid-backuprestore');
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                 } else {
                     $subject = 'WPvivid Test Mail';
                     $body = 'This is a test mail from WPvivid backup plugin';
@@ -5679,14 +5993,14 @@ class WPvivid {
                     } else {
                         $ret['result'] = 'success';
                     }
-                    echo json_encode($ret);
+                    echo wp_json_encode($ret);
                 }
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -5694,7 +6008,13 @@ class WPvivid {
 
     public function create_debug_package()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             $files = WPvivid_error_log::get_error_log();
             $staging_files = WPvivid_error_log::get_staging_error_log();
@@ -5706,37 +6026,37 @@ class WPvivid {
             $path = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $backup_path . DIRECTORY_SEPARATOR . 'wpvivid_debug.zip';
 
             if (file_exists($path)) {
-                @unlink($path);
+                @wp_delete_file($path);
             }
             $archive = new WPvivid_PclZip($path);
 
             if (!empty($files)) {
                 if (!$archive->add($files, WPVIVID_PCLZIP_OPT_REMOVE_ALL_PATH)) {
-                    echo $archive->errorInfo(true) . ' <a href="' . admin_url() . 'admin.php?page=WPvivid">retry</a>.';
+                    echo esc_html($archive->errorInfo(true)) . ' <a href="' . esc_url(admin_url()) . 'admin.php?page=WPvivid">retry</a>.';
                     exit;
                 }
             }
 
             if (!empty($staging_files)) {
                 if (!$archive->add($staging_files, WPVIVID_PCLZIP_OPT_REMOVE_ALL_PATH)) {
-                    echo $archive->errorInfo(true) . ' <a href="' . admin_url() . 'admin.php?page=WPvivid">retry</a>.';
+                    echo esc_html($archive->errorInfo(true)) . ' <a href="' . esc_url(admin_url()) . 'admin.php?page=WPvivid">retry</a>.';
                     exit;
                 }
             }
 
-            $server_info = json_encode($this->get_website_info());
+            $server_info = wp_json_encode($this->get_website_info());
             $server_file_path = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $backup_path . DIRECTORY_SEPARATOR . 'wpvivid_server_info.json';
             if (file_exists($server_file_path)) {
-                @unlink($server_file_path);
+                @wp_delete_file($server_file_path);
             }
             $server_file = fopen($server_file_path, 'x');
             fclose($server_file);
             file_put_contents($server_file_path, $server_info);
             if (!$archive->add($server_file_path, WPVIVID_PCLZIP_OPT_REMOVE_ALL_PATH)) {
-                echo $archive->errorInfo(true) . ' <a href="' . admin_url() . 'admin.php?page=WPvivid">retry</a>.';
+                echo esc_html($archive->errorInfo(true)) . ' <a href="' . esc_url(admin_url()) . 'admin.php?page=WPvivid">retry</a>.';
                 exit;
             }
-            @unlink($server_file_path);
+            @wp_delete_file($server_file_path);
 
             if (session_id())
                 session_write_close();
@@ -5754,37 +6074,38 @@ class WPvivid {
 
             ob_end_clean();
             readfile($path);
-            @unlink($path);
+            @wp_delete_file($path);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         exit;
     }
 
-    public function get_admin_bar_setting()
-    {
-        return WPvivid_Setting::get_admin_bar_setting();
-    }
-
     public function get_log_list()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             $ret['result'] = 'success';
             $html = '';
             $html = apply_filters('wpvivid_get_log_list', $html);
             $ret['html'] = $html['html'];
             $ret['log_count'] = $html['log_count'];
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -5810,17 +6131,17 @@ class WPvivid {
                 else{
                     $offset=get_option('gmt_offset');
                     $localtime = strtotime($value['time'])/* + $offset * 60 * 60*/;
-                    $value['time'] = date('F-d-Y H:i:s',$localtime);
+                    $value['time'] = gmdate('F-d-Y H:i:s',$localtime);
                 }
                 if (empty($value['des'])) {
                     $value['des'] = 'N/A';
                 }
                 $value['path'] = str_replace('\\', '/', $value['path']);
                 $html .= '<tr style="'.esc_attr($log_tr_display, 'wpvivid-backuprestore').'">
-                <td class="row-title"><label for="tablecell">'.__($value['time'], 'wpvivid-backuprestore').'</label>
+                <td class="row-title"><label for="tablecell">'.$value['time'].'</label>
                 </td>
-                <td>'.__($value['des'], 'wpvivid-backuprestore').'</td>
-                <td>'.__($value['file_name'], 'wpvivid-backuprestore').'</td>
+                <td>'.$value['des'].'</td>
+                <td>'.$value['file_name'].'</td>
                 <td>
                     <a onclick="wpvivid_read_log(\''.'wpvivid_view_log'.'\', \''.$value['id'].'\', \''.'backup'.'\')" style="cursor:pointer;">
                     <img src="'.esc_url(WPVIVID_PLUGIN_URL.$pic_log).'" style="vertical-align:middle;">Log
@@ -5836,9 +6157,57 @@ class WPvivid {
         return $ret;
     }
 
+    public function wpvivid_get_log_list_output()
+    {
+        $loglist=$this->get_log_list_ex();
+        $current_num=1;
+        $max_log_diaplay=20;
+        $pic_log='/admin/partials/images/Log.png';
+        if(!empty($loglist['log_list']['file'])) {
+            foreach ($loglist['log_list']['file'] as $value) {
+                if ($current_num <= $max_log_diaplay) {
+                    $log_tr_display = '';
+                } else {
+                    $log_tr_display = 'display: none;';
+                }
+                if (empty($value['time'])) {
+                    $value['time'] = 'N/A';
+                }
+                else{
+                    $localtime = strtotime($value['time']);
+                    $value['time'] = gmdate('F-d-Y H:i:s',$localtime);
+                }
+                if (empty($value['des'])) {
+                    $value['des'] = 'N/A';
+                }
+                $value['path'] = str_replace('\\', '/', $value['path']);
+                ?>
+                <tr style="<?php echo esc_attr($log_tr_display); ?>">
+                    <td class="row-title"><label for="tablecell"><?php echo esc_html($value['time']); ?></label>
+                    </td>
+                    <td><?php echo esc_html($value['des']); ?></td>
+                    <td><?php echo esc_html($value['file_name']); ?></td>
+                    <td>
+                        <a onclick="wpvivid_read_log('wpvivid_view_log', '<?php echo esc_js($value['id']); ?>', 'backup');" style="cursor:pointer;">
+                            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.$pic_log); ?>" style="vertical-align:middle;">Log
+                        </a>
+                    </td>
+                </tr>
+                <?php
+                $current_num++;
+            }
+        }
+    }
+
     public function get_log_list_ex()
     {
         $ret['log_list']['file']=array();
+
+        if(!class_exists('WPvivid_Log'))
+        {
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-log.php';
+        }
+
         $log=new WPvivid_Log();
         $dir=$log->GetSaveLogFolder();
         $files=array();
@@ -5968,7 +6337,13 @@ class WPvivid {
 
     public function view_log()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['id']) && !empty($_POST['id']) && is_string($_POST['id'])) {
                 $id = sanitize_text_field($_POST['id']);
@@ -6008,7 +6383,7 @@ class WPvivid {
                 if (!file_exists($path)) {
                     $json['result'] = 'failed';
                     $json['error'] = __('The log not found.', 'wpvivid-backuprestore');
-                    echo json_encode($json);
+                    echo wp_json_encode($json);
                     die();
                 }
 
@@ -6017,7 +6392,7 @@ class WPvivid {
                 if (!$file) {
                     $json['result'] = 'failed';
                     $json['error'] = __('Unable to open the log file.', 'wpvivid-backuprestore');
-                    echo json_encode($json);
+                    echo wp_json_encode($json);
                     die();
                 }
 
@@ -6029,17 +6404,17 @@ class WPvivid {
 
                 $json['result'] = 'success';
                 $json['data'] = $buffer;
-                echo json_encode($json);
+                echo wp_json_encode($json);
             } else {
                 $json['result'] = 'failed';
                 $json['error'] = __('Reading the log failed. Please try again.', 'wpvivid-backuprestore');
-                echo json_encode($json);
+                echo wp_json_encode($json);
             }
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -6157,6 +6532,7 @@ class WPvivid {
             }
 
             if ($ret['data']['pdo_mysql'] == 'support') {
+                include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-db-method.php';
                 $db_method = new WPvivid_DB_Method();
                 $ret_sql_mode = $db_method->get_sql_mode();
                 if ($ret_sql_mode['result'] == WPVIVID_FAILED) {
@@ -6309,13 +6685,13 @@ class WPvivid {
                 <th class="check-column"><input name="check_backup" type="checkbox" id="' . esc_attr($key, 'wpvivid-backuprestore') . '" value="' . esc_attr($key, 'wpvivid-backuprestore') . '" onclick="wpvivid_click_check_backup(\'' . $key . '\', \'' . $list_name . '\');" /></th>
                 <td class="tablelistcolumn">
                     <div style="float:left;padding:0 10px 10px 0;">
-                        <div class="backuptime"><strong>' . $upload_title . '</strong>' . __(date('M-d-Y H:i', $backup_time), 'wpvivid-backuprestore') . '</div>
+                        <div class="backuptime"><strong>' . $upload_title . '</strong>' . gmdate('M-d-Y H:i', $backup_time) . '</div>
                         <div class="common-table">
                             <span title="To lock the backup, the backup can only be deleted manually" id="wpvivid_lock_' . $key . '">
                             <img src="' . esc_url(WPVIVID_PLUGIN_URL . $backup_lock) . '" name="' . esc_attr($lock_status, 'wpvivid-backuprestore') . '" onclick="wpvivid_set_backup_lock(\'' . $key . '\', \'' . $lock_status . '\');" style="vertical-align:middle; cursor:pointer;"/>
                             </span>
-                            <span style="margin:0;">|</span> <span>' . __('Type:', 'wpvivid-backuprestore') . '</span><span>' . __($value['type'], 'wpvivid-backuprestore') . '</span>
-                            <span style="margin:0;">|</span> <span title="Backup log"><a href="#" onclick="wpvivid_read_log(\'' . 'wpvivid_view_backup_log' . '\', \'' . __($key) . '\');"><img src="' . esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/Log.png') . '" style="vertical-align:middle;cursor:pointer;"/><span style="margin:0;">' . __('Log', 'wpvivid-backuprestore') . '</span></a></span>
+                            <span style="margin:0;">|</span> <span>' . __('Type:', 'wpvivid-backuprestore') . '</span><span>' . $value['type'] . '</span>
+                            <span style="margin:0;">|</span> <span title="Backup log"><a href="#" onclick="wpvivid_read_log(\'' . 'wpvivid_view_backup_log' . '\', \'' . $key . '\');"><img src="' . esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/Log.png') . '" style="vertical-align:middle;cursor:pointer;"/><span style="margin:0;">' . __('Log', 'wpvivid-backuprestore') . '</span></a></span>
                         </div>
                     </div>
                 </td>
@@ -6323,16 +6699,16 @@ class WPvivid {
                     <div style="float:left;padding:10px 10px 10px 0;">' . $remote_pic_html . '</div>
                 </td>
                 <td class="tablelistcolumn" style="min-width:100px;">
-                    <div id="wpvivid_file_part_' . __($key, 'wpvivid-backuprestore') . '" style="float:left;padding:10px 10px 10px 0;">
+                    <div id="wpvivid_file_part_' .$key . '" style="float:left;padding:10px 10px 10px 0;">
                         <div style="cursor:pointer;" onclick="wpvivid_initialize_download(\'' . $key . '\', \'' . $list_name . '\');" title="'. esc_html__('Prepare to download the backup', 'wpvivid-backuprestore') .'">
-                            <img id="wpvivid_download_btn_' . __($key, 'wpvivid-backuprestore') . '" src="' . esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/download.png') . '" style="vertical-align:middle;" /><span>' . __('Download', 'wpvivid-backuprestore') . '</span>
-                            <div class="spinner" id="wpvivid_download_loading_' . __($key, 'wpvivid-backuprestore') . '" style="float:right;width:auto;height:auto;padding:10px 180px 10px 0;background-position:0 0;"></div>
+                            <img id="wpvivid_download_btn_' . $key . '" src="' . esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/download.png') . '" style="vertical-align:middle;" /><span>' . __('Download', 'wpvivid-backuprestore') . '</span>
+                            <div class="spinner" id="wpvivid_download_loading_' . $key . '" style="float:right;width:auto;height:auto;padding:10px 180px 10px 0;background-position:0 0;"></div>
                         </div>
                     </div>
                 </td>
                 <td class="tablelistcolumn" style="min-width:100px;">
                     <div class="' . $tour_class . '" onclick="wpvivid_popup_tour(\'' . $hide . '\');">
-                        ' . $tour_message . '<div style="cursor:pointer;padding:10px 0 10px 0;" onclick="wpvivid_initialize_restore(\'' . __($key, 'wpvivid-backuprestore') . '\',\'' . __(date('M-d-Y H:i', $backup_time), 'wpvivid-backuprestore') . '\',\'' . __($value['type'], 'wpvivid-backuprestore') . '\');" style="float:left;padding:10px 10px 10px 0;">
+                        ' . $tour_message . '<div style="cursor:pointer;padding:10px 0 10px 0;" onclick="wpvivid_initialize_restore(\'' . $key . '\',\'' . gmdate('M-d-Y H:i', $backup_time) . '\',\'' . $value['type'] . '\');" style="float:left;padding:10px 10px 10px 0;">
                             <img src="' . esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/Restore.png') . '" style="vertical-align:middle;" /><span>' . __('Restore', 'wpvivid-backuprestore') . '</span>
                         </div>
                     </div>
@@ -6346,6 +6722,140 @@ class WPvivid {
             }
         }
         return $html;
+    }
+
+    public function wpvivid_add_backup_list_output()
+    {
+        $list_name = 'wpvivid_backup_list';
+        $backuplist=WPvivid_Backuplist::get_backuplist($list_name);
+        $remote=array();
+        $remote=apply_filters('wpvivid_remote_pic', $remote);
+        $upload_title = '';
+        foreach ($backuplist as $key=>$value) {
+            if($value['type'] !== 'Rollback') {
+                $row_style = '';
+                if ($value['type'] == 'Migration' || $value['type'] == 'Upload') {
+                    if ($value['type'] == 'Migration') {
+                        $upload_title = 'Received Backup: ';
+                    } else if ($value['type'] == 'Upload') {
+                        $upload_title = __('Uploaded Backup: ', 'wpvivid-backuprestore');
+                    }
+                    $row_style = 'border: 2px solid #006799; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box;';
+                } else if ($value['type'] == 'Manual' || $value['type'] == 'Cron') {
+                    $row_style = '';
+                    $upload_title = '';
+                } else {
+                    $upload_title = '';
+                }
+
+                if (empty($value['lock'])) {
+                    $backup_lock = '/admin/partials/images/unlocked.png';
+                    $lock_status = 'unlock';
+                } else {
+                    if ($value['lock'] == 0) {
+                        $backup_lock = '/admin/partials/images/unlocked.png';
+                        $lock_status = 'unlock';
+                    } else {
+                        $backup_lock = '/admin/partials/images/locked.png';
+                        $lock_status = 'lock';
+                    }
+                }
+
+                $backup_time=$value['create_time'];
+                if(isset($value['backup']['files'])){
+                    foreach ($value['backup']['files'] as $file_info){
+                        if(preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}/',$file_info['file_name'],$matches))
+                        {
+                            $backup_date=$matches[0];
+                        }
+                        else
+                        {
+                            $backup_date=$value['create_time'];
+                        }
+
+                        $time_array=explode('-',$backup_date);
+                        if(sizeof($time_array)>4){
+                            $time=$time_array[0].'-'.$time_array[1].'-'.$time_array[2].' '.$time_array[3].':'.$time_array[4];
+                            $backup_time=strtotime($time);
+                        }
+                        break;
+                    }
+                }
+
+                $hide = 'hide';
+                ?>
+                <tr style="<?php echo esc_attr($row_style); ?>">
+                    <th class="check-column"><input name="check_backup" type="checkbox" id="<?php echo esc_attr($key); ?>" value="<?php echo esc_attr($key); ?>" onclick="wpvivid_click_check_backup('<?php echo esc_js($key); ?>', '<?php echo esc_js($list_name); ?>');" /></th>
+                    <td class="tablelistcolumn">
+                        <div style="float:left;padding:0 10px 10px 0;">
+                            <div class="backuptime"><strong><?php echo esc_html($upload_title); ?></strong><?php echo esc_html(gmdate('M-d-Y H:i', $backup_time)); ?></div>
+                            <div class="common-table">
+                            <span title="To lock the backup, the backup can only be deleted manually" id="wpvivid_lock_<?php echo esc_attr($key); ?>">
+                            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL . $backup_lock); ?>" name="<?php echo esc_attr($lock_status); ?>" onclick="wpvivid_set_backup_lock('<?php echo esc_js($key); ?>', '<?php echo esc_js($lock_status); ?>');" style="vertical-align:middle; cursor:pointer;"/>
+                            </span>
+                                <span style="margin:0;">|</span> <span><?php esc_html_e('Type: ', 'wpvivid-backuprestore'); ?>'</span><span><?php echo esc_html($value['type']); ?></span>
+                                <span style="margin:0;">|</span> <span title="Backup log"><a href="#" onclick="wpvivid_read_log('wpvivid_view_backup_log', '<?php echo esc_js($key); ?>');"><img src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/Log.png'); ?>" style="vertical-align:middle;cursor:pointer;"/><span style="margin:0;"><?php esc_html_e('Log', 'wpvivid-backuprestore'); ?></span></a></span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="tablelistcolumn">
+                        <div style="float:left;padding:10px 10px 10px 0;">
+                            <?php
+                            $remote_pic_html = '';
+                            $save_local_pic_y = '/admin/partials/images/storage-local.png';
+                            $save_local_pic_n = '/admin/partials/images/storage-local(gray).png';
+                            $local_title = 'Localhost';
+                            if ($value['save_local'] == 1 || $value['type'] == 'Migration') {
+                                echo '<img  src="'.esc_url(WPVIVID_PLUGIN_URL . $save_local_pic_y).'" style="vertical-align:middle; " title="'.esc_attr($local_title).'"/>';
+                            } else {
+                                echo '<img  src="'.esc_url(WPVIVID_PLUGIN_URL . $save_local_pic_n).'" style="vertical-align:middle; " title="'.esc_attr($local_title).'"/>';
+                            }
+                            $b_has_remote = false;
+                            if (is_array($remote)) {
+                                foreach ($remote as $key1 => $value1) {
+                                    $pic = $value1['default_pic'];
+                                    foreach ($value['remote'] as $storage_type) {
+                                        $b_has_remote = true;
+                                        if ($key1 === $storage_type['type']) {
+                                            $pic = $value1['selected_pic'];
+                                        } else {
+                                            $pic = $value1['default_pic'];
+                                        }
+                                    }
+                                    if (!$b_has_remote) {
+                                        $pic = $value1['default_pic'];
+                                    }
+                                    $title = $value1['title'];
+                                    echo '<img  src="'.esc_url(WPVIVID_PLUGIN_URL . $pic).'" style="vertical-align:middle; " title="'.esc_attr($title).'"/>';
+                                }
+                            }
+                            ?>
+                        </div>
+                    </td>
+                    <td class="tablelistcolumn" style="min-width:100px;">
+                        <div id="wpvivid_file_part_<?php echo esc_attr($key); ?>" style="float:left;padding:10px 10px 10px 0;">
+                            <div style="cursor:pointer;" onclick="wpvivid_initialize_download('<?php echo esc_js($key); ?>', '<?php echo esc_js($list_name); ?>');" title="<?php esc_attr_e('Prepare to download the backup', 'wpvivid-backuprestore'); ?>">
+                                <img id="wpvivid_download_btn_<?php echo esc_attr($key); ?>" src="<?php echo esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/download.png'); ?>" style="vertical-align:middle;" /><span><?php esc_html_e('Download', 'wpvivid-backuprestore'); ?></span>
+                                <div class="spinner" id="wpvivid_download_loading_<?php esc_attr($key); ?>" style="float:right;width:auto;height:auto;padding:10px 180px 10px 0;background-position:0 0;"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="tablelistcolumn" style="min-width:100px;">
+                        <div onclick="wpvivid_popup_tour('<?php echo esc_js($hide); ?>');">
+                            <div style="cursor:pointer;padding:10px 0 10px 0;" onclick="wpvivid_initialize_restore('<?php echo esc_js($key); ?>','<?php echo esc_js(gmdate('M-d-Y H:i', $backup_time)); ?>','<?php echo esc_js($value['type']); ?>');" style="float:left;padding:10px 10px 10px 0;">
+                                <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/Restore.png'); ?>" style="vertical-align:middle;" /><span><?php esc_html_e('Restore', 'wpvivid-backuprestore'); ?></span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="tablelistcolumn">
+                        <div class="backuplist-delete-backup" style="padding:10px 0 10px 0;">
+                            <img src="<?php echo esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/Delete.png'); ?>" style="vertical-align:middle; cursor:pointer;" title="<?php esc_attr_e('Delete the backup', 'wpvivid-backuprestore'); ?>" onclick="wpvivid_delete_selected_backup('<?php echo esc_js($key); ?>', '<?php echo esc_js($list_name); ?>');"/>
+                        </div>
+                    </td>
+                </tr>
+                <?php
+            }
+        }
     }
 
     public function wpvivid_add_remote_storage_list($html)
@@ -6374,14 +6884,14 @@ class WPvivid {
             $storage_type = $value['type'];
             $storage_type=apply_filters('wpvivid_storage_provider_tran', $storage_type);
             $html .= '<tr>
-                <td>'.__($i++, 'wpvivid-backuprestore').'</td>
-                <td><input type="checkbox" name="remote_storage" value="'.esc_attr($key, 'wpvivid-backuprestore').'" '.esc_attr($check_status, 'wpvivid-backuprestore').' /></td>
-                <td>'.__($storage_type, 'wpvivid-backuprestore').'</td>
-                <td class="row-title"><label for="tablecell">'.__($value['name'], 'wpvivid-backuprestore').'</label></td>
+                <td>'.$i++.'</td>
+                <td><input type="checkbox" name="remote_storage" value="'.esc_attr($key).'" '.esc_attr($check_status).' /></td>
+                <td>'.$storage_type.'</td>
+                <td class="row-title"><label for="tablecell">'.$value['name'].'</label></td>
                 <td>
-                    <div style="float: left;"><img src="'.esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/Edit.png').'" onclick="click_retrieve_remote_storage(\''.esc_attr($key, 'wpvivid-backuprestore').'\',\''.esc_attr($value['type'], 'wpvivid-backuprestore').'\',\''.esc_attr($value['name'], 'wpvivid-backuprestore').'\'
+                    <div style="float: left;"><img src="'.esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/Edit.png').'" onclick="click_retrieve_remote_storage(\''.esc_attr($key).'\',\''.esc_attr($value['type']).'\',\''.esc_attr($value['name']).'\'
                     );" style="vertical-align:middle; cursor:pointer;" title="'. esc_html__('Edit the remote storage', 'wpvivid-backuprestore') .'"/></div>
-                    <div><img src="'.esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/Delete.png').'" onclick="wpvivid_delete_remote_storage(\''.esc_attr($key, 'wpvivid-backuprestore').'\'
+                    <div><img src="'.esc_url(WPVIVID_PLUGIN_URL.'/admin/partials/images/Delete.png').'" onclick="wpvivid_delete_remote_storage(\''.esc_attr($key).'\'
                     );" style="vertical-align:middle; cursor:pointer;" title="'. esc_html__('Remove the remote storage', 'wpvivid-backuprestore') .'"/></div>
                 </td>
                 </tr>';
@@ -6602,10 +7112,16 @@ class WPvivid {
 
     public function need_review()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_POST['review']) && !empty($_POST['review']) && is_string($_POST['review'])) {
-                $review = $_POST['review'];
+                $review = sanitize_text_field($_POST['review']);
                 if ($review == 'rate-now') {
                     $review_option = 'do_not_ask';
                     echo 'https://wordpress.org/support/plugin/wpvivid-backuprestore/reviews/?filter=5';
@@ -6629,14 +7145,20 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
     }
 
     public function wpvivid_send_debug_info(){
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (!isset($_POST['user_mail']) || empty($_POST['user_mail'])) {
                 $ret['result'] = 'failed';
@@ -6647,38 +7169,49 @@ class WPvivid {
                     $ret['result'] = 'failed';
                     $ret['error'] = __('Please enter a valid email address.', 'wpvivid-backuprestore');
                 } else {
-                    $this->ajax_check_security();
-                    $ret = WPvivid_mail_report::wpvivid_send_debug_info($_POST['user_mail'],$_POST['server_type'],$_POST['host_provider'],$_POST['comment']);
+                    $user_mail=sanitize_email($_POST['user_mail']);
+                    $server_type=sanitize_text_field($_POST['server_type']);
+                    $host_provider=sanitize_text_field($_POST['host_provider']);
+                    $comment=sanitize_text_field($_POST['comment']);
+                    if(!class_exists('WPvivid_mail_report'))
+                        include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-mail-report.php';
+                    $ret = WPvivid_mail_report::wpvivid_send_debug_info($user_mail,$server_type,$host_provider,$comment);
                 }
             }
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
     }
 
     public function get_ini_memory_limit(){
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             $memory_limit = @ini_get('memory_limit');
-            echo $memory_limit;
+            echo esc_html($memory_limit);
         }
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
     }
 
     public function wpvivid_switch_domain_to_folder($domain){
-        $parse = parse_url($domain);
+        $parse = wp_parse_url($domain);
         $path = '';
         if(isset($parse['path'])) {
             $parse['path'] = str_replace('/', '_', $parse['path']);
@@ -6697,7 +7230,13 @@ class WPvivid {
 
     public function amazons3_notice()
     {
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             $notice_message = 'init';
             WPvivid_Setting::update_option('wpvivid_amazons3_notice', $notice_message);
@@ -6705,7 +7244,7 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         die();
@@ -6719,23 +7258,42 @@ class WPvivid {
     }
 
     public function hide_mainwp_tab_page(){
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         WPvivid_Setting::update_option('wpvivid_hide_mwp_tab_page_v1', true);
         $ret['result']=WPVIVID_SUCCESS;
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
     public function hide_wp_cron_notice(){
-        $this->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         WPvivid_Setting::update_option('wpvivid_hide_wp_cron_notice', true);
         $ret['result']=WPVIVID_SUCCESS;
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
     public function download_backup_mainwp()
     {
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try {
             if (isset($_REQUEST['backup_id']) && isset($_REQUEST['file_name'])) {
                 if (!empty($_REQUEST['backup_id']) && is_string($_REQUEST['backup_id'])) {
@@ -6746,7 +7304,7 @@ class WPvivid {
 
                 if (!empty($_REQUEST['file_name']) && is_string($_REQUEST['file_name'])) {
                     //$file_name=sanitize_file_name($_REQUEST['file_name']);
-                    $file_name = $_REQUEST['file_name'];
+                    $file_name = sanitize_text_field($_REQUEST['file_name']);
                 } else {
                     die();
                 }
@@ -6806,20 +7364,24 @@ class WPvivid {
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
             die();
         }
         $admin_url = admin_url();
-        echo '<a href="'.$admin_url.'admin.php?page=WPvivid">file not found. please retry again.</a>';
+        echo '<a href="'.esc_url($admin_url).'admin.php?page=WPvivid">file not found. please retry again.</a>';
         die();
     }
 
     public function set_mail_subject($subject, $task){
+        if(!class_exists('WPvivid_mail_report'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-mail-report.php';
         $subject=WPvivid_mail_report::create_subject($task);
         return $subject;
     }
 
     public function set_mail_body($body, $task){
+        if(!class_exists('WPvivid_mail_report'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-mail-report.php';
         $body=WPvivid_mail_report::create_body($task);
         return $body;
     }

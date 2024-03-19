@@ -102,7 +102,7 @@ abstract class AbstractUploadBuilder
         // Use the contents of a file as the data source
         if (is_string($source)) {
             if (!file_exists($source)) {
-                throw new InvalidArgumentException("File does not exist: {$source}");
+                throw new InvalidArgumentException(esc_html("File does not exist: {$source}"));
             }
             // Clear the cache so that we send accurate file sizes
             clearstatcache(true, $source);

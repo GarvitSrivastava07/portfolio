@@ -241,7 +241,7 @@ class WPvivid_Google_Model implements ArrayAccess
   {
     if ($obj && !is_array($obj)) {
       throw new WPvivid_Google_Exception(
-          "Incorrect parameter type passed to $method(). Expected an array."
+          esc_html("Incorrect parameter type passed to $method(). Expected an array.")
       );
     }
   }

@@ -40,6 +40,7 @@ class WPvivid_Backup_Database
 
             require_once 'class-wpvivid-mysqldump-method.php';
             require_once 'class-wpvivid-mysqldump.php';
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-db-method.php';
 
             $db_method=new WPvivid_DB_Method();
             $version =$db_method->get_mysql_version();
@@ -106,7 +107,7 @@ class WPvivid_Backup_Database
                 $dump = new WPvivid_Mysqldump($host, $database_name, $user, $pass, $is_additional_db, $dumpSettings);
 
                 if (file_exists($backup_file))
-                    @unlink($backup_file);
+                    @wp_delete_file($backup_file);
 
                 $dump->task_id=$task_id;
                 $dump->start($backup_file);

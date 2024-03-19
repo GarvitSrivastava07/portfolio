@@ -24,8 +24,13 @@ class Wpvivid_BackupUploader
 
     function cancel_upload_backup_free()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
         try{
             $path=WP_CONTENT_DIR.DIRECTORY_SEPARATOR.WPvivid_Setting::get_backupdir().DIRECTORY_SEPARATOR;
             if(is_dir($path))
@@ -45,12 +50,12 @@ class Wpvivid_BackupUploader
                             {
                                 if (preg_match('/.*\.tmp$/', $filename))
                                 {
-                                    @unlink($path  . $filename);
+                                    @wp_delete_file($path  . $filename);
                                 }
 
                                 if (preg_match('/.*\.part$/', $filename))
                                 {
-                                    @unlink($path  . $filename);
+                                    @wp_delete_file($path  . $filename);
                                 }
                             }
                         }
@@ -63,7 +68,7 @@ class Wpvivid_BackupUploader
         catch (Exception $error) {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
@@ -81,8 +86,13 @@ class Wpvivid_BackupUploader
 
     function is_backup_file_free()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try
         {
@@ -116,12 +126,12 @@ class Wpvivid_BackupUploader
                 $ret['error'] = 'Failed to post file name.';
             }
 
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
 
         die();
@@ -129,31 +139,41 @@ class Wpvivid_BackupUploader
 
     function upload_files_finish_free()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try {
             $ret = $this->_rescan_local_folder_set_backup();
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     function delete_upload_incomplete_backup()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try {
             if(isset($_POST['incomplete_backup'])&&!empty($_POST['incomplete_backup']))
             {
-                $json = $_POST['incomplete_backup'];
+                $json = sanitize_text_field($_POST['incomplete_backup']);
                 $json = stripslashes($json);
                 $incomplete_backup = json_decode($json, true);
 
@@ -165,32 +185,38 @@ class Wpvivid_BackupUploader
                         $backup = basename($backup);
                         if (preg_match('/wpvivid-.*_.*_.*\.zip$/', $backup))
                         {
-                            @unlink($path.$backup);
+                            @wp_delete_file($path.$backup);
                         }
                         else if(preg_match('/'.apply_filters('wpvivid_white_label_file_prefix', 'wpvivid').'-.*_.*_.*\.zip$/', $backup))
                         {
-                            @unlink($path.$backup);
+                            @wp_delete_file($path.$backup);
                         }
                     }
                 }
 
                 $ret['result']='success';
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
             }
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     function get_file_id()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
+
         $file_name=sanitize_text_field($_POST['file_name']);
         if(isset($file_name))
         {
@@ -229,7 +255,7 @@ class Wpvivid_BackupUploader
             $ret['error']='Failed to post file name.';
         }
 
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
@@ -266,13 +292,18 @@ class Wpvivid_BackupUploader
 
     function upload_files()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try
         {
-            $chunk = isset($_REQUEST["chunk"]) ? intval($_REQUEST["chunk"]) : 0;
-            $chunks = isset($_REQUEST["chunks"]) ? intval($_REQUEST["chunks"]) : 0;
+            $chunk = isset($_REQUEST["chunk"]) ? intval(sanitize_key($_REQUEST["chunk"])) : 0;
+            $chunks = isset($_REQUEST["chunks"]) ? intval(sanitize_key($_REQUEST["chunks"])) : 0;
 
             $fileName = isset($_REQUEST["name"]) ? sanitize_text_field($_REQUEST["name"]) : $_FILES["file"]["name"];
 
@@ -304,18 +335,18 @@ class Wpvivid_BackupUploader
                 }
                 else
                 {
-                    echo json_encode(array('result'=>'failed','error'=>"Failed to open tmp file.path:".$status['file']));
+                    echo wp_json_encode(array('result'=>'failed','error'=>"Failed to open tmp file.path:".$status['file']));
                     die();
                 }
 
                 @fclose($in);
                 @fclose($out);
 
-                @unlink($status['file']);
+                @wp_delete_file($status['file']);
             }
             else
             {
-                echo json_encode(array('result'=>'failed','error'=>"Failed to open input stream.path:{$filePath}.part"));
+                echo wp_json_encode(array('result'=>'failed','error'=>"Failed to open input stream.path:{$filePath}.part"));
                 die();
             }
 
@@ -325,26 +356,32 @@ class Wpvivid_BackupUploader
                 rename("{$filePath}.part", $filePath);
             }
 
-            echo json_encode(array('result' => WPVIVID_SUCCESS));
+            echo wp_json_encode(array('result' => WPVIVID_SUCCESS));
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     function upload_files_finish()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         $ret['html']=false;
         if(isset($_POST['files']))
         {
-            $files =stripslashes($_POST['files']);
+            $files=sanitize_text_field($_POST['files']);
+            $files =stripslashes($files);
             $files =json_decode($files,true);
             if(is_null($files))
             {
@@ -402,7 +439,7 @@ class Wpvivid_BackupUploader
                     else{
                         foreach ($files as $file) {
                             $this->clean_tmp_files($path, $file['name']);
-                            @unlink($path . $file['name']);
+                            @wp_delete_file($path . $file['name']);
                         }
                         $ret['result']=WPVIVID_FAILED;
                         $ret['error']='Upload file failed.';
@@ -425,7 +462,7 @@ class Wpvivid_BackupUploader
             $ret['result']=WPVIVID_FAILED;
             $ret['error']='Failed to post file name.';
         }
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
@@ -438,7 +475,7 @@ class Wpvivid_BackupUploader
                 $iPos = strrpos($file, '_');
                 $file_temp = substr($file, 0, $iPos);
                 if($file_temp === $filename) {
-                    @unlink($path.$file);
+                    @wp_delete_file($path.$file);
                 }
             }
         }
@@ -629,11 +666,16 @@ class Wpvivid_BackupUploader
 
     function rescan_local_folder_set_backup()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         $ret = $this->_rescan_local_folder_set_backup();
-        echo json_encode($ret);
+        echo wp_json_encode($ret);
         die();
     }
 
@@ -646,7 +688,7 @@ class Wpvivid_BackupUploader
         $backupdir=WPvivid_Setting::get_backupdir();
         ?>
         <div style="padding-top: 10px;">
-            <span><?php _e('Tips: Click the button below to scan all uploaded or received backups in directory', 'wpvivid-backuprestore'); ?>&nbsp<?php echo WP_CONTENT_DIR.'/'.$backupdir; ?></span>
+            <span><?php esc_html_e('Tips: Click the button below to scan all uploaded or received backups in directory', 'wpvivid-backuprestore'); ?>&nbsp<?php echo esc_html(WP_CONTENT_DIR.'/'.$backupdir); ?></span>
         </div>
         <div style="padding-top: 10px;">
             <input type="submit" class="button-primary" value="<?php esc_attr_e('Scan uploaded backup or received backup', 'wpvivid-backuprestore'); ?>" onclick="wpvivid_rescan_local_folder();" />
@@ -688,11 +730,16 @@ class Wpvivid_BackupUploader
 
     function get_backup_count()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         $backuplist=WPvivid_Backuplist::get_backuplist();
-        echo sizeof($backuplist);
+        echo esc_attr(sizeof($backuplist));
         die();
     }
 
@@ -702,8 +749,8 @@ class Wpvivid_BackupUploader
         <div id="wpvivid_plupload-upload-ui" class="hide-if-no-js" style="margin-bottom: 10px;">
             <div id="drag-drop-area">
                 <div class="drag-drop-inside">
-                    <p class="drag-drop-info"><?php _e('Drop files here', 'wpvivid-backuprestore'); ?></p>
-                    <p><?php _ex('or', 'Uploader: Drop files here - or - Select Files', 'wpvivid-backuprestore'); ?></p>
+                    <p class="drag-drop-info"><?php esc_html_e('Drop files here', 'wpvivid-backuprestore'); ?></p>
+                    <p><?php esc_html_x('or', 'Uploader: Drop files here - or - Select Files', 'wpvivid-backuprestore'); ?></p>
                     <p class="drag-drop-buttons"><input id="wpvivid_select_file_button" type="button" value="<?php esc_attr_e('Select Files', 'wpvivid-backuprestore'); ?>" class="button" /></p>
                 </div>
             </div>
@@ -858,7 +905,7 @@ class Wpvivid_BackupUploader
             {
                 jQuery('#wpvivid_upload_file_list').append(
                     '<div id="' + file.id + '" style="width: 100%; height: 36px; background: #fff; margin-bottom: 1px;">' +
-                    '<img src=" <?php echo $upload_file_image; ?> " alt="" style="float: left; margin: 2px 10px 0 3px; max-width: 40px; max-height: 32px;">' +
+                    '<img src=" <?php echo esc_attr($upload_file_image); ?> " alt="" style="float: left; margin: 2px 10px 0 3px; max-width: 40px; max-height: 32px;">' +
                     '<div style="line-height: 36px; float: left; margin-left: 5px;"><span>' + file.name + '</span></div>' +
                     '<div class="fileprogress" style="line-height: 36px; float: right; margin-right: 5px;"></div>' +
                     '</div>' +
@@ -889,7 +936,7 @@ class Wpvivid_BackupUploader
 
             function wpvivid_init_upload_list()
             {
-                uploader = new plupload.Uploader(<?php echo json_encode($plupload_init); ?>);
+                uploader = new plupload.Uploader(<?php echo wp_json_encode($plupload_init); ?>);
 
                 // checks if browser supports drag and drop upload, makes some css adjustments if necessary
                 uploader.bind('Init', function(up)
@@ -970,7 +1017,7 @@ class Wpvivid_BackupUploader
                                 jQuery('#wpvivid_backup_list').html('');
                                 jQuery('#wpvivid_backup_list').append(jsonarray.html);
                                 wpvivid_click_switch_page('backup', 'wpvivid_tab_backup', true);
-                                location.href = '<?php echo admin_url() . 'admin.php?page=WPvivid'; ?>';
+                                location.href = '<?php echo esc_url(admin_url()) . 'admin.php?page=WPvivid'; ?>';
                             }
                             else
                             {

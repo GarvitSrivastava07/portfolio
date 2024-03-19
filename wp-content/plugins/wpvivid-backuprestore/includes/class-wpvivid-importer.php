@@ -41,44 +41,6 @@ class WPvivid_Export_List extends WP_List_Table
         $this->page_num=$page_num;
     }
 
-    public function print_column_headers( $with_id = true )
-    {
-        list($columns, $hidden, $sortable, $primary) = $this->get_column_info();
-
-        if (!empty($columns['cb'])) {
-            static $cb_counter = 1;
-            $columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __('Select All', 'wpvivid-backuprestore') . '</label>'
-                . '<input id="cb-select-all-' . $cb_counter . '" type="checkbox"/>';
-            $cb_counter++;
-        }
-
-        foreach ($columns as $column_key => $column_display_name) {
-            $class = array('manage-column', "column-$column_key");
-
-            if (in_array($column_key, $hidden)) {
-                $class[] = 'hidden';
-            }
-
-            if ('cb' === $column_key) {
-                $class[] = 'check-column';
-            }
-
-            if ($column_key === $primary) {
-                $class[] = 'column-primary';
-            }
-
-            $tag = ('cb' === $column_key) ? 'td' : 'th';
-            $scope = ('th' === $tag) ? 'scope="col"' : '';
-            $id = $with_id ? "id='$column_key'" : '';
-
-            if (!empty($class)) {
-                $class = "class='" . join(' ', $class) . "'";
-            }
-
-            echo "<$tag $scope $id $class>$column_display_name</$tag>";
-        }
-    }
-
     public function get_columns()
     {
         $posts_columns = array();
@@ -143,7 +105,7 @@ class WPvivid_Export_List extends WP_List_Table
     public function column_cb( $item )
     {
         ?>
-        <input id="cb-select-<?php echo $item['id']; ?>" type="checkbox" name="export[]" value="<?php echo $item['id']; ?>"/>
+        <input id="cb-select-<?php echo esc_attr($item['id']); ?>" type="checkbox" name="export[]" value="<?php echo esc_attr($item['id']); ?>"/>
         <?php
     }
 
@@ -151,10 +113,10 @@ class WPvivid_Export_List extends WP_List_Table
     {
         echo '<td>                 
                     <div>
-                        '.$item['file_name'].'
+                        '.esc_html($item['file_name']).'
                     </div>
                      <div style="padding-bottom: 5px;">
-                        <div class="backuptime">Data Modified: ' . __(date('M-d-Y H:i', $item['time']), 'wpvivid-backuprestore') . '</div>              
+                        <div class="backuptime">Data Modified: ' .esc_html(gmdate('M-d-Y H:i', $item['time'])) . '</div>              
                     </div>
                 </td>';
     }
@@ -164,7 +126,9 @@ class WPvivid_Export_List extends WP_List_Table
         $export = $item['export_type'] === 'page' ? 'Page' : 'Post';
         echo '<td style="color: #000;">              
                     <div>
-                        <div style="float:left;padding:10px 10px 10px 0;">'.__('Type: ', 'wpvivid-backuprestore').$export.'</div>
+                        <div style="float:left;padding:10px 10px 10px 0;">';
+        esc_html_e('Type: ', 'wpvivid-backuprestore');
+        echo esc_html($export).'</div>
                     </div> 
               </td>';
     }
@@ -173,7 +137,7 @@ class WPvivid_Export_List extends WP_List_Table
     {
         echo '<td style="min-width:100px;">
                     <div style="float:left;padding:10px 10px 10px 0;">
-                        '.$item['posts_count'].'
+                        '.esc_html($item['posts_count']).'
                     </div>
                 </td>';
     }
@@ -182,7 +146,7 @@ class WPvivid_Export_List extends WP_List_Table
     {
         echo '<td style="min-width:100px;">
                     <div style="float:left;padding:10px 10px 10px 0;">
-                        '.$item['media_size'].'
+                        '.esc_html($item['media_size']).'
                     </div>
                 </td>';
     }
@@ -191,7 +155,8 @@ class WPvivid_Export_List extends WP_List_Table
     {
         echo '<td style="min-width:100px;">
                    <div class="export-list-import" style="cursor:pointer;padding:10px 0 10px 0;">
-                        <img src="' . esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/Restore.png') . '" style="vertical-align:middle;" /><span>' . __('Import', 'wpvivid-backuprestore') . '</span>
+                        <img src="' . esc_url(WPVIVID_PLUGIN_URL . '/admin/partials/images/Restore.png') . '" style="vertical-align:middle;" /><span>' ; esc_html_e('Import', 'wpvivid-backuprestore') ;
+                        echo '</span>
                    </div>                
                </td>';
     }
@@ -243,129 +208,10 @@ class WPvivid_Export_List extends WP_List_Table
     public function single_row($item)
     {
         ?>
-        <tr id="<?php echo $item['id'] ?>" class="wpvivid-export-list-item">
+        <tr id="<?php echo esc_attr($item['id']) ?>" class="wpvivid-export-list-item">
             <?php $this->single_row_columns( $item ); ?>
         </tr>
         <?php
-    }
-
-    protected function pagination( $which ) {
-        if ( empty( $this->_pagination_args ) ) {
-            return;
-        }
-
-        $total_items     = $this->_pagination_args['total_items'];
-        $total_pages     = $this->_pagination_args['total_pages'];
-        $infinite_scroll = false;
-        if ( isset( $this->_pagination_args['infinite_scroll'] ) ) {
-            $infinite_scroll = $this->_pagination_args['infinite_scroll'];
-        }
-
-        if ( 'top' === $which && $total_pages > 1 ) {
-            $this->screen->render_screen_reader_content( 'heading_pagination' );
-        }
-
-        $output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items, 'wpvivid-backuprestore' ), number_format_i18n( $total_items ) ) . '</span>';
-
-        $current              = $this->get_pagenum();
-        $removable_query_args = wp_removable_query_args();
-
-        $current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
-
-        $current_url = remove_query_arg( $removable_query_args, $current_url );
-
-        $page_links = array();
-
-        $total_pages_before = '<span class="paging-input">';
-        $total_pages_after  = '</span></span>';
-
-        $disable_first = $disable_last = $disable_prev = $disable_next = false;
-
-        if ( $current == 1 ) {
-            $disable_first = true;
-            $disable_prev  = true;
-        }
-        if ( $current == 2 ) {
-            $disable_first = true;
-        }
-        if ( $current == $total_pages ) {
-            $disable_last = true;
-            $disable_next = true;
-        }
-        if ( $current == $total_pages - 1 ) {
-            $disable_last = true;
-        }
-
-        if ( $disable_first ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&laquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='first-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                __( 'First page', 'wpvivid-backuprestore' ),
-                '&laquo;'
-            );
-        }
-
-        if ( $disable_prev ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&lsaquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='prev-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                $current,
-                __( 'Previous page', 'wpvivid-backuprestore' ),
-                '&lsaquo;'
-            );
-        }
-
-        if ( 'bottom' === $which ) {
-            $html_current_page  = $current;
-            $total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page', 'wpvivid-backuprestore' ) . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
-        } else {
-            $html_current_page = sprintf(
-                "%s<input class='current-page' id='current-page-selector-import' type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' /><span class='tablenav-paging-text'>",
-                '<label for="current-page-selector-import" class="screen-reader-text">' . __( 'Current Page', 'wpvivid-backuprestore' ) . '</label>',
-                $current,
-                strlen( $total_pages )
-            );
-        }
-        $html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
-        $page_links[]     = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging', 'wpvivid-backuprestore' ), $html_current_page, $html_total_pages ) . $total_pages_after;
-
-        if ( $disable_next ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&rsaquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='next-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                $current,
-                __( 'Next page', 'wpvivid-backuprestore' ),
-                '&rsaquo;'
-            );
-        }
-
-        if ( $disable_last ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&raquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='last-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                __( 'Last page', 'wpvivid-backuprestore' ),
-                '&raquo;'
-            );
-        }
-
-        $pagination_links_class = 'pagination-links';
-        if ( ! empty( $infinite_scroll ) ) {
-            $pagination_links_class .= ' hide-if-js';
-        }
-        $output .= "\n<span class='$pagination_links_class'>" . join( "\n", $page_links ) . '</span>';
-
-        if ( $total_pages ) {
-            $page_class = $total_pages < 2 ? ' one-page' : '';
-        } else {
-            $page_class = ' no-pages';
-        }
-        $this->_pagination = "<div class='tablenav-pages{$page_class}'>$output</div>";
-
-        echo $this->_pagination;
     }
 }
 
@@ -495,7 +341,7 @@ class WPvivid_import_data
         if(filesize($this->import_log_file)>4*1024*1024)
         {
             $this->import_log->CloseFile();
-            unlink($this->import_log_file);
+            wp_delete_file($this->import_log_file);
             $this->import_log=null;
             $this->import_log=new WPvivid_Log();
             $this->import_log->OpenLogFile($this->import_log_file,'has_folder');
@@ -625,7 +471,7 @@ class WPvivid_media_importer
                 return $ret;
             }
             $this->import_log->wpvivid_write_import_log('Import task is completed, file name: '.$file_path, 'notice');
-            @unlink($file_path);
+            @wp_delete_file($file_path);
         }
 
         $this->replace_domain();
@@ -639,6 +485,8 @@ class WPvivid_media_importer
 
     public function get_file_info($file_name)
     {
+        if(!class_exists('WPvivid_ZipClass'))
+            include_once WPVIVID_PLUGIN_DIR . '/includes/class-wpvivid-zipclass.php';
         $zip=new WPvivid_ZipClass();
         $ret=$zip->get_json_data($file_name, 'export');
         if($ret['result'] === WPVIVID_SUCCESS)
@@ -1671,7 +1519,7 @@ class WPvivid_media_importer
 
         if(!file_exists($new_file))
         {
-            return new WP_Error( 'import_file_error', __('File not exist, file:'.$new_file, 'wpvivid-backuprestore') );
+            return new WP_Error( 'import_file_error', 'File not exist, file:'.$new_file );
         }
 
         $wp_filetype = wp_check_filetype( $file_name );
@@ -1748,7 +1596,7 @@ class WPvivid_media_importer
 
         if ( is_wp_error( $post_id ) )
         {
-            echo 'error file:'.$upload['file'];
+            echo 'error file:'.esc_html($upload['file']);
         }
 
         //$metadata=wp_generate_attachment_metadata( $post_id, $upload['file'] );
@@ -1784,7 +1632,7 @@ class WPvivid_media_importer
 
         if(!file_exists($new_file))
         {
-            return new WP_Error( 'import_file_error', __('File not exist, file:'.$new_file, 'wpvivid-backuprestore') );
+            return new WP_Error( 'import_file_error', 'File not exist, file:'.$new_file );
         }
 
         return apply_filters(

@@ -43,56 +43,10 @@ class WPvivid_Exclude_Files_List extends WP_List_Table
         return array( 'widefat striped' );
     }
 
-    public function print_column_headers( $with_id = true )
-    {
-        list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
-
-        if (!empty($columns['cb']))
-        {
-            static $cb_counter = 1;
-            $columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __('Select All', 'wpvivid-backuprestore') . '</label>'
-                . '<input id="cb-select-all-' . $cb_counter . '" type="checkbox"/>';
-            $cb_counter++;
-        }
-
-        foreach ( $columns as $column_key => $column_display_name )
-        {
-
-            $class = array( 'manage-column', "column-$column_key" );
-
-            if ( in_array( $column_key, $hidden ) )
-            {
-                $class[] = 'hidden';
-            }
-
-
-            if ( $column_key === $primary )
-            {
-                $class[] = 'column-primary';
-            }
-
-            if ( $column_key === 'cb' )
-            {
-                $class[] = 'check-column';
-            }
-            $tag='th';
-            $tag   = ( 'cb' === $column_key ) ? 'td' : 'th';
-            $scope = ( 'th' === $tag ) ? 'scope="col"' : '';
-            $id    = $with_id ? "id='$column_key'" : '';
-
-            if ( ! empty( $class ) )
-            {
-                $class = "class='" . join( ' ', $class ) . "'";
-            }
-
-            echo "<$tag $scope $id $class>$column_display_name</$tag>";
-        }
-    }
-
     public function get_columns()
     {
         $sites_columns = array(
-            'cb'          => __( ' ', 'wpvivid-backuprestore' ),
+            'cb'          => ' ',
             'file_regex'    => __( 'File Regex', 'wpvivid-backuprestore' )
         );
 
@@ -121,13 +75,13 @@ class WPvivid_Exclude_Files_List extends WP_List_Table
 
     public function column_cb( $item )
     {
-        $html='<input type="checkbox" name="regex_list" />';
-        echo $html;
+        echo '<input type="checkbox" name="regex_list" />';
+
     }
 
     public function column_file_regex( $item )
     {
-        echo $item;
+        echo esc_html($item);
     }
 
     public function has_items()
@@ -180,128 +134,10 @@ class WPvivid_Exclude_Files_List extends WP_List_Table
     public function single_row($item)
     {
         ?>
-        <tr file_regex="<?php echo $item?>">
+        <tr file_regex="<?php echo esc_attr($item)?>">
             <?php $this->single_row_columns( $item ); ?>
         </tr>
         <?php
-    }
-
-    protected function pagination( $which )
-    {
-        if ( empty( $this->_pagination_args ) )
-        {
-            return;
-        }
-
-        $total_items     = $this->_pagination_args['total_items'];
-        $total_pages     = $this->_pagination_args['total_pages'];
-        $infinite_scroll = false;
-        if ( isset( $this->_pagination_args['infinite_scroll'] ) )
-        {
-            $infinite_scroll = $this->_pagination_args['infinite_scroll'];
-        }
-
-        if ( 'top' === $which && $total_pages > 1 )
-        {
-            $this->screen->render_screen_reader_content( 'heading_pagination' );
-        }
-
-        $output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items, 'wpvivid-backuprestore' ), number_format_i18n( $total_items ) ) . '</span>';
-
-        $current              = $this->get_pagenum();
-
-        $page_links = array();
-
-        $total_pages_before = '<span class="paging-input">';
-        $total_pages_after  = '</span></span>';
-
-        $disable_first = $disable_last = $disable_prev = $disable_next = false;
-
-        if ( $current == 1 ) {
-            $disable_first = true;
-            $disable_prev  = true;
-        }
-        if ( $current == 2 ) {
-            $disable_first = true;
-        }
-        if ( $current == $total_pages ) {
-            $disable_last = true;
-            $disable_next = true;
-        }
-        if ( $current == $total_pages - 1 ) {
-            $disable_last = true;
-        }
-
-        if ( $disable_first ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&laquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='first-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                __( 'First page', 'wpvivid-backuprestore' ),
-                '&laquo;'
-            );
-        }
-
-        if ( $disable_prev ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&lsaquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='prev-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                $current,
-                __( 'Previous page', 'wpvivid-backuprestore' ),
-                '&lsaquo;'
-            );
-        }
-
-        if ( 'bottom' === $which ) {
-            $html_current_page  = $current;
-            $total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page', 'wpvivid-backuprestore' ) . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
-        } else {
-            $html_current_page = sprintf(
-                "%s<input class='current-page'  type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' /><span class='tablenav-paging-text'>",
-                '<label  class="screen-reader-text">' . __( 'Current Page', 'wpvivid-backuprestore' ) . '</label>',
-                $current,
-                strlen( $total_pages )
-            );
-        }
-        $html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
-        $page_links[]     = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging', 'wpvivid-backuprestore' ), $html_current_page, $html_total_pages ) . $total_pages_after;
-
-        if ( $disable_next ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&rsaquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='next-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                $current,
-                __( 'Next page', 'wpvivid-backuprestore' ),
-                '&rsaquo;'
-            );
-        }
-
-        if ( $disable_last ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&raquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='last-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                __( 'Last page', 'wpvivid-backuprestore' ),
-                '&raquo;'
-            );
-        }
-
-        $pagination_links_class = 'pagination-links';
-        if ( ! empty( $infinite_scroll ) ) {
-            $pagination_links_class .= ' hide-if-js';
-        }
-        $output .= "\n<span class='$pagination_links_class'>" . join( "\n", $page_links ) . '</span>';
-
-        if ( $total_pages ) {
-            $page_class = $total_pages < 2 ? ' one-page' : '';
-        } else {
-            $page_class = ' no-pages';
-        }
-        $this->_pagination = "<div class='tablenav-pages{$page_class}'>$output</div>";
-
-        echo $this->_pagination;
     }
 
     protected function display_tablenav( $which ) {
@@ -318,7 +154,7 @@ class WPvivid_Exclude_Files_List extends WP_List_Table
         if ( $total_pages >1)
         {
             ?>
-            <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php esc_attr_e($css_type); ?>">
+            <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php echo esc_attr($css_type); ?>">
                 <div class="alignleft actions bulkactions">
                     <label for="wpvivid_uc_exclude_regex_bulk_action" class="screen-reader-text">Select bulk action</label>
                     <select name="action" id="wpvivid_uc_exclude_regex_bulk_action">
@@ -337,7 +173,7 @@ class WPvivid_Exclude_Files_List extends WP_List_Table
         else
         {
             ?>
-            <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php esc_attr_e($css_type); ?>">
+            <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php echo esc_attr($css_type); ?>">
                 <div class="alignleft actions bulkactions">
                     <label for="wpvivid_uc_exclude_regex_bulk_action" class="screen-reader-text">Select bulk action</label>
                     <select name="action" id="wpvivid_uc_exclude_regex_bulk_action">
@@ -359,7 +195,7 @@ class WPvivid_Exclude_Files_List extends WP_List_Table
 
         $this->screen->render_screen_reader_content( 'heading_list' );
         ?>
-        <table class="wp-list-table <?php echo implode( ' ', $this->get_table_classes() ); ?>" >
+        <table class="wp-list-table <?php echo esc_attr(implode( ' ', $this->get_table_classes() )); ?>" >
             <thead>
             <tr>
                 <?php $this->print_column_headers(); ?>
@@ -369,7 +205,7 @@ class WPvivid_Exclude_Files_List extends WP_List_Table
             <tbody id="the-list"
                 <?php
                 if ( $singular ) {
-                    echo " data-wp-lists='list:$singular'";
+                    echo esc_attr(" data-wp-lists='list:$singular'");
                 }
                 ?>
             >
@@ -421,56 +257,10 @@ class WPvivid_Post_Type_List extends WP_List_Table
         return array( 'widefat striped' );
     }
 
-    public function print_column_headers( $with_id = true )
-    {
-        list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
-
-        if (!empty($columns['cb']))
-        {
-            static $cb_counter = 1;
-            $columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __('Select All', 'wpvivid-backuprestore') . '</label>'
-                . '<input id="cb-select-all-' . $cb_counter . '" type="checkbox"/>';
-            $cb_counter++;
-        }
-
-        foreach ( $columns as $column_key => $column_display_name )
-        {
-
-            $class = array( 'manage-column', "column-$column_key" );
-
-            if ( in_array( $column_key, $hidden ) )
-            {
-                $class[] = 'hidden';
-            }
-
-
-            if ( $column_key === $primary )
-            {
-                $class[] = 'column-primary';
-            }
-
-            if ( $column_key === 'cb' )
-            {
-                $class[] = 'check-column';
-            }
-            $tag='th';
-            $tag   = ( 'cb' === $column_key ) ? 'td' : 'th';
-            $scope = ( 'th' === $tag ) ? 'scope="col"' : '';
-            $id    = $with_id ? "id='$column_key'" : '';
-
-            if ( ! empty( $class ) )
-            {
-                $class = "class='" . join( ' ', $class ) . "'";
-            }
-
-            echo "<$tag $scope $id $class>$column_display_name</$tag>";
-        }
-    }
-
     public function get_columns()
     {
         $sites_columns = array(
-            'cb'          => __( ' ', 'wpvivid-backuprestore' ),
+            'cb'          => ' ',
             'post_type'    => __( 'Post Type', 'wpvivid-backuprestore' )
         );
 
@@ -499,13 +289,13 @@ class WPvivid_Post_Type_List extends WP_List_Table
 
     public function column_cb( $item )
     {
-        $html='<input type="checkbox" name="post_type" />';
-        echo $html;
+        echo '<input type="checkbox" name="post_type" />';
+
     }
 
     public function column_post_type( $item )
     {
-        echo $item;
+        echo esc_attr($item);
     }
 
     public function has_items()
@@ -558,128 +348,10 @@ class WPvivid_Post_Type_List extends WP_List_Table
     public function single_row($item)
     {
         ?>
-        <tr post_type="<?php echo $item?>">
+        <tr post_type="<?php echo esc_attr($item)?>">
             <?php $this->single_row_columns( $item ); ?>
         </tr>
         <?php
-    }
-
-    protected function pagination( $which )
-    {
-        if ( empty( $this->_pagination_args ) )
-        {
-            return;
-        }
-
-        $total_items     = $this->_pagination_args['total_items'];
-        $total_pages     = $this->_pagination_args['total_pages'];
-        $infinite_scroll = false;
-        if ( isset( $this->_pagination_args['infinite_scroll'] ) )
-        {
-            $infinite_scroll = $this->_pagination_args['infinite_scroll'];
-        }
-
-        if ( 'top' === $which && $total_pages > 1 )
-        {
-            $this->screen->render_screen_reader_content( 'heading_pagination' );
-        }
-
-        $output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items, 'wpvivid-backuprestore' ), number_format_i18n( $total_items ) ) . '</span>';
-
-        $current              = $this->get_pagenum();
-
-        $page_links = array();
-
-        $total_pages_before = '<span class="paging-input">';
-        $total_pages_after  = '</span></span>';
-
-        $disable_first = $disable_last = $disable_prev = $disable_next = false;
-
-        if ( $current == 1 ) {
-            $disable_first = true;
-            $disable_prev  = true;
-        }
-        if ( $current == 2 ) {
-            $disable_first = true;
-        }
-        if ( $current == $total_pages ) {
-            $disable_last = true;
-            $disable_next = true;
-        }
-        if ( $current == $total_pages - 1 ) {
-            $disable_last = true;
-        }
-
-        if ( $disable_first ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&laquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='first-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                __( 'First page', 'wpvivid-backuprestore' ),
-                '&laquo;'
-            );
-        }
-
-        if ( $disable_prev ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&lsaquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='prev-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                $current,
-                __( 'Previous page', 'wpvivid-backuprestore' ),
-                '&lsaquo;'
-            );
-        }
-
-        if ( 'bottom' === $which ) {
-            $html_current_page  = $current;
-            $total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page', 'wpvivid-backuprestore' ) . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
-        } else {
-            $html_current_page = sprintf(
-                "%s<input class='current-page'  type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' /><span class='tablenav-paging-text'>",
-                '<label  class="screen-reader-text">' . __( 'Current Page', 'wpvivid-backuprestore' ) . '</label>',
-                $current,
-                strlen( $total_pages )
-            );
-        }
-        $html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
-        $page_links[]     = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging', 'wpvivid-backuprestore' ), $html_current_page, $html_total_pages ) . $total_pages_after;
-
-        if ( $disable_next ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&rsaquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='next-page button' value='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                $current,
-                __( 'Next page', 'wpvivid-backuprestore' ),
-                '&rsaquo;'
-            );
-        }
-
-        if ( $disable_last ) {
-            $page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&raquo;</span>';
-        } else {
-            $page_links[] = sprintf(
-                "<div class='last-page button'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></div>",
-                __( 'Last page', 'wpvivid-backuprestore' ),
-                '&raquo;'
-            );
-        }
-
-        $pagination_links_class = 'pagination-links';
-        if ( ! empty( $infinite_scroll ) ) {
-            $pagination_links_class .= ' hide-if-js';
-        }
-        $output .= "\n<span class='$pagination_links_class'>" . join( "\n", $page_links ) . '</span>';
-
-        if ( $total_pages ) {
-            $page_class = $total_pages < 2 ? ' one-page' : '';
-        } else {
-            $page_class = ' no-pages';
-        }
-        $this->_pagination = "<div class='tablenav-pages{$page_class}'>$output</div>";
-
-        echo $this->_pagination;
     }
 
     protected function display_tablenav( $which ) {
@@ -696,7 +368,7 @@ class WPvivid_Post_Type_List extends WP_List_Table
         if ( $total_pages >1)
         {
             ?>
-            <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php esc_attr_e($css_type); ?>">
+            <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php echo esc_attr($css_type); ?>">
                 <div class="alignleft actions bulkactions">
                     <label for="wpvivid_uc_post_type_bulk_action" class="screen-reader-text">Select bulk action</label>
                     <select name="action" id="wpvivid_uc_post_type_bulk_action">
@@ -715,7 +387,7 @@ class WPvivid_Post_Type_List extends WP_List_Table
         else
         {
             ?>
-            <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php esc_attr_e($css_type); ?>">
+            <div class="tablenav <?php echo esc_attr( $which ); ?>" style="<?php echo esc_attr($css_type); ?>">
                 <div class="alignleft actions bulkactions">
                     <label for="wpvivid_uc_post_type_bulk_action" class="screen-reader-text">Select bulk action</label>
                     <select name="action" id="wpvivid_uc_post_type_bulk_action">
@@ -737,7 +409,7 @@ class WPvivid_Post_Type_List extends WP_List_Table
 
         $this->screen->render_screen_reader_content( 'heading_list' );
         ?>
-        <table class="wp-list-table <?php echo implode( ' ', $this->get_table_classes() ); ?>" >
+        <table class="wp-list-table <?php echo esc_attr(implode( ' ', $this->get_table_classes() )); ?>" >
             <thead>
             <tr>
                 <?php $this->print_column_headers(); ?>
@@ -747,7 +419,7 @@ class WPvivid_Post_Type_List extends WP_List_Table
             <tbody id="the-list"
                 <?php
                 if ( $singular ) {
-                    echo " data-wp-lists='list:$singular'";
+                    echo esc_attr(" data-wp-lists='list:$singular'");
                 }
                 ?>
             >
@@ -832,7 +504,7 @@ class WPvivid_Uploads_Cleaner_Setting
     public function wpvivid_settingpage_add_tab_uc()
     {
         ?>
-        <a href="#" id="wpvivid_tab_uc_setting" class="nav-tab setting-nav-tab" onclick="switchsettingTabs(event,'page-uc-setting')"><?php _e('Media Cleaner Settings', 'wpvivid-backuprestore'); ?></a>
+        <a href="#" id="wpvivid_tab_uc_setting" class="nav-tab setting-nav-tab" onclick="switchsettingTabs(event,'page-uc-setting')"><?php esc_html_e('Media Cleaner Settings', 'wpvivid-backuprestore'); ?></a>
         <?php
     }
 
@@ -905,364 +577,57 @@ class WPvivid_Uploads_Cleaner_Setting
         <div class="postbox schedule-tab-block setting-page-content">
             <div class="wpvivid-element-space-bottom">
                 <label for="wpvivid_uc_scan_file_types">
-                    <input style="margin: 4px;" id="wpvivid_uc_quick_scan" type="checkbox" option="setting" name="wpvivid_uc_quick_scan" <?php esc_attr_e($quick_scan); ?> />
-                    <span><strong><?php _e('Enable Quick Scan', 'wpvivid-backuprestore'); ?></strong></span>
+                    <input style="margin: 4px;" id="wpvivid_uc_quick_scan" type="checkbox" option="setting" name="wpvivid_uc_quick_scan" <?php echo esc_attr($quick_scan); ?> />
+                    <span><strong><?php esc_html_e('Enable Quick Scan', 'wpvivid-backuprestore'); ?></strong></span>
                 </label>
             </div>
             <div class="wpvivid-element-space-bottom">
-                <span><?php _e('Checking this option will speed up your scans but may produce lower accuracy.', 'wpvivid-backuprestore'); ?></span>
+                <span><?php esc_html_e('Checking this option will speed up your scans but may produce lower accuracy.', 'wpvivid-backuprestore'); ?></span>
             </div>
             <div class="wpvivid-element-space-bottom">
                 <label for="wpvivid_uc_delete_media_when_delete_file">
-                    <input style="margin: 4px;" id="wpvivid_uc_delete_media_when_delete_file" style="margin-right: 4px;" type="checkbox" option="setting" name="wpvivid_uc_delete_media_when_delete_file" <?php esc_attr_e($delete_media_when_delete_file); ?> />
-                    <span><strong><?php _e('Delete Image URL', 'wpvivid-backuprestore'); ?></strong></span>
+                    <input style="margin: 4px;" id="wpvivid_uc_delete_media_when_delete_file" style="margin-right: 4px;" type="checkbox" option="setting" name="wpvivid_uc_delete_media_when_delete_file" <?php echo esc_attr($delete_media_when_delete_file); ?> />
+                    <span><strong><?php esc_html_e('Delete Image URL', 'wpvivid-backuprestore'); ?></strong></span>
                 </label>
             </div>
             <div class="wpvivid-element-space-bottom">
-                <span><?php _e('With this option checked, when the image is deleted, the corresponding image url in the database that is not used anywhere on your website will also be deleted.', 'wpvivid-backuprestore'); ?></span>
+                <span><?php esc_html_e('With this option checked, when the image is deleted, the corresponding image url in the database that is not used anywhere on your website will also be deleted.', 'wpvivid-backuprestore'); ?></span>
             </div>
         </div>
 
         <div class="postbox schedule-tab-block setting-page-content">
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('Posts Quantity Processed Per Request', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Posts Quantity Processed Per Request', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input style="margin: 0px;" type="text" placeholder="20" option="setting" name="wpvivid_uc_scan_limit" id="wpvivid_uc_scan_limit" class="all-options" value="<?php esc_attr_e($scan_limit, 'wpvivid-backuprestore'); ?>" onkeyup="value=value.replace(/\D/g,'')" />
+                <input style="margin: 0px;" type="text" placeholder="20" option="setting" name="wpvivid_uc_scan_limit" id="wpvivid_uc_scan_limit" class="all-options" value="<?php echo esc_attr($scan_limit); ?>" onkeyup="value=value.replace(/\D/g,'')" />
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e( 'Set how many posts to process per request. The value should be set depending on your server performance and the recommended value is 20.', 'wpvivid-backuprestore' ); ?>
+                <?php esc_html_e( 'Set how many posts to process per request. The value should be set depending on your server performance and the recommended value is 20.', 'wpvivid-backuprestore' ); ?>
             </div>
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('Media Files Quantity Processed Per Request', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Media Files Quantity Processed Per Request', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <input style="margin: 0px;" type="text" placeholder="100" option="setting" name="wpvivid_uc_files_limit" id="wpvivid_uc_files_limit" class="all-options" value="<?php esc_attr_e($files_limit, 'wpvivid-backuprestore'); ?>" onkeyup="value=value.replace(/\D/g,'')" />
+                <input style="margin: 0px;" type="text" placeholder="100" option="setting" name="wpvivid_uc_files_limit" id="wpvivid_uc_files_limit" class="all-options" value="<?php echo esc_attr($files_limit); ?>" onkeyup="value=value.replace(/\D/g,'')" />
             </div>
             <div class="wpvivid-element-space-bottom">
-                <?php _e( 'Set how many media files to process per request. The value should be set depending on your server performance and the recommended value is 100.', 'wpvivid-backuprestore' ); ?>
+                <?php esc_html_e( 'Set how many media files to process per request. The value should be set depending on your server performance and the recommended value is 100.', 'wpvivid-backuprestore' ); ?>
             </div>
 
-            <div class="wpvivid-element-space-bottom"><strong><?php _e('Exclude images by folder path', 'wpvivid-backuprestore'); ?></strong></div>
+            <div class="wpvivid-element-space-bottom"><strong><?php esc_html_e('Exclude images by folder path', 'wpvivid-backuprestore'); ?></strong></div>
             <div class="wpvivid-element-space-bottom">
-                <textarea placeholder="Example:&#10;/wp-content/uploads/19/03/&#10;/wp-content/uploads/19/04/" option="setting" name="wpvivid_uc_exclude_files_regex" style="width:100%; height:200px; overflow-x:auto;"><?php echo $exclude_path; ?></textarea>
+                <textarea placeholder="Example:&#10;/wp-content/uploads/19/03/&#10;/wp-content/uploads/19/04/" option="setting" name="wpvivid_uc_exclude_files_regex" style="width:100%; height:200px; overflow-x:auto;"><?php echo esc_html($exclude_path); ?></textarea>
             </div>
         </div>
         <?php
-        /*
-        <div class="postbox schedule-tab-block wpvivid-setting-addon" style="margin-bottom: 10px; padding-bottom: 0;">
-            <div style="margin-bottom: 20px;"><strong><?php _e('Files Filter ', 'wpvivid-backuprestore'); ?></strong></div>
-            <div>
-                <div class="wpvivid-element-space-bottom" style="float: left;">
-                    <input type="text" option="setting" id="wpvivid_uc_exclude_files_regex" class="regular-text" />
-                </div>
-                <div class="wpvivid-element-space-bottom" style="float: left;">
-                    <input class="button-secondary" id="wpvivid_uc_add_exclude_files_regex" type="submit" value="<?php esc_attr_e( 'Add File Regex', 'wpvivid-backuprestore' ); ?>"/>
-                </div>
-                <div style="clear: both;"></div>
-            </div>
-            <div class="wpvivid-element-space-bottom">
-                <div id="wpvivid_uc_add_exclude_files_regex_list">
-                    <?php
-                    $list = new WPvivid_Exclude_Files_List();
-
-                    $list->set_list($white_list);
-                    $list->prepare_items();
-                    $list ->display();
-                    ?>
-                </div>
-            </div>
-            <script>
-                jQuery('#wpvivid_uc_add_exclude_files_regex').click(function()
-                {
-                    var file_exclude=jQuery('#wpvivid_uc_exclude_files_regex').val();
-                    wpvivid_get_exclude_files_list('first',file_exclude);
-                });
-
-                jQuery('#wpvivid_uc_add_exclude_files_regex_list').on("click",'.first-page',function()
-                {
-                    wpvivid_get_exclude_files_list('first');
-                });
-
-                jQuery('#wpvivid_uc_add_exclude_files_regex_list').on("click",'.prev-page',function()
-                {
-                    var page=parseInt(jQuery(this).attr('value'));
-                    wpvivid_get_exclude_files_list(page-1);
-                });
-
-                jQuery('#wpvivid_uc_add_exclude_files_regex_list').on("click",'.next-page',function()
-                {
-                    var page=parseInt(jQuery(this).attr('value'));
-                    wpvivid_get_exclude_files_list(page+1);
-                });
-
-                jQuery('#wpvivid_uc_add_exclude_files_regex_list').on("click",'.last-page',function()
-                {
-                    wpvivid_get_exclude_files_list('last');
-                });
-
-                jQuery('#wpvivid_uc_add_exclude_files_regex_list').on("keypress", '.current-page', function()
-                {
-                    if(event.keyCode === 13)
-                    {
-                        var page = jQuery(this).val();
-                        wpvivid_get_exclude_files_list(page);
-                    }
-                });
-
-                jQuery('#wpvivid_uc_add_exclude_files_regex_list').on("click",'.action',function()
-                {
-                    var selected=jQuery('#wpvivid_uc_exclude_regex_bulk_action').val();
-
-                    if(selected=='remove_exclude_regex')
-                    {
-                        wpvivid_delete_exclude_files();
-                    }
-                });
-
-                function wpvivid_get_exclude_files_list(page,file_exclude='')
-                {
-                    var ajax_data = {
-                        'action': 'wpvivid_get_exclude_files_list',
-                        'page':page,
-                        'file_exclude':file_exclude
-                    };
-
-                    wpvivid_post_request(ajax_data, function (data)
-                    {
-                        jQuery('#wpvivid_uc_add_exclude_files_regex_list').html('');
-                        try
-                        {
-                            var jsonarray = jQuery.parseJSON(data);
-                            if (jsonarray.result === 'success')
-                            {
-                                jQuery('#wpvivid_uc_add_exclude_files_regex_list').html(jsonarray.html);
-                            }
-                            else
-                            {
-                                alert(jsonarray.error);
-                            }
-                        }
-                        catch (err)
-                        {
-                            alert(err);
-                        }
-                    }, function (XMLHttpRequest, textStatus, errorThrown)
-                    {
-                        var error_message = wpvivid_output_ajaxerror('achieving backup', textStatus, errorThrown);
-                        alert(error_message);
-                    });
-                }
-
-                function wpvivid_delete_exclude_files()
-                {
-                    var json = {};
-                    json['selected']=Array();
-                    jQuery('input[name=regex_list][type=checkbox]').each(function(index, value)
-                    {
-                        if(jQuery(value).prop('checked'))
-                        {
-                            jQuery(value).closest('tr');
-                            var path = jQuery(this).closest('tr').attr('file_regex');
-                            json['selected'].push(path)
-                        }
-                    });
-                    var selected= JSON.stringify(json);
-                    jQuery('#wpvivid_uc_add_exclude_files_regex_list').find('.action').prop('disabled', true);
-
-                    var ajax_data = {
-                        'action': 'wpvivid_delete_exclude_files',
-                        'selected':selected
-                    };
-                    wpvivid_post_request(ajax_data, function (data)
-                    {
-                        jQuery('#wpvivid_uc_add_exclude_files_regex_list').find('.action').prop('disabled', false);
-                        jQuery('#wpvivid_uc_add_exclude_files_regex_list').html('');
-                        try
-                        {
-                            var jsonarray = jQuery.parseJSON(data);
-                            if (jsonarray.result === 'success')
-                            {
-                                alert('success');
-                                jQuery('#wpvivid_uc_add_exclude_files_regex_list').html(jsonarray.html);
-                            }
-                            else
-                            {
-                                alert(jsonarray.error);
-                            }
-                        }
-                        catch (err)
-                        {
-                            alert(err);
-                        }
-                    }, function (XMLHttpRequest, textStatus, errorThrown)
-                    {
-                        jQuery('#wpvivid_uc_add_exclude_files_regex_list').find('.action').prop('disabled', false);
-
-                        var error_message = wpvivid_output_ajaxerror('achieving backup', textStatus, errorThrown);
-                        alert(error_message);
-                    });
-                }
-            </script>
-        </div>
-        <div class="postbox schedule-tab-block wpvivid-setting-addon" style="margin-bottom: 10px; padding-bottom: 0;">
-            <div style="margin-bottom: 20px;"><strong><?php _e('Post type', 'wpvivid-backuprestore'); ?></strong></div>
-            <div>
-                <div class="wpvivid-element-space-bottom" style="float: left;">
-                    <input type="text" option="setting" id="wpvivid_uc_post_type" class="regular-text" />
-                </div>
-                <div class="wpvivid-element-space-bottom" style="float: left;">
-                    <input class="button-secondary" id="wpvivid_uc_add_post_type" type="submit" value="<?php esc_attr_e( 'Add Post type', 'wpvivid-backuprestore' ); ?>"/>
-                </div>
-                <div style="clear: both;"></div>
-            </div>
-            <div class="wpvivid-element-space-bottom">
-                <div id="wpvivid_uc_post_type_list">
-                    <?php
-                    $list = new WPvivid_Post_Type_List();
-
-                    $list->set_list($post_types);
-                    $list->prepare_items();
-                    $list ->display();
-                    ?>
-                </div>
-            </div>
-            <script>
-                jQuery('#wpvivid_uc_add_post_type').click(function()
-                {
-                    var post_type=jQuery('#wpvivid_uc_post_type').val();
-                    wpvivid_get_post_type_list('first',post_type);
-                });
-
-                jQuery('#wpvivid_uc_post_type_list').on("click",'.first-page',function()
-                {
-                    wpvivid_get_post_type_list('first');
-                });
-
-                jQuery('#wpvivid_uc_post_type_list').on("click",'.prev-page',function()
-                {
-                    var page=parseInt(jQuery(this).attr('value'));
-                    wpvivid_get_post_type_list(page-1);
-                });
-
-                jQuery('#wpvivid_uc_post_type_list').on("click",'.next-page',function()
-                {
-                    var page=parseInt(jQuery(this).attr('value'));
-                    wpvivid_get_post_type_list(page+1);
-                });
-
-                jQuery('#wpvivid_uc_post_type_list').on("click",'.last-page',function()
-                {
-                    wpvivid_get_post_type_list('last');
-                });
-
-                jQuery('#wpvivid_uc_post_type_list').on("keypress", '.current-page', function()
-                {
-                    if(event.keyCode === 13)
-                    {
-                        var page = jQuery(this).val();
-                        wpvivid_get_post_type_list(page);
-                    }
-                });
-
-                jQuery('#wpvivid_uc_post_type_list').on("click",'.action',function()
-                {
-                    var selected=jQuery('#wpvivid_uc_post_type_bulk_action').val();
-
-                    if(selected=='remove_post_type')
-                    {
-                        wpvivid_delete_post_type();
-                    }
-                });
-
-                function wpvivid_get_post_type_list(page,post_type='')
-                {
-                    var ajax_data = {
-                        'action': 'wpvivid_get_post_type_list',
-                        'page':page,
-                        'post_type':post_type
-                    };
-
-                    wpvivid_post_request(ajax_data, function (data)
-                    {
-                        jQuery('#wpvivid_uc_post_type_list').html('');
-                        try
-                        {
-                            var jsonarray = jQuery.parseJSON(data);
-                            if (jsonarray.result === 'success')
-                            {
-                                jQuery('#wpvivid_uc_post_type_list').html(jsonarray.html);
-                            }
-                            else
-                            {
-                                alert(jsonarray.error);
-                            }
-                        }
-                        catch (err)
-                        {
-                            alert(err);
-                        }
-                    }, function (XMLHttpRequest, textStatus, errorThrown)
-                    {
-                        var error_message = wpvivid_output_ajaxerror('achieving backup', textStatus, errorThrown);
-                        alert(error_message);
-                    });
-                }
-
-                function wpvivid_delete_post_type()
-                {
-                    var json = {};
-                    json['selected']=Array();
-                    jQuery('input[name=post_type][type=checkbox]').each(function(index, value)
-                    {
-                        if(jQuery(value).prop('checked'))
-                        {
-                            jQuery(value).closest('tr');
-                            var path = jQuery(this).closest('tr').attr('post_type');
-                            json['selected'].push(path)
-                        }
-                    });
-                    var selected= JSON.stringify(json);
-                    jQuery('#wpvivid_uc_post_type_list').find('.action').prop('disabled', true);
-
-                    var ajax_data = {
-                        'action': 'wpvivid_delete_post_type',
-                        'selected':selected
-                    };
-                    wpvivid_post_request(ajax_data, function (data)
-                    {
-                        jQuery('#wpvivid_uc_post_type_list').find('.action').prop('disabled', false);
-                        jQuery('#wpvivid_uc_post_type_list').html('');
-                        try
-                        {
-                            var jsonarray = jQuery.parseJSON(data);
-                            if (jsonarray.result === 'success')
-                            {
-                                alert('success');
-                                jQuery('#wpvivid_uc_post_type_list').html(jsonarray.html);
-                            }
-                            else
-                            {
-                                alert(jsonarray.error);
-                            }
-                        }
-                        catch (err)
-                        {
-                            alert(err);
-                        }
-                    }, function (XMLHttpRequest, textStatus, errorThrown)
-                    {
-                        jQuery('#wpvivid_uc_post_type_list').find('.action').prop('disabled', false);
-
-                        var error_message = wpvivid_output_ajaxerror('achieving backup', textStatus, errorThrown);
-                        alert(error_message);
-                    });
-                }
-            </script>
-        </div>
-        */
     }
 
     public function get_exclude_files_list()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try
         {
@@ -1279,7 +644,7 @@ class WPvivid_Uploads_Cleaner_Setting
 
             if(isset($_POST['page']))
             {
-                $list->set_list($white_list,$_POST['page']);
+                $list->set_list($white_list,sanitize_text_field($_POST['page']));
             }
             else
             {
@@ -1293,25 +658,30 @@ class WPvivid_Uploads_Cleaner_Setting
 
             $ret['result']='success';
             $ret['html']=$html;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     public function delete_exclude_files()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try
         {
-            $json = $_POST['selected'];
+            $json = sanitize_text_field($_POST['selected']);
             $json = stripslashes($json);
             $json = json_decode($json, true);
 
@@ -1327,7 +697,7 @@ class WPvivid_Uploads_Cleaner_Setting
 
             if(isset($_POST['page']))
             {
-                $list->set_list($white_list,$_POST['page']);
+                $list->set_list($white_list,sanitize_key($_POST['page']));
             }
             else
             {
@@ -1341,21 +711,26 @@ class WPvivid_Uploads_Cleaner_Setting
 
             $ret['result']='success';
             $ret['html']=$html;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     public function get_post_type_list()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try
         {
@@ -1382,7 +757,7 @@ class WPvivid_Uploads_Cleaner_Setting
 
             if(isset($_POST['page']))
             {
-                $list->set_list($post_types,$_POST['page']);
+                $list->set_list($post_types,sanitize_key($_POST['page']));
             }
             else
             {
@@ -1396,21 +771,26 @@ class WPvivid_Uploads_Cleaner_Setting
 
             $ret['result']='success';
             $ret['html']=$html;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }
 
     public function delete_post_type()
     {
-        global $wpvivid_plugin;
-        $wpvivid_plugin->ajax_check_security();
+        check_ajax_referer( 'wpvivid_ajax', 'nonce' );
+        $check=is_admin()&&current_user_can('administrator');
+        $check=apply_filters('wpvivid_ajax_check_security',$check);
+        if(!$check)
+        {
+            die();
+        }
 
         try
         {
@@ -1423,7 +803,7 @@ class WPvivid_Uploads_Cleaner_Setting
             $default_post_types[]='shop_order_refund';
             $default_post_types[]='oembed_cache';
 
-            $json = $_POST['selected'];
+            $json = sanitize_text_field($_POST['selected']);
             $json = stripslashes($json);
             $json = json_decode($json, true);
 
@@ -1439,7 +819,7 @@ class WPvivid_Uploads_Cleaner_Setting
 
             if(isset($_POST['page']))
             {
-                $list->set_list($post_types,$_POST['page']);
+                $list->set_list($post_types,sanitize_key($_POST['page']));
             }
             else
             {
@@ -1453,13 +833,13 @@ class WPvivid_Uploads_Cleaner_Setting
 
             $ret['result']='success';
             $ret['html']=$html;
-            echo json_encode($ret);
+            echo wp_json_encode($ret);
         }
         catch (Exception $error)
         {
             $message = 'An exception has occurred. class: '.get_class($error).';msg: '.$error->getMessage().';code: '.$error->getCode().';line: '.$error->getLine().';in_file: '.$error->getFile().';';
             error_log($message);
-            echo json_encode(array('result'=>'failed','error'=>$message));
+            echo wp_json_encode(array('result'=>'failed','error'=>$message));
         }
         die();
     }

@@ -66,7 +66,7 @@ class WPvivid_crypt
     {
         $user_info['user']=$user;
         $user_info['pw']=$pw;
-        $info=json_encode($user_info);
+        $info=wp_json_encode($user_info);
         $this->rsa->loadKey($this->public_key);
         return $this->rsa->encrypt($info);
     }
@@ -75,7 +75,7 @@ class WPvivid_crypt
     {
         $user_info['user']=$user;
         $user_info['token']=$token;
-        $info=json_encode($user_info);
+        $info=wp_json_encode($user_info);
         $this->rsa->loadKey($this->public_key);
         return $this->rsa->encrypt($info);
     }
@@ -114,7 +114,7 @@ class WPvivid_Crypt_File
 
         if (file_exists($encrypted_path))
         {
-            @unlink($encrypted_path);
+            @wp_delete_file($encrypted_path);
         }
         $encrypted_handle = fopen($encrypted_path, 'wb+');
 

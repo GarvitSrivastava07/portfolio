@@ -478,7 +478,7 @@ class WPvivid_Staging_Copy_Files
     public function create_cache_file($list)
     {
         if(file_exists($this->cache_file_name))
-            @unlink($this->cache_file_name);
+            @wp_delete_file($this->cache_file_name);
         $this->cache_file=fopen($this->cache_file_name,'a');
         foreach ($list as $item)
         {
@@ -664,6 +664,6 @@ class WPvivid_Staging_Copy_Files
     {
         if($this->cache_file)
             fclose($this->cache_file);
-        @unlink($this->cache_file_name);
+        @wp_delete_file($this->cache_file_name);
     }
 }

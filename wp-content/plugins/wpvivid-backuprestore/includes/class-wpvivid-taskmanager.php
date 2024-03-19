@@ -19,7 +19,7 @@ class WPvivid_taskmanager
         $task['status']['resume_count']=0;
 
         $task['options']=$option;
-        $task['options']['file_prefix']=$task['id'].'_'.date('Y-m-d-H-i',$task['status']['start_time']);
+        $task['options']['file_prefix']=$task['id'].'_'.gmdate('Y-m-d-H-i',$task['status']['start_time']);
         $task['options']['log_file_name']=$id.'_backup';
         $log=new WPvivid_Log();
         $log->CreateLogFile($task['options']['log_file_name'],'no_folder','backup');
@@ -73,7 +73,7 @@ class WPvivid_taskmanager
         $task['status']['resume_count']=0;
 
         $task['options']=$option;
-        $task['options']['file_prefix']=$task['id'].'_'.date('Y-m-d-H-i',$task['status']['start_time']);
+        $task['options']['file_prefix']=$task['id'].'_'.gmdate('Y-m-d-H-i',$task['status']['start_time']);
         $task['options']['log_file_name']=$id.'_backup';
         $log=new WPvivid_Log();
         $log->CreateLogFile($task['options']['log_file_name'],'no_folder','backup');
@@ -198,18 +198,18 @@ class WPvivid_taskmanager
         if(array_key_exists ($task_id,$tasks))
         {
             $task = $tasks[$task_id];
-            $current_time=date("Y-m-d H:i:s");
-            $create_time=date("Y-m-d H:i:s",$task['status']['start_time']);
+            $current_time=gmdate("Y-m-d H:i:s");
+            $create_time=gmdate("Y-m-d H:i:s",$task['status']['start_time']);
             $time_diff=strtotime($current_time)-strtotime($create_time);
             $running_time='';
-            if(date("G",$time_diff) > 0){
-                $running_time .= date("G",$time_diff).' hour(s)';
+            if(gmdate("G",$time_diff) > 0){
+                $running_time .= gmdate("G",$time_diff).' hour(s)';
             }
-            if(intval(date("i",$time_diff)) > 0){
-                $running_time .= intval(date("i",$time_diff)).' min(s)';
+            if(intval(gmdate("i",$time_diff)) > 0){
+                $running_time .= intval(gmdate("i",$time_diff)).' min(s)';
             }
-            if(intval(date("s",$time_diff)) > 0){
-                $running_time .= intval(date("s",$time_diff)).' second(s)';
+            if(intval(gmdate("s",$time_diff)) > 0){
+                $running_time .= intval(gmdate("s",$time_diff)).' second(s)';
             }
             $next_resume_time=WPvivid_Schedule::get_next_resume_time($task['id']);
 
@@ -217,7 +217,7 @@ class WPvivid_taskmanager
             $ret['progress']=$task['data'][$ret['type']]['progress'];
             $ret['doing']=$task['data'][$ret['type']]['doing'];
             if(isset($task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress']))
-                $ret['descript']=__($task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress'], 'wpvivid-backuprestore');
+                $ret['descript']=$task['data'][$ret['type']]['sub_job'][$ret['doing']]['progress'];
             else
                 $ret['descript']='';
             if(isset($task['data'][$ret['type']]['sub_job'][$ret['doing']]['upload_data']))
@@ -606,8 +606,8 @@ class WPvivid_taskmanager
 
     public static function is_backup_task_timeout($task)
     {
-        $current_time=date("Y-m-d H:i:s");
-        $run_time=date("Y-m-d H:i:s",  $task['data']['run_time']);
+        $current_time=gmdate("Y-m-d H:i:s");
+        $run_time=gmdate("Y-m-d H:i:s",  $task['data']['run_time']);
         $running_time=strtotime($current_time)-strtotime($run_time);
         if($running_time>$task['data']['options']['max_execution_time'])
         {

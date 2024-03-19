@@ -8,7 +8,7 @@ class WPvivid_tools
 {
     public static function clean_junk_cache(){
         $home_url_prefix=get_home_url();
-        $parse = parse_url($home_url_prefix);
+        $parse = wp_parse_url($home_url_prefix);
         $tmppath='';
         if(isset($parse['path'])) {
             $tmppath=str_replace('/','_',$parse['path']);
@@ -31,10 +31,10 @@ class WPvivid_tools
                 WPvivid_tools::deldir($path.DIRECTORY_SEPARATOR.$filename,'',true);
             }*/
             if(preg_match('#pclzip-.*\.tmp#', $filename)){
-                @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
             }
             if(preg_match('#pclzip-.*\.gz#', $filename)){
-                @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
             }
         }
         @closedir($handler);
@@ -60,7 +60,7 @@ class WPvivid_tools
                     }
                 }else{
                     if(empty($exclude)||WPvivid_tools::regex_match($exclude['file'],$path.DIRECTORY_SEPARATOR.$filename ,0)){
-                        @unlink($path.DIRECTORY_SEPARATOR.$filename);
+                        @wp_delete_file($path.DIRECTORY_SEPARATOR.$filename);
                     }
                 }
             }
@@ -107,37 +107,32 @@ class WPvivid_tools
         return true;
     }
 
-    public static function file_put_array($json,$file){
-        file_put_contents($file,json_encode($json));
-    }
-    public static function  file_get_array($file){
-        global $wpvivid_plugin;
-        if(file_exists($file))
-        {
-            $get_file_ret = json_decode(file_get_contents($file),true);
-            if(empty($get_file_ret))
-            {
-                sleep(1);
-                $contents=file_get_contents($file);
-                if($contents==false)
-                {
-                    if( $wpvivid_plugin->restore_data)
-                        $wpvivid_plugin->restore_data->write_log('file_get_contents failed.', 'notice');
-                }
-                $get_file_ret = json_decode($contents,true);
-                if(empty($get_file_ret))
-                {
-                    if( $wpvivid_plugin->restore_data)
-                        $wpvivid_plugin->restore_data->write_log('Failed to decode restore data file.', 'notice');
-                }
+    public static function GetSaveLogFolder()
+    {
+        $options = get_option('wpvivid_common_setting',array());
 
-                return $get_file_ret;
-            }
-            return $get_file_ret;
-        }else{
-            if( $wpvivid_plugin->restore_data)
-                $wpvivid_plugin->restore_data->write_log('Failed to open restore data file, the file may not exist.', 'notice');
-            return array();
+        if(!isset($options['log_save_location']))
+        {
+            //WPvivid_Setting::set_default_common_option();
+            $options['log_save_location']=WPVIVID_DEFAULT_LOG_DIR;
+            update_option('wpvivid_common_setting', $options);
+
+            $options = get_option('wpvivid_common_setting',array());
         }
+
+        if(!is_dir(WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$options['log_save_location']))
+        {
+            @mkdir(WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$options['log_save_location'],0777,true);
+            //@fopen(WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$options['log_save_location'].DIRECTORY_SEPARATOR.'index.html', 'x');
+            $tempfile=@fopen(WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$options['log_save_location'].DIRECTORY_SEPARATOR.'.htaccess', 'x');
+            if($tempfile)
+            {
+                //$text="deny from all";
+                $text="<IfModule mod_rewrite.c>\r\nRewriteEngine On\r\nRewriteRule .* - [F,L]\r\n</IfModule>";
+                fwrite($tempfile,$text );
+            }
+        }
+
+        return WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$options['log_save_location'].DIRECTORY_SEPARATOR;
     }
 }

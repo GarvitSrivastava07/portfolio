@@ -1,3 +1,5 @@
+<?php
+?>
 <script>
     function wpvivid_get_ini_memory_limit() {
         var ajax_data = {
@@ -53,3 +55,5 @@
         //wpvivid_get_ini_memory_limit();
     });
 </script>
+<?php
+?>

@@ -82,7 +82,7 @@ class InstanceMetadataClient extends AbstractClient
                 . ' not running inside of Amazon EC2, you must provide your AWS access key ID and secret access key in'
                 . ' the "key" and "secret" options when creating a client or provide an instantiated'
                 . ' Aws\\Common\\Credentials\\CredentialsInterface object. (%s)', $e->getMessage());
-            throw new InstanceProfileCredentialsException($message, $e->getCode());
+            throw new InstanceProfileCredentialsException(esc_html($message), esc_attr($e->getCode()));
         }
 
         // Ensure that the status code was successful

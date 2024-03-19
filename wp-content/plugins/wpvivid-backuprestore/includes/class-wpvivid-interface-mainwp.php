@@ -155,7 +155,7 @@ class WPvivid_Interface_MainWP
             {
                 $ret['result']='failed';
                 $ret['error']=__('A task is already running. Please wait until the running task is complete, and try again.', 'wpvivid-backuprestore');
-                echo json_encode($ret);
+                echo wp_json_encode($ret);
                 die();
             }
 

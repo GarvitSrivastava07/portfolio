@@ -194,8 +194,8 @@ class WPvivid_mail_report
             $type = 'Cron-Schedule';
         }
         $offset=get_option('gmt_offset');
-        $start_time=date("m-d-Y H:i:s",$task->get_start_time()+$offset*60*60);
-        $end_time=date("m-d-Y H:i:s",time()+$offset*60*60);
+        $start_time=gmdate("m-d-Y H:i:s",$task->get_start_time()+$offset*60*60);
+        $end_time=gmdate("m-d-Y H:i:s",time()+$offset*60*60);
         $running_time=($task->get_end_time()-$task->get_start_time()).'s';
         $remote_options= $task->task['options']['remote_options'];
         if($remote_options!==false)
@@ -639,8 +639,8 @@ class WPvivid_mail_report
             $type = 'Cron-Schedule';
         }
         $offset=get_option('gmt_offset');
-        $start_time=date("m-d-Y H:i:s",$task['status']['start_time']+$offset*60*60);
-        $end_time=date("m-d-Y H:i:s",time()+$offset*60*60);
+        $start_time=gmdate("m-d-Y H:i:s",$task['status']['start_time']+$offset*60*60);
+        $end_time=gmdate("m-d-Y H:i:s",time()+$offset*60*60);
         $running_time=($task['status']['run_time']-$task['status']['start_time']).'s';
         $remote_options= $task['options']['remote_options'];
         if($remote_options!==false)
@@ -1072,7 +1072,7 @@ class WPvivid_mail_report
 
         if(file_exists($path))
         {
-            @unlink( $path);
+            @wp_delete_file( $path);
         }
         $archive = new WPvivid_PclZip($path);
 
@@ -1080,27 +1080,27 @@ class WPvivid_mail_report
         {
             if(!$archive->add($files,WPVIVID_PCLZIP_OPT_REMOVE_ALL_PATH))
             {
-                echo $archive->errorInfo(true).' <a href="'.admin_url().'admin.php?page=WPvivid">retry</a>.';
+                echo esc_html($archive->errorInfo(true)).' <a href="'.esc_url(admin_url()).'admin.php?page=WPvivid">retry</a>.';
                 exit;
             }
         }
 
         global $wpvivid_plugin;
-        $server_info=json_encode($wpvivid_plugin->get_website_info());
+        $server_info=wp_json_encode($wpvivid_plugin->get_website_info());
         $server_file_path=WP_CONTENT_DIR.DIRECTORY_SEPARATOR.$backup_path.DIRECTORY_SEPARATOR.'wpvivid_server_info.json';
         if(file_exists($server_file_path))
         {
-            @unlink( $server_file_path);
+            @wp_delete_file( $server_file_path);
         }
         $server_file = fopen($server_file_path, 'x');
         fclose($server_file);
         file_put_contents($server_file_path,$server_info);
         if(!$archive->add($server_file_path,WPVIVID_PCLZIP_OPT_REMOVE_ALL_PATH))
         {
-            echo $archive->errorInfo(true).' <a href="'.admin_url().'admin.php?page=WPvivid">retry</a>.';
+            echo esc_html($archive->errorInfo(true)).' <a href="'.esc_url(admin_url()).'admin.php?page=WPvivid">retry</a>.';
             exit;
         }
-        @unlink( $server_file_path);
+        @wp_delete_file( $server_file_path);
 
         $attachments[] = $path;
 
@@ -1114,7 +1114,7 @@ class WPvivid_mail_report
             $ret['result']='success';
         }
 
-        @unlink($path);
+        @wp_delete_file($path);
         return $ret;
     }
 }
